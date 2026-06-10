@@ -1,0 +1,179 @@
+{% extends 'admin_fe/base.html' %}
+
+{% block title %}Cấu hình hệ thống | HALINK CMS{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'settings_view' %}" class="hover:text-white transition-colors">Hệ thống</a>
+<i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+<span class="text-slate-200">Cấu hình</span>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-gears text-brand-500 mr-2"></i>Cấu hình hệ thống</h1>
+        <p class="text-xs text-slate-400 mt-1">Cấu hình tham số gửi mail SMTP, thiết lập ngôn ngữ và các tham số vận hành của cổng thông tin Suối Tiên.</p>
+    </div>
+
+    <!-- Tabs Header -->
+    <div class="flex border-b border-slate-800">
+        <button onclick="switchTab('smtp')" 
+            class="tab-btn px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 {% if current_tab == 'smtp' %}border-brand-500 text-brand-500{% else %}border-transparent text-slate-400{% endif %} hover:text-white transition-all focus:outline-none">
+            Cấu hình SMTP gửi mail
+        </button>
+        <button onclick="switchTab('lang')" 
+            class="tab-btn px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 {% if current_tab == 'lang' %}border-brand-500 text-brand-500{% else %}border-transparent text-slate-400{% endif %} hover:text-white transition-all focus:outline-none">
+            Cài đặt ngôn ngữ
+        </button>
+        <button onclick="switchTab('general')" 
+            class="tab-btn px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 {% if current_tab == 'general' %}border-brand-500 text-brand-500{% else %}border-transparent text-slate-400{% endif %} hover:text-white transition-all focus:outline-none">
+            Cài đặt Website (Chung)
+        </button>
+    </div>
+
+    <!-- Tab Contents Container -->
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Tab 1: SMTP Config -->
+        <div id="smtp-tab" class="tab-content bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md space-y-6 {% if current_tab != 'smtp' %}hidden{% endif %}">
+            <div>
+                <h3 class="text-sm font-bold text-white mb-1">Cổng kết nối Email SMTP</h3>
+                <p class="text-[10px] text-slate-500">Các tham số kết nối dịch vụ gửi mail tự động (đơn hàng, thông báo khách hàng).</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for config in smtp_configs %}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
+                        {{ config.meta_title|default:config.meta_type }}
+                    </label>
+                    <input type="text" name="config_{{ config.Id }}" value="{{ config.meta_value }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                    <p class="text-[10px] text-slate-600 mt-1">Khóa dữ liệu: <code class="font-mono text-slate-500">{{ config.meta_title }}</code></p>
+                </div>
+                {% empty %}
+                <div class="col-span-2 text-center py-6 text-slate-500">
+                    Chưa thiết lập cấu hình SMTP nào trong `halink_meta` (loại `halinksmtp`).
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab 2: Language Config -->
+        <div id="lang-tab" class="tab-content bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md space-y-6 {% if current_tab != 'lang' %}hidden{% endif %}">
+            <div>
+                <h3 class="text-sm font-bold text-white mb-1">Cấu hình ngôn ngữ</h3>
+                <p class="text-[10px] text-slate-500">Bản dịch các cụm từ tĩnh trên giao diện website chính.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for config in lang_configs %}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
+                        {{ config.meta_title|default:config.meta_type }}
+                    </label>
+                    <textarea name="config_{{ config.Id }}" rows="2"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">{{ config.meta_value }}</textarea>
+                    <p class="text-[10px] text-slate-600 mt-1">Khóa dữ liệu: <code class="font-mono text-slate-500">{{ config.meta_title }}</code></p>
+                </div>
+                {% empty %}
+                <div class="col-span-2 text-center py-6 text-slate-500">
+                    Chưa thiết lập cấu hình dịch ngôn ngữ nào trong `halink_meta` (loại `halinklanguage`).
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab 3: General Config -->
+        <div id="general-tab" class="tab-content bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md space-y-6 {% if current_tab != 'general' %}hidden{% endif %}">
+            <div>
+                <h3 class="text-sm font-bold text-white mb-1">Cài đặt Website chung</h3>
+                <p class="text-[10px] text-slate-500">Thông tin cơ bản vận hành trang cổng thông tin Suối Tiên.</p>
+            </div>
+            
+            {% if website_config %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Tiêu đề Website</label>
+                    <input type="text" name="web_title" value="{{ website_config.clean_title|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Tên công ty</label>
+                    <input type="text" name="web_tencty" value="{{ website_config.clean_tencty|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Hotline 1</label>
+                    <input type="text" name="web_hotline" value="{{ website_config.hotline|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Hotline 2</label>
+                    <input type="text" name="web_hotline2" value="{{ website_config.hotline2|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Email liên hệ</label>
+                    <input type="email" name="web_email" value="{{ website_config.email|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Slogan</label>
+                    <input type="text" name="web_slogan" value="{{ website_config.clean_slogan|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Giờ mở cửa</label>
+                    <input type="text" name="web_opentime" value="{{ website_config.opentime|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Giờ đóng cửa</label>
+                    <input type="text" name="web_closetime" value="{{ website_config.closetime|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Địa chỉ công ty</label>
+                    <input type="text" name="web_diachi" value="{{ website_config.clean_diachi|default:'' }}"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Từ khóa SEO (Keywords)</label>
+                    <textarea name="web_keyword" rows="3"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">{{ website_config.keyword|default:'' }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Mô tả SEO (Description)</label>
+                    <textarea name="web_description" rows="3"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-colors">{{ website_config.description|default:'' }}</textarea>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-6 text-slate-500">
+                Không tìm thấy cấu hình website nào trong bảng `halink_website`.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Save Button Floating bar -->
+        <div class="flex items-center justify-end bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
+            <button type="submit" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl shadow-lg hover:shadow-brand-500/20 transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-floppy-disk text-sm"></i>
+                <span>Lưu toàn bộ thay đổi</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    function switchTab(tabName) {
+        window.location.href = "{% url 'settings_view' %}?tab=" + tabName;
+    }
+</script>
+{% endblock %}

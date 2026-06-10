@@ -1,0 +1,87 @@
+{% extends 'admin_fe/base.html' %}
+
+{% block title %}Hỗ trợ & Góp ý | HALINK CMS{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'support_list' %}" class="hover:text-white transition-colors">Tương tác</a>
+<i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
+<span class="text-slate-200">Hỗ trợ & Góp ý</span>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-envelope text-brand-500 mr-2"></i>Hỗ trợ & Góp ý</h1>
+        <p class="text-xs text-slate-400 mt-1">Danh sách yêu cầu liên hệ, đăng ký nhận tin hoặc ý kiến góp ý của khách hàng gửi từ website.</p>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-800 bg-slate-950/40">
+                        <th class="py-4 px-6">ID</th>
+                        <th class="py-4 px-6">Thông tin liên hệ</th>
+                        <th class="py-4 px-6">Nội dung hỗ trợ</th>
+                        <th class="py-4 px-6">Tiêu đề / Loại</th>
+                        <th class="py-4 px-6">Địa chỉ IP</th>
+                        <th class="py-4 px-6">Ngày gửi</th>
+                        <th class="py-4 px-6">Trạng thái</th>
+                        <th class="py-4 px-6 text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% for support in supports %}
+                    <tr class="hover:bg-slate-800/10 text-slate-300 transition-colors">
+                        <td class="py-5 px-6 font-bold text-white align-top">#{{ support.Id }}</td>
+                        <td class="py-5 px-6 align-top">
+                            <div class="font-bold text-slate-200">{{ support.meta_title|default:"Khách hàng liên hệ" }}</div>
+                            <div class="text-[10px] text-slate-500 mt-1.5 space-y-1">
+                                {% if support.meta_value_cus %}
+                                <div class="flex items-center"><i class="fa-solid fa-user-tag mr-1.5 w-3.5"></i>{{ support.meta_value_cus }}</div>
+                                {% endif %}
+                                <div class="flex items-center"><i class="fa-solid fa-envelope mr-1.5 w-3.5"></i>{{ support.meta_value_cus|default:"" }}</div>
+                            </div>
+                        </td>
+                        <td class="py-5 px-6 align-top max-w-sm">
+                            <p class="text-slate-300 font-medium leading-relaxed whitespace-pre-line">{{ support.meta_value }}</p>
+                        </td>
+                        <td class="py-5 px-6 align-top">
+                            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full font-semibold">
+                                {{ support.meta_title|default:"Liên hệ chung" }}
+                            </span>
+                        </td>
+                        <td class="py-5 px-6 align-top text-slate-400 font-mono">{{ support.meta_like|default:"N/A" }}</td>
+                        <td class="py-5 px-6 align-top text-slate-400">{{ support.date|date:"H:i d/m/Y" }}</td>
+                        <td class="py-5 px-6 align-top">
+                            {% if support.ticlock == '0' %}
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">Đã xử lý</span>
+                            {% else %}
+                            <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full font-semibold">Mới</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-5 px-6 align-top text-center">
+                            <a href="{% url 'toggle_support_status' support.Id %}" 
+                                class="inline-flex items-center px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors {% if support.ticlock == '0' %}bg-slate-800 border-slate-700 text-slate-400 hover:text-yellow-400{% else %}bg-brand-500/10 border-brand-500/20 text-brand-400 hover:bg-brand-500 hover:text-white{% endif %}">
+                                {% if support.ticlock == '0' %}<i class="fa-solid fa-arrow-rotate-left mr-1"></i>Mở lại{% else %}<i class="fa-solid fa-circle-check mr-1"></i>Xử lý{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-500">Chưa có yêu cầu hỗ trợ nào được gửi.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'admin_fe/includes/pagination.html' with item_name="yêu cầu" %}
+
+</div>
+{% endblock %}

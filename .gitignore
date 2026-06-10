@@ -1,0 +1,28 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Large files and backups
+*.zip
+*.tar
+*.gz
+*.sql
+
+# Scratch files (Nháp)
+scratch_*
+
+# Environment configurations
+.env
+
+# Media and DBs
+db.sqlite3
+media/
+
+# Workflow documentation
+tai_lieu_workflow_db.md

@@ -1,0 +1,88 @@
+{% extends 'admin_fe/base.html' %}
+
+{% block title %}Quản lý Bài viết | HALINK CMS{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'post_list' %}" class="hover:text-white transition-colors">Bài viết</a>
+<i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
+<span class="text-slate-200">Tất cả bài viết</span>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-newspaper text-brand-500 mr-2"></i>Danh sách Bài viết</h1>
+            <p class="text-xs text-slate-400 mt-1">Danh sách tin tức và bài viết giới thiệu của Suối Tiên.</p>
+        </div>
+        
+        <form method="GET" class="flex items-center space-x-2 w-full sm:w-80">
+            <div class="relative w-full">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="q" value="{{ query }}" placeholder="Tìm bài viết..." 
+                    class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none transition-colors">
+            </div>
+            {% if query %}
+            <a href="{% url 'post_list' %}" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition-colors">
+                Xóa
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-800 bg-slate-950/40">
+                        <th class="py-3 px-6">ID</th>
+                        <th class="py-3 px-6">Hình ảnh</th>
+                        <th class="py-3 px-6">Tiêu đề bài viết</th>
+                        <th class="py-3 px-6">Lượt xem</th>
+                        <th class="py-3 px-6">Hiển thị</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% for post in posts %}
+                    <tr class="hover:bg-slate-800/10 text-slate-300 transition-colors">
+                        <td class="py-4 px-6 font-bold text-white">#{{ post.Id }}</td>
+                        <td class="py-4 px-6">
+                            {% if post.post_image %}
+                            <img src="{{ post.post_image }}" alt="Image" class="w-12 h-10 object-cover rounded-lg border border-slate-800">
+                            {% else %}
+                            <div class="w-12 h-10 bg-slate-950 rounded-lg flex items-center justify-center text-slate-700"><i class="fa-solid fa-image"></i></div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 max-w-sm sm:max-w-md">
+                            <p class="font-semibold text-slate-200 truncate">{{ post.clean_title }}</p>
+                            <p class="text-[10px] text-slate-500 mt-1 truncate">{{ post.alias }}</p>
+                        </td>
+                        <td class="py-4 px-6 font-semibold">{{ post.post_views }}</td>
+                        <td class="py-4 px-6">
+                            {% if post.ticlock == '0' %}
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">Hiện</span>
+                            {% else %}
+                            <span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-semibold">Ẩn</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-500">Không tìm thấy bài viết nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'admin_fe/includes/pagination.html' with item_name="bài viết" %}
+
+</div>
+{% endblock %}

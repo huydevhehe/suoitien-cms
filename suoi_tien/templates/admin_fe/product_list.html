@@ -1,0 +1,92 @@
+{% extends 'admin_fe/base.html' %}
+
+{% block title %}Quản lý Thực đơn & Sản phẩm | HALINK CMS{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'product_list' %}" class="hover:text-white transition-colors">Sản phẩm</a>
+<i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
+<span class="text-slate-200">Thực đơn / Sản phẩm</span>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-utensils text-brand-500 mr-2"></i>Thực đơn & Sản phẩm</h1>
+            <p class="text-xs text-slate-400 mt-1">Danh sách các món ăn trực thuộc nhà hàng và sản phẩm bán lẻ tại Suối Tiên.</p>
+        </div>
+        
+        <form method="GET" class="flex items-center space-x-2 w-full sm:w-80">
+            <div class="relative w-full">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="q" value="{{ query }}" placeholder="Tìm món ăn..." 
+                    class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none transition-colors">
+            </div>
+            {% if query %}
+            <a href="{% url 'product_list' %}" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition-colors">
+                Xóa
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-800 bg-slate-950/40">
+                        <th class="py-3 px-6">ID</th>
+                        <th class="py-3 px-6">Hình ảnh</th>
+                        <th class="py-3 px-6">Tên món ăn / sản phẩm</th>
+                        <th class="py-3 px-6">Đơn giá / Số lượng</th>
+                        <th class="py-3 px-6">Sắp xếp</th>
+                        <th class="py-3 px-6">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% for product in products %}
+                    <tr class="hover:bg-slate-800/10 text-slate-300 transition-colors">
+                        <td class="py-4 px-6 font-bold text-white">#{{ product.Id }}</td>
+                        <td class="py-4 px-6">
+                            {% if product.post_image %}
+                            <img src="{{ product.post_image }}" alt="Product Image" class="w-12 h-10 object-cover rounded-lg border border-slate-800">
+                            {% else %}
+                            <div class="w-12 h-10 bg-slate-950 rounded-lg flex items-center justify-center text-slate-700"><i class="fa-solid fa-bowl-food"></i></div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 max-w-sm">
+                            <p class="font-semibold text-slate-200 truncate">{{ product.clean_title }}</p>
+                            <p class="text-[10px] text-slate-500 mt-1 truncate">{{ product.alias }}</p>
+                        </td>
+                        <td class="py-4 px-6 font-bold text-brand-400">
+                            {{ product.post_amount|floatformat:0 }}đ
+                        </td>
+                        <td class="py-4 px-6 text-slate-400">{{ product.sort|default:"0" }}</td>
+                        <td class="py-4 px-6">
+                            {% if product.ticlock == '0' %}
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">Bán trực tuyến</span>
+                            {% else %}
+                            <span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-semibold">Tạm ngưng</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">Không tìm thấy sản phẩm nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'admin_fe/includes/pagination.html' with item_name="sản phẩm" %}
+
+</div>
+{% endblock %}

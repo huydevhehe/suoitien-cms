@@ -1,0 +1,146 @@
+{% extends 'admin_fe/base.html' %}
+
+{% block title %}Đơn hàng (Vé) | HALINK CMS{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'ticket_orders' %}" class="hover:text-white transition-colors">Giao dịch</a>
+<i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
+<span class="text-slate-200">Đơn hàng (Vé)</span>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-xl font-bold text-white"><i class="fa-solid fa-ticket text-brand-500 mr-2"></i>Quản lý Đơn hàng (Đặt vé)</h1>
+        <p class="text-xs text-slate-400 mt-1">Danh sách đơn hàng đăng ký mua vé tham quan và tham gia trò chơi trực tuyến của Suối Tiên.</p>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-800 bg-slate-950/40">
+                        <th class="py-4 px-6">ID</th>
+                        <th class="py-4 px-6">Mã đơn hàng</th>
+                        <th class="py-4 px-6">Khách hàng</th>
+                        <th class="py-4 px-6 text-right">Tổng tiền</th>
+                        <th class="py-4 px-6">Ngày đặt</th>
+                        <th class="py-4 px-6">Trạng thái</th>
+                        <th class="py-4 px-6 text-center">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% for order in orders %}
+                    <!-- Main Row -->
+                    <tr class="hover:bg-slate-800/10 text-slate-300 transition-colors">
+                        <td class="py-4 px-6 font-bold text-white">#{{ order.Id }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-200">{{ order.id_cart }}</td>
+                        <td class="py-4 px-6">
+                            <div class="font-bold text-slate-200">{{ order.fullname }}</div>
+                            <div class="text-[10px] text-slate-500 mt-1 space-y-0.5">
+                                <div><i class="fa-solid fa-phone mr-1"></i>{{ order.phone }}</div>
+                                {% if order.email %}
+                                <div><i class="fa-solid fa-envelope mr-1"></i>{{ order.email }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-right font-bold text-brand-400 text-sm">
+                            {{ order.total_price|floatformat:0 }}đ
+                        </td>
+                        <td class="py-4 px-6 text-slate-400">{{ order.date|date:"H:i d/m/Y" }}</td>
+                        <td class="py-4 px-6">
+                            {% if order.status == 3 %}
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">Hoàn tất</span>
+                            {% else %}
+                            <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full font-semibold">Chờ duyệt</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                            <button onclick="toggleOrderDetail('details-{{ order.Id }}')" 
+                                class="inline-flex items-center px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-200 rounded-lg font-bold transition-all">
+                                <i class="fa-solid fa-magnifying-glass-plus mr-1 text-brand-500"></i>Xem vé
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Detail Expanded Row -->
+                    <tr id="details-{{ order.Id }}" class="bg-slate-950/40 hidden">
+                        <td colspan="7" class="p-6">
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-inner">
+                                
+                                <!-- User & Shipping Info -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b border-slate-800/60">
+                                    <div>
+                                        <h4 class="text-[10px] font-bold text-brand-400 uppercase tracking-wider mb-2">Thông tin giao nhận vé</h4>
+                                        <div class="space-y-1 text-slate-400 text-xs">
+                                            <p><span class="text-slate-500">Người nhận:</span> <strong class="text-slate-200">{{ order.fullname }}</strong></p>
+                                            <p><span class="text-slate-500">Điện thoại:</span> {{ order.phone }}</p>
+                                            <p><span class="text-slate-500">Email:</span> {{ order.email|default:"N/A" }}</p>
+                                            <p><span class="text-slate-500">Địa chỉ:</span> {{ order.address|default:"N/A" }}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-2">Ghi chú từ khách hàng</h4>
+                                        <p class="text-slate-400 text-xs italic bg-slate-950/60 p-3 rounded-lg border border-slate-800/60 min-h-[4rem]">
+                                            {{ order.note|default:"Không có ghi chú nào khác." }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Ordered Tickets -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-3">Danh sách vé đặt mua</h4>
+                                    <div class="space-y-2.5">
+                                        {% for item in order.items %}
+                                        <div class="flex items-center justify-between p-3 bg-slate-950/30 border border-slate-800/40 rounded-xl">
+                                            <div class="flex items-center space-x-3">
+                                                {% if item.product_image %}
+                                                <img src="{{ item.product_image }}" alt="Ticket" class="w-12 h-10 object-cover rounded-lg border border-slate-800">
+                                                {% else %}
+                                                <div class="w-12 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-slate-700"><i class="fa-solid fa-ticket"></i></div>
+                                                {% endif %}
+                                                <div>
+                                                    <p class="font-bold text-slate-200 text-xs">{{ item.product_title }}</p>
+                                                    <p class="text-[10px] text-slate-500 mt-0.5">Số lượng: <strong class="text-slate-300">{{ item.quantity }}</strong> &times; {{ item.price|floatformat:0 }}đ</p>
+                                                </div>
+                                            </div>
+                                            <div class="font-bold text-white text-xs">
+                                                {{ item.total|floatformat:0 }}đ
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">Chưa có giao dịch đặt vé nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% include 'admin_fe/includes/pagination.html' with item_name="đơn hàng" %}
+    </div>
+
+</div>
+
+<script>
+    function toggleOrderDetail(rowId) {
+        const row = document.getElementById(rowId);
+        if (row.classList.contains('hidden')) {
+            row.classList.remove('hidden');
+        } else {
+            row.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}
