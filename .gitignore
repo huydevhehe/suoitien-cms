@@ -34,3 +34,6 @@ test_cases_parity.md
 check_parity.py
 check_sql_parity.py
 test_widgets_save.py
+
+# Test directory (E2E Automated tests)
+tests/
