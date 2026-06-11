@@ -152,6 +152,31 @@ class SidebarAdminMixin:
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
+class StatusSwitchAdminMixin:
+    """Mixin tự động áp dụng StatusSwitchWidget cho các trường trạng thái dạng 0/1 hoặc '0'/'1'."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name in ['ticlock', 'home', 'fullwidth', 'enable', 'thugon_menu']:
+            from django.db import models
+            from .widgets import StatusSwitchWidget
+            is_char = isinstance(db_field, (models.CharField, models.TextField))
+            kwargs['widget'] = StatusSwitchWidget(is_char=is_char)
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+class UnixTimestampDateTimeAdminMixin:
+    """Mixin gắn UnixTimestampDateTimeWidget vào các trường lưu Unix Timestamp dạng số."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'date' and db_field.model.__name__ in ['HalinkFlash', 'HalinkFlashAdmin']:
+            from .widgets import UnixTimestampDateTimeWidget
+            kwargs['widget'] = UnixTimestampDateTimeWidget()
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+
 
 
 
@@ -250,7 +275,7 @@ class HalinkAdminAdmin(ModelAdmin):
 
 # 2. Quản lý Thành viên
 @admin.register(HalinkUser)
-class HalinkUserAdmin(ModelAdmin):
+class HalinkUserAdmin(StatusSwitchAdminMixin, ModelAdmin):
     form = HalinkUserPasswordForm
     list_per_page = 20
     list_display = ('id', 'username', 'fullname', 'email', 'phone', 'date', 'ticlock')
@@ -260,7 +285,7 @@ class HalinkUserAdmin(ModelAdmin):
 
 # 4. Quản lý Banner & Quảng cáo / Thư viện
 @admin.register(HalinkFlash)
-class HalinkFlashAdmin(ImagePickerAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('get_filename', 'get_dimensions', 'get_size', 'get_status_display', 'get_date_display')
     search_fields = ('title_vn', 'file_vn', 'link')
@@ -302,7 +327,7 @@ class HalinkFlashAdmin(ImagePickerAdminMixin, PostDisplayMixin, MultiLangAdminMi
 
 # 5. Quản lý Menu
 @admin.register(HalinkMenu)
-class HalinkMenuAdmin(PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkMenuAdmin(StatusSwitchAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_clean_title', 'id_cat', 'get_status_display')
     search_fields = ('title_cat',)
@@ -310,10 +335,25 @@ class HalinkMenuAdmin(PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
 
 # 6. Cấu hình Website
 @admin.register(HalinkWebsite)
-class HalinkWebsiteAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkWebsiteAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('id', 'get_clean_title', 'hotline', 'email', 'get_clean_diachi')
     search_fields = ('title', 'email', 'hotline')
+    
+    fieldsets = (
+        ('Cấu hình chung & Nhận diện thương hiệu', {
+            'fields': ('tencty', 'slogan', 'logo', 'fav', 'opentime', 'closetime'),
+        }),
+        ('Thông tin liên hệ', {
+            'fields': ('hotline', 'hotline2', 'email', 'diachi', 'fanpage', 'youtube', 'twitter', 'google', 'instagram', 'linkedin'),
+        }),
+        ('SEO & Cấu hình tìm kiếm', {
+            'fields': ('title', 'keyword', 'description', 'googleanalytics', 'googlemap', 'schema_home'),
+        }),
+        ('Cấu hình hệ thống', {
+            'fields': ('enable', 'thugon_menu', 'theme', 'st_accesstoken', 'st_accesstoken_ex'),
+        }),
+    )
 
 # 7. Thống kê truy cập
 @admin.register(HalinkStatistic)
@@ -343,7 +383,7 @@ class HalinkMetaAdmin(ModelAdmin):
 # ==============================================================================
 
 @admin.register(PostProxy)
-class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'  # Chuyên mục bài viết
     list_per_page = 20
     list_display = ('get_image', 'get_clean_title', 'get_category_display', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
@@ -364,7 +404,7 @@ class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixi
 
 
 @admin.register(PostCategoryProxy)
-class PostCategoryProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostCategoryProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'
     list_per_page = 20
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
@@ -386,7 +426,7 @@ class PostCategoryProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarA
 
 
 @admin.register(PageProxy)
-class PageProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PageProxyAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_display = ('Id', 'get_clean_title', 'alias', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
     search_fields = ('title_vn', 'content_vn', 'alias')
@@ -405,7 +445,7 @@ class PageProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, M
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
     list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'sort', 'get_status_display', 'get_date_display')
@@ -493,7 +533,7 @@ class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminM
 
 
 @admin.register(ProductCategoryProxy)
-class ProductCategoryProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductCategoryProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'
     list_display = ('Id', 'get_clean_title', 'alias', 'sort', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
@@ -656,7 +696,7 @@ class TicketOrderProxyAdmin(ModelAdmin):
 
 
 @admin.register(FoodOrderProxy)
-class FoodOrderProxyAdmin(ModelAdmin):
+class FoodOrderProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_order_id', 'get_fullname', 'get_phone', 'get_address', 'get_total_price', 'get_date', 'get_status')
     list_display_links = ('Id', 'get_order_id', 'get_fullname')
@@ -861,7 +901,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
 
 
 @admin.register(CommentProxy)
-class CommentProxyAdmin(ModelAdmin):
+class CommentProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_id_post', 'get_fullname', 'get_phone', 'get_content', 'get_star', 'date', 'get_status')
     search_fields = ('meta_value',)
@@ -903,7 +943,7 @@ class CommentProxyAdmin(ModelAdmin):
 
 
 @admin.register(SupportProxy)
-class SupportProxyAdmin(ModelAdmin):
+class SupportProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_id_post', 'get_subject', 'get_message', 'date', 'get_status')
     search_fields = ('meta_title', 'meta_value')
@@ -937,7 +977,7 @@ class SupportProxyAdmin(ModelAdmin):
 
 
 @admin.register(LanguageProxy)
-class LanguageProxyAdmin(ModelAdmin):
+class LanguageProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_key', 'get_val', 'get_status')
     search_fields = ('meta_title', 'meta_value')
@@ -967,7 +1007,7 @@ class LanguageProxyAdmin(ModelAdmin):
 
 
 @admin.register(SMTPProxy)
-class SMTPProxyAdmin(ModelAdmin):
+class SMTPProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('Id', 'get_key', 'get_val', 'get_status')
     search_fields = ('meta_title', 'meta_value')
