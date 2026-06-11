@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     ].join(', ');
 
     function initTinyMCE() {
+        // Detect dark mode từ class .dark của Unfold Admin
+        var isDark = document.documentElement.classList.contains('dark');
+
         tinymce.init({
             selector: selectors,
             height: 400,
@@ -26,7 +29,13 @@ document.addEventListener('DOMContentLoaded', function() {
                      'bold italic backcolor | alignleft aligncenter ' +
                      'alignright alignjustify | bullist numlist outdent indent | ' +
                      'removeformat | link image media code fullscreen',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+
+            // Dark mode: tự động đổi skin theo chế độ của Unfold Admin
+            skin: isDark ? 'oxide-dark' : 'oxide',
+            content_css: isDark ? 'dark' : 'default',
+            content_style: isDark
+                ? 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px; background:#1a1a1a; color:#e5e5e5; }'
+                : 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px; }',
 
             // QUAN TRỌNG: Cấu hình để quản lý code legacy không bị tự động làm sạch/sanitize
             verify_html: false,       // Tắt tính năng tự động loại bỏ thẻ lạ
