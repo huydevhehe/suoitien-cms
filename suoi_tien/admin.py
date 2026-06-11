@@ -114,6 +114,30 @@ class MultiLangAdminMixin:
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
+class CategoryAdminMixin:
+    """Mixin gắn CategoryCheckboxWidget vào field idcat."""
+    category_type = 'postcat'  # Override trong từng admin class
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'idcat':
+            from .widgets import CategoryCheckboxWidget
+            kwargs['widget'] = CategoryCheckboxWidget(category_type=self.category_type)
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+class ImagePickerAdminMixin:
+    """Mixin gắn ImagePickerWidget vào field post_image."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'post_image':
+            from .widgets import ImagePickerWidget
+            kwargs['widget'] = ImagePickerWidget(subfolder='hinhanh')
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+
 
 
 
@@ -303,9 +327,9 @@ class HalinkMetaAdmin(ModelAdmin):
 # ==============================================================================
 
 @admin.register(PostProxy)
-class PostProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+    category_type = 'postcat'  # Chuyên mục bài viết
     list_per_page = 20
-    # Cột giống PHP: Ảnh, Tiêu đề, Chuyên mục, Nổi bật, Trạng thái, Tác giả, Thời gian
     list_display = ('get_image', 'get_clean_title', 'get_category_display', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'content_vn', 'alias')
@@ -324,7 +348,7 @@ class PostProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, M
 
 
 @admin.register(PostCategoryProxy)
-class PostCategoryProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostCategoryProxyAdmin(ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
     list_display = ('get_image', 'get_clean_title', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
@@ -364,7 +388,8 @@ class PageProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, M
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+    category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
     list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'sort', 'get_status_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')

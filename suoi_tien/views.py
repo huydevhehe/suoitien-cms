@@ -451,3 +451,97 @@ def widgets_save_ajax(request):
         import traceback
         print(traceback.format_exc())
         return JsonResponse({'status': 'error', 'message': f'Lỗi hệ thống: {str(e)}'}, status=500)
+
+
+# ==============================================================================
+# IMAGE BROWSER VIEW
+# ==============================================================================
+
+IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'}
+
+
+def image_browser_view(request):
+    """
+    Popup trình duyệt ảnh - liệt kê tất cả ảnh từ thư mục uploads.
+    Params: field_id = id input cần gán, subfolder = thư mục con (mặc định: hinhanh)
+    """
+    from django.conf import settings
+    from django.http import HttpResponse
+
+    field_id  = request.GET.get('field_id', 'id_post_image')
+    subfolder = request.GET.get('subfolder', 'hinhanh')
+    search    = request.GET.get('q', '').lower().strip()
+
+    image_dir = os.path.join(settings.MEDIA_ROOT, subfolder)
+
+    images = []
+    if os.path.isdir(image_dir):
+        for fname in sorted(os.listdir(image_dir), reverse=True):
+            ext = os.path.splitext(fname)[1].lower()
+            if ext in IMAGE_EXTENSIONS:
+                if search and search not in fname.lower():
+                    continue
+                rel_path = f"{subfolder}/{fname}"
+                url = f"{settings.MEDIA_URL}{rel_path}"
+                images.append({'path': rel_path, 'url': url, 'name': fname})
+
+    img_grid = ""
+    if images:
+        for img in images:
+            img_grid += (
+                f'<div class="img-item" onclick="selectImage(\'{img["path"]}\', \'{img["name"]}\')">'
+                f'<img src="{img["url"]}" alt="{img["name"]}" loading="lazy"'
+                f' onerror="this.src=\'https://placehold.co/120x120/27272a/71717a?text=Err\'">'
+                f'<div class="name">{img["name"]}</div>'
+                f'</div>'
+            )
+    else:
+        img_grid = '<div class="empty">Không tìm thấy ảnh nào.</div>'
+
+    html = f"""<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="UTF-8"><title>Chọn ảnh</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:Inter,sans-serif;background:#ffffff;color:#18181b}}
+.toolbar{{position:sticky;top:0;z-index:10;display:flex;gap:8px;padding:10px 14px;background:#f4f4f5;border-bottom:1px solid #e4e4e7}}
+.toolbar input[type=text]{{flex:1;padding:6px 10px;border-radius:6px;border:1px solid #e4e4e7;background:#ffffff;color:#18181b;font-size:13px;outline:none}}
+.toolbar input[type=text]:focus{{border-color:#7c3aed}}
+.toolbar button{{padding:6px 14px;border-radius:6px;border:none;background:#7c3aed;color:#fff;font-size:13px;cursor:pointer}}
+.toolbar button:hover{{background:#6d28d9}}
+.count{{font-size:12px;color:#71717a;align-self:center;white-space:nowrap}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:12px}}
+.img-item{{position:relative;border-radius:8px;overflow:hidden;border:1px solid #e4e4e7;cursor:pointer;background:#f4f4f5;aspect-ratio:1;transition:border-color .15s,transform .15s}}
+.img-item:hover{{border-color:#7c3aed;transform:scale(1.03)}}
+.img-item img{{width:100%;height:100%;object-fit:cover;display:block}}
+.img-item .name{{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);color:#18181b;font-size:10px;padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.empty{{text-align:center;padding:60px 20px;color:#71717a}}
+
+/* Dark Mode Styles */
+@media (prefers-color-scheme: dark) {
+  body{{background:#18181b;color:#e4e4e7}}
+  .toolbar{{background:#09090b;border-bottom:1px solid #3f3f46}}
+  .toolbar input[type=text]{{border:1px solid #3f3f46;background:#27272a;color:#e4e4e7}}
+  .img-item{{border:1px solid transparent;background:#27272a}}
+  .img-item .name{{background:rgba(0,0,0,.7);color:#e4e4e7}}
+}
+</style></head><body>
+<form class="toolbar" method="get">
+  <input type="hidden" name="field_id" value="{field_id}">
+  <input type="hidden" name="subfolder" value="{subfolder}">
+  <input type="text" name="q" placeholder="Tìm theo tên file..." value="{search}" autofocus>
+  <button type="submit">Tìm</button>
+  <span class="count">{len(images)} ảnh</span>
+</form>
+<div class="grid">{img_grid}</div>
+<script>
+function selectImage(path, name) {{
+  if (window.opener && window.opener.receiveImageFromBrowser) {{
+    window.opener.receiveImageFromBrowser('{field_id}', path, name);
+    window.close();
+  }}
+}}
+</script>
+</body></html>"""
+
+    return HttpResponse(html)

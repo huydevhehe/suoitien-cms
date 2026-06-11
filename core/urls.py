@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/suoi_tien/themes/', admin.site.admin_view(suoi_tien_views.theme_info_view), name='admin_theme_info'),
     path('admin/suoi_tien/widgets/', admin.site.admin_view(suoi_tien_views.widgets_view), name='admin_widgets'),
     path('admin/suoi_tien/widgets/save/', admin.site.admin_view(suoi_tien_views.widgets_save_ajax), name='admin_widgets_save'),
+    path('admin/suoi_tien/image-browser/', admin.site.admin_view(suoi_tien_views.image_browser_view), name='admin_image_browser'),
 
     # Tự động chuyển hướng trang chủ gốc vào trang Admin Unfold
     path('', RedirectView.as_view(url='/admin/', permanent=True)),
