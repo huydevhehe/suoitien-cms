@@ -44,8 +44,8 @@ class MultiLangWidget(forms.MultiWidget):
 
 class CategoryCheckboxWidget(forms.Widget):
     """
-    Widget hiển thị danh sách chuyên mục dạng checkbox có phân cấp.
-    Tự động hỗ trợ giao diện tối/sáng (Dark/Light mode) dựa trên class .dark của Unfold.
+    Widget chọn chuyên mục dạng hộp sổ xuống (dropdown collapsible) chứa checkbox.
+    Tự động cập nhật nhãn đã chọn và hỗ trợ giao diện tối/sáng của Unfold.
     """
 
     def __init__(self, category_type='postcat', *args, **kwargs):
@@ -81,35 +81,186 @@ class CategoryCheckboxWidget(forms.Widget):
                 '</label>' % (name, cat_id, checked, indent, title)
             )
 
-        inner = '\n'.join(rows) if rows else '<p style="color:#888;font-size:13px;">Chưa có chuyên mục nào.</p>'
+        inner = '\n'.join(rows) if rows else '<p style="color:#888;font-size:13px;padding:8px 12px;">Chưa có chuyên mục nào.</p>'
 
-        html = """<div class="category-checkbox-widget">
+        html = """
+<div class="category-dropdown-container" id="cat_container_%s">
+  <div class="category-dropdown-header" onclick="toggleCategoryDropdown('cat_container_%s')">
+    <span class="category-dropdown-selected-text">Chọn chuyên mục...</span>
+    <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+  </div>
+  <div class="category-dropdown-panel">
+    <div class="category-checkbox-widget">
+      %s
+    </div>
+  </div>
+</div>
+
 <style>
-.category-checkbox-widget {
-    max-height: 220px; overflow-y: auto;
-    border: 1px solid #e4e4e7; border-radius: 8px;
-    padding: 8px 10px; background: #ffffff;
+.category-dropdown-container {
+    position: relative;
+    width: 100%%;
+    max-width: 480px;
 }
-.dark .category-checkbox-widget {
-    border-color: rgb(63 63 70); background: rgb(24 24 27);
+.category-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1f2937;
+    user-select: none;
+    transition: all 0.15s;
+}
+.dark .category-dropdown-header {
+    background: rgb(24 24 27);
+    border-color: rgb(63 63 70);
+    color: #f4f4f5;
+}
+.category-dropdown-header:hover {
+    border-color: #9ca3af;
+}
+.dark .category-dropdown-header:hover {
+    border-color: #52525b;
+}
+.category-dropdown-panel {
+    display: none;
+    position: absolute;
+    top: 100%%;
+    left: 0;
+    width: 100%%;
+    margin-top: 4px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 999;
+}
+.dark .category-dropdown-panel {
+    background: rgb(24 24 27);
+    border-color: rgb(63 63 70);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+.category-dropdown-container.open .category-dropdown-panel {
+    display: block;
+}
+.category-dropdown-container.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+.dropdown-arrow {
+    transition: transform 0.2s;
+    font-size: 18px;
+    color: #6b7280;
+}
+.dark .dropdown-arrow {
+    color: #a1a1aa;
+}
+.category-checkbox-widget {
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 8px 10px;
 }
 .category-checkbox-widget .cat-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 6px; border-radius: 4px; cursor: pointer;
-    color: #18181b; font-size: 13px; transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #1f2937;
+    font-size: 13px;
+    transition: background 0.15s;
 }
 .dark .category-checkbox-widget .cat-item {
-    color: rgb(228 228 231);
+    color: #e5e7eb;
 }
-.category-checkbox-widget .cat-item:hover { background: #f4f4f5; }
-.dark .category-checkbox-widget .cat-item:hover { background: rgb(39 39 42); }
+.category-checkbox-widget .cat-item:hover {
+    background: #f3f4f6;
+}
+.dark .category-checkbox-widget .cat-item:hover {
+    background: #27272a;
+}
 .category-checkbox-widget input[type="checkbox"] {
-    accent-color: #7c3aed; width: 15px; height: 15px; flex-shrink: 0;
+    accent-color: #7c3aed;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
 }
 </style>
-%s
-</div>
-<p style="font-size:11px; color:#6b7280; margin-top:4px;">Tick chọn chuyên mục cho bài viết này.</p>""" % inner
+
+<script>
+if (!window._categoryDropdownReady) {
+  window._categoryDropdownReady = true;
+  
+  window.toggleCategoryDropdown = function(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const isOpen = container.classList.contains('open');
+    
+    // Close other dropdowns
+    document.querySelectorAll('.category-dropdown-container').forEach(c => {
+      c.classList.remove('open');
+    });
+    
+    if (!isOpen) {
+      container.classList.add('open');
+    }
+  };
+
+  // Click outside to close
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.category-dropdown-container')) {
+      document.querySelectorAll('.category-dropdown-container').forEach(c => {
+        c.classList.remove('open');
+      });
+    }
+  });
+
+  // Update dropdown text based on checkbox status
+  window.updateCategorySelectedText = function(container) {
+    const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+    const textSpan = container.querySelector('.category-dropdown-selected-text');
+    if (!textSpan) return;
+    
+    if (checkedBoxes.length === 0) {
+      textSpan.textContent = 'Chọn chuyên mục...';
+      textSpan.style.color = '';
+    } else {
+      const names = [];
+      checkedBoxes.forEach(cb => {
+        let labelText = cb.nextElementSibling.textContent;
+        labelText = labelText.replace(/^[\\s —-]+/, '');
+        names.push(labelText);
+      });
+      textSpan.textContent = names.join(', ');
+      textSpan.style.color = '#a78bfa'; // Violet tone matching dark/light mode
+    }
+  };
+
+  // Bind event
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('.category-checkbox-widget input[type="checkbox"]')) {
+      const container = e.target.closest('.category-dropdown-container');
+      if (container) {
+        window.updateCategorySelectedText(container);
+      }
+    }
+  });
+}
+
+// Perform initial setup for this container
+(function() {
+  const container = document.getElementById('cat_container_%s');
+  if (container) {
+    window.updateCategorySelectedText(container);
+  }
+})();
+</script>
+""" % (name, name, inner, name)
 
         return mark_safe(html)
 
@@ -128,8 +279,9 @@ class ImagePickerWidget(forms.TextInput):
     def __init__(self, subfolder='hinhanh', *args, **kwargs):
         self.subfolder = subfolder
         attrs = kwargs.get('attrs', {}) or {}
+        # Dùng class riêng để CSS override bên dưới bắt chính xác
         default_attrs = {
-            'class': 'border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-gray-950 dark:text-zinc-200 rounded-lg p-2 w-full focus:ring-1 focus:ring-primary-500 focus:outline-none'
+            'class': 'image-picker-input rounded-lg p-2 w-full focus:ring-1 focus:ring-primary-500 focus:outline-none'
         }
         default_attrs.update(attrs)
         kwargs['attrs'] = default_attrs
@@ -166,6 +318,19 @@ class ImagePickerWidget(forms.TextInput):
 </div>
 %s
 <style>
+/* CSS cho ô nhập text của ImagePicker */
+.image-picker-input {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border: 1px solid #d1d5db !important;
+}
+.dark .image-picker-input {
+    background-color: rgb(24 24 27) !important;
+    color: #f4f4f5 !important;
+    border-color: rgb(63 63 70) !important;
+}
+
+/* CSS cho nút Chọn ảnh */
 .image-picker-btn {
     padding: 7px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
     display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.15s;
