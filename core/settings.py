@@ -152,7 +152,7 @@ UNFOLD = {
                     {
                         "title": "Trang chủ",
                         "icon": "home",
-                        "link": "/admin/suoi_tien/halinkwebsite/",
+                        "link": "https://suoitien.vn/",
                     },
                 ],
             },
@@ -252,7 +252,7 @@ UNFOLD = {
                     {
                         "title": "Cài đặt",
                         "icon": "settings",
-                        "link": "/admin/suoi_tien/halinkwebsite/",
+                        "link": "/admin/suoi_tien/halinkwebsite/1/change/",
                     },
                 ],
             },

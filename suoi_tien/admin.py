@@ -449,19 +449,29 @@ class HalinkWebsiteAdmin(JSONSchemaAdminMixin, StatusSwitchAdminMixin, PostDispl
     search_fields = ('title', 'email', 'hotline')
     
     fieldsets = (
-        ('Cấu hình chung & Nhận diện thương hiệu', {
+        ('Nhận dạng site', {
+            'classes': ('tab',),
             'fields': ('tencty', 'slogan', 'logo', 'fav', 'opentime', 'closetime'),
         }),
-        ('Thông tin liên hệ', {
+        ('Cấu hình Địa chỉ/Mạng xã hội', {
+            'classes': ('tab',),
             'fields': ('hotline', 'hotline2', 'email', 'diachi', 'fanpage', 'youtube', 'twitter', 'google', 'instagram', 'linkedin'),
         }),
-        ('SEO & Cấu hình tìm kiếm', {
+        ('Cấu hình SEO', {
+            'classes': ('tab',),
             'fields': ('title', 'keyword', 'description', 'googleanalytics', 'googlemap', 'schema_home'),
         }),
         ('Cấu hình hệ thống', {
+            'classes': ('tab',),
             'fields': ('enable', 'thugon_menu', 'theme', 'st_accesstoken', 'st_accesstoken_ex'),
         }),
     )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 # 7. Thống kê truy cập
 @admin.register(HalinkStatistic)
