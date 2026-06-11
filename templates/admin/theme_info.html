@@ -11,7 +11,43 @@
 </div>
 {% endblock %}
 
-{% block content %}
+{% block content %}\n<!-- Custom CSS overrides to fix bright-white styles in dark mode for custom view -->
+<style>
+  .dark .bg-white {
+      background-color: #18181b !important;
+  }
+  .dark .bg-gray-50 {
+      background-color: #222225 !important;
+  }
+  .dark .bg-gray-100 {
+      background-color: #09090b !important;
+  }
+  .dark .border-gray-200 {
+      border-color: #27272a !important;
+  }
+  .dark .divide-gray-100 > * {
+      border-color: #27272a !important;
+  }
+  .dark .text-gray-900 {
+      color: #f4f4f5 !important;
+  }
+  .dark .text-gray-800 {
+      color: #e4e4e7 !important;
+  }
+  .dark .text-gray-700 {
+      color: #d4d4d8 !important;
+  }
+  .dark .text-gray-600 {
+      color: #a1a1aa !important;
+  }
+  .dark .text-gray-500 {
+      color: #71717a !important;
+  }
+  .dark .text-gray-400 {
+      color: #52525b !important;
+  }
+</style>
+
 <div class="px-4 lg:px-12 py-8 max-w-[1600px] mx-auto space-y-8">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">

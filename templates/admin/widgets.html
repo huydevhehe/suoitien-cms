@@ -11,7 +11,93 @@
 </div>
 {% endblock %}
 
-{% block content %}
+{% block content %}\n<!-- Custom CSS overrides to fix bright-white styles in dark mode for custom view -->
+<style>
+  .dark .bg-white {
+      background-color: #18181b !important;
+  }
+  .dark .bg-gray-50 {
+      background-color: #222225 !important;
+  }
+  .dark .bg-gray-100 {
+      background-color: #09090b !important;
+  }
+  .dark .hover\:bg-gray-100:hover {
+      background-color: #27272a !important;
+  }
+  .dark .border-gray-200 {
+      border-color: #27272a !important;
+  }
+  .dark .border-gray-100 {
+      border-color: #27272a !important;
+  }
+  .dark .divide-gray-100 > * {
+      border-color: #27272a !important;
+  }
+  .dark .text-gray-900 {
+      color: #f4f4f5 !important;
+  }
+  .dark .text-gray-850,
+  .dark .text-gray-800 {
+      color: #e4e4e7 !important;
+  }
+  .dark .text-gray-700 {
+      color: #d4d4d8 !important;
+  }
+  .dark .text-gray-600 {
+      color: #a1a1aa !important;
+  }
+  .dark .text-gray-500 {
+      color: #71717a !important;
+  }
+  .dark .text-gray-400 {
+      color: #52525b !important;
+  }
+  .dark input, .dark select, .dark textarea {
+      background-color: #18181b !important;
+      color: #e4e4e7 !important;
+      border-color: #27272a !important;
+  }
+  .dark .widget-instance {
+      background-color: #27272a !important;
+      border-color: #3f3f46 !important;
+      color: #e4e4e7 !important;
+  }
+  .dark .widget-instance:hover {
+      background-color: #3f3f46 !important;
+  }
+  .dark .widget-template {
+      background-color: #27272a !important;
+      border-color: #3f3f46 !important;
+      color: #e4e4e7 !important;
+  }
+  .dark .widget-template:hover {
+      background-color: #3f3f46 !important;
+  }
+  .dark .widget-counter {
+      background-color: #27272a !important;
+      color: #a1a1aa !important;
+  }
+  .dark .dropzone-area {
+      background-color: #18181b !important;
+      border-color: #3f3f46 !important;
+  }
+  .dark .dropzone-area.drag-over {
+      border-color: #7c3aed !important;
+      background-color: rgba(124, 58, 237, 0.1) !important;
+  }
+  .dark .empty-message {
+      color: #3f3f46 !important;
+  }
+  /* Style inputs for configurations inside widgets popup */
+  .dark .widget-form-container input[type="text"], 
+  .dark .widget-form-container select {
+      background-color: #09090b !important;
+      color: #e4e4e7 !important;
+      border: 1px solid #27272a !important;
+  }
+</style>
+
 <div class="px-4 lg:px-12 py-8 max-w-[1600px] mx-auto space-y-8">
     
     <!-- Top Action Panel -->
