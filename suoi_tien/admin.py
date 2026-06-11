@@ -176,6 +176,75 @@ class UnixTimestampDateTimeAdminMixin:
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
+class JSONSchemaAdminMixin:
+    """Mixin tự động áp dụng JSONTextAreaWidget cho các trường Schema JSON-LD."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name in ['schema_org', 'schema_home']:
+            from .widgets import JSONTextAreaWidget
+            kwargs['widget'] = JSONTextAreaWidget()
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+class SortableAdminMixin:
+    """Mixin cung cấp nút dịch chuyển Lên/Xuống cho trường 'sort' trong Django Admin list view."""
+
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path('<path:object_id>/move-up/', self.admin_site.admin_view(self.move_up), name='move_up'),
+            path('<path:object_id>/move-down/', self.admin_site.admin_view(self.move_down), name='move_down'),
+        ]
+        return custom_urls + urls
+
+    def move_up(self, request, object_id):
+        obj = self.get_object(request, object_id)
+        if obj and hasattr(obj, 'sort'):
+            # Lấy đối tượng liền trước (có sort nhỏ hơn)
+            prev_obj = self.model.objects.filter(sort__lt=obj.sort).order_by('-sort').first()
+            if prev_obj:
+                obj.sort, prev_obj.sort = prev_obj.sort, obj.sort
+                obj.save()
+                prev_obj.save()
+            else:
+                obj.sort = (obj.sort or 0) - 1
+                obj.save()
+        from django.shortcuts import redirect
+        return redirect(request.META.get('HTTP_REFERER', '../'))
+
+    def move_down(self, request, object_id):
+        obj = self.get_object(request, object_id)
+        if obj and hasattr(obj, 'sort'):
+            # Lấy đối tượng liền sau (có sort lớn hơn)
+            next_obj = self.model.objects.filter(sort__gt=obj.sort).order_by('sort').first()
+            if next_obj:
+                obj.sort, next_obj.sort = next_obj.sort, obj.sort
+                obj.save()
+                next_obj.save()
+            else:
+                obj.sort = (obj.sort or 0) + 1
+                obj.save()
+        from django.shortcuts import redirect
+        return redirect(request.META.get('HTTP_REFERER', '../'))
+
+    def display_sort_actions(self, obj):
+        if not hasattr(obj, 'sort') or obj.sort is None:
+            return '---'
+        return format_html(
+            '<div style="display:flex; gap:4px; align-items:center;">'
+            '<a href="{}/move-up/" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#e0f2fe; color:#0369a1; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển lên">▲</a>'
+            '<span style="min-width:20px; text-align:center; font-weight:600;">{}</span>'
+            '<a href="{}/move-down/" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#fee2e2; color:#b91c1c; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển xuống">▼</a>'
+            '</div>',
+            obj.pk, obj.sort, obj.pk
+        )
+    display_sort_actions.short_description = "Thứ tự"
+    display_sort_actions.admin_order_field = 'sort'
+
+
+
 
 
 
@@ -228,6 +297,45 @@ class HalinkUserPasswordForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class TicketOrderProxyForm(forms.ModelForm):
+    STATUS_CHOICES = [
+        (0, 'Chưa thanh toán'),
+        (1, 'Đang xử lý'),
+        (3, 'Hủy/Đơn hàng lỗi'),
+        (4, 'Đã thanh toán'),
+    ]
+    status = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-gray-950 dark:text-zinc-200 rounded-lg p-2 w-full focus:ring-1 focus:ring-primary-500 focus:outline-none'
+        }),
+        label="Trạng thái đơn hàng"
+    )
+
+    class Meta:
+        model = TicketOrderProxy
+        fields = '__all__'
+
+
+class FoodOrderProxyForm(forms.ModelForm):
+    STATUS_CHOICES = [
+        (1, 'Đang xử lý'),
+        (0, 'Đã hoàn thành'),
+        (3, 'Hủy/Lỗi'),
+    ]
+    ticlock = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-gray-950 dark:text-zinc-200 rounded-lg p-2 w-full focus:ring-1 focus:ring-primary-500 focus:outline-none'
+        }),
+        label="Trạng thái đơn hàng"
+    )
+
+    class Meta:
+        model = FoodOrderProxy
+        fields = '__all__'
 
 
 class ProductAdminForm(forms.ModelForm):
@@ -335,7 +443,7 @@ class HalinkMenuAdmin(StatusSwitchAdminMixin, PostDisplayMixin, MultiLangAdminMi
 
 # 6. Cấu hình Website
 @admin.register(HalinkWebsite)
-class HalinkWebsiteAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkWebsiteAdmin(JSONSchemaAdminMixin, StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('id', 'get_clean_title', 'hotline', 'email', 'get_clean_diachi')
     search_fields = ('title', 'email', 'hotline')
@@ -383,10 +491,10 @@ class HalinkMetaAdmin(ModelAdmin):
 # ==============================================================================
 
 @admin.register(PostProxy)
-class PostProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'  # Chuyên mục bài viết
     list_per_page = 20
-    list_display = ('get_image', 'get_clean_title', 'get_category_display', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
+    list_display = ('get_image', 'get_clean_title', 'get_category_display', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'content_vn', 'alias')
     list_filter = ('ticlock', 'date')
@@ -404,11 +512,11 @@ class PostProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdmi
 
 
 @admin.register(PostCategoryProxy)
-class PostCategoryProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'
     list_per_page = 20
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
-    list_display = ('get_image', 'get_clean_title', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
+    list_display = ('get_image', 'get_clean_title', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
@@ -445,10 +553,10 @@ class PageProxyAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
-    list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'sort', 'get_status_display', 'get_date_display')
+    list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'display_sort_actions', 'get_status_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'description_vn', 'content_vn')
     list_filter = ('ticlock', 'date')
@@ -533,9 +641,9 @@ class ProductProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerA
 
 
 @admin.register(ProductCategoryProxy)
-class ProductCategoryProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'
-    list_display = ('Id', 'get_clean_title', 'alias', 'sort', 'get_status_display', 'get_date_display')
+    list_display = ('Id', 'get_clean_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
@@ -554,12 +662,14 @@ class ProductCategoryProxyAdmin(StatusSwitchAdminMixin, CategoryAdminMixin, Imag
 
 @admin.register(TicketOrderProxy)
 class TicketOrderProxyAdmin(ModelAdmin):
+    form = TicketOrderProxyForm
     list_per_page = 20
     # Hiển thị các cột giống giao diện PHP cũ: Mã đơn, Họ tên, SĐT, Ngày, Hình thức, Tổng tiền, Trạng thái
     list_display = ('id_cart', 'get_fullname', 'get_phone', 'date', 'get_type_payment_display', 'get_total_price_display', 'get_status_display')
     list_display_links = ('id_cart', 'get_fullname')
     search_fields = ('id_cart', 'info_user')
     list_filter = ('status', 'type_payment', 'date')
+    actions = ['resend_confirmation_email']
     
     readonly_fields = ('render_order_details',)
     
@@ -694,14 +804,63 @@ class TicketOrderProxyAdmin(ModelAdmin):
         return format_html('<span style="color: {}; font-weight: 500;">{}</span>', color, val)
     get_type_payment_display.short_description = 'Hình thức thanh toán'
 
+    def resend_confirmation_email(self, request, queryset):
+        sent_count = 0
+        error_count = 0
+        for order in queryset:
+            try:
+                if order.info_user:
+                    parts = order.info_user.split('***+++***')
+                    email = parts[3] if len(parts) > 3 else None
+                    fullname = parts[1] if len(parts) > 1 else 'Quý khách'
+                    
+                    if email and '@' in email:
+                        from .utils import send_email_via_smtp_proxy
+                        subject = f"Xác nhận đơn đặt vé #{order.id_cart} - Công viên văn hóa Suối Tiên"
+                        prod_html = self._parse_all_products(order.info_product)
+                        body_html = f"""
+                        <html>
+                        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                            <h2 style="color: #0284c7;">Kính gửi {fullname},</h2>
+                            <p>Chúng tôi xin gửi lại thông tin xác nhận đơn đặt vé của quý khách tại Suối Tiên Theme Park:</p>
+                            <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                                <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> {order.id_cart}</p>
+                                <p style="margin: 5px 0;"><b>Thời gian đặt:</b> {order.date.strftime('%d/%m/%Y %H:%M:%S') if order.date else '---'}</p>
+                                <p style="margin: 5px 0;"><b>Tổng thanh toán:</b> {order.computed_total_price_formatted} đ</p>
+                            </div>
+                            <h3 style="border-bottom: 2px solid #0284c7; padding-bottom: 5px;">Chi tiết đặt vé</h3>
+                            <div style="margin-bottom: 20px;">{prod_html}</div>
+                            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;"/>
+                            <p style="font-size: 12px; color: #6b7280;">Đây là thư tự động từ hệ thống quản lý Suối Tiên Theme Park. Vui lòng không trả lời thư này.</p>
+                        </body>
+                        </html>
+                        """
+                        send_email_via_smtp_proxy(email.strip(), subject, body_html)
+                        sent_count += 1
+                    else:
+                        error_count += 1
+                else:
+                    error_count += 1
+            except Exception:
+                error_count += 1
+                
+        self.message_user(
+            request, 
+            f"Đã gửi lại email xác nhận cho {sent_count} đơn đặt vé." + 
+            (f" Thất bại: {error_count} đơn hàng do không có email hợp lệ hoặc lỗi kết nối." if error_count > 0 else "")
+        )
+    resend_confirmation_email.short_description = "Gửi lại email xác nhận đơn hàng"
+
 
 @admin.register(FoodOrderProxy)
-class FoodOrderProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
+class FoodOrderProxyAdmin(ModelAdmin):
+    form = FoodOrderProxyForm
     list_per_page = 20
     list_display = ('Id', 'get_order_id', 'get_fullname', 'get_phone', 'get_address', 'get_total_price', 'get_date', 'get_status')
     list_display_links = ('Id', 'get_order_id', 'get_fullname')
     search_fields = ('meta_value_cus', 'meta_like', 'Id_post')
     list_filter = ('ticlock', 'date')
+    actions = ['resend_confirmation_email']
     readonly_fields = ('render_order_details',)
     
     fieldsets = (
@@ -898,6 +1057,57 @@ class FoodOrderProxyAdmin(StatusSwitchAdminMixin, ModelAdmin):
         else:
             return mark_safe(f'<span style="color:#fbbf24; font-weight:bold;">● {status_str}</span>')
     get_status.short_description = 'Trạng thái'
+
+    def resend_confirmation_email(self, request, queryset):
+        sent_count = 0
+        error_count = 0
+        for order in queryset:
+            try:
+                email = order.get_customer_field('email')
+                fullname = order.fullname or 'Quý khách'
+                
+                if email and '@' in email:
+                    from .utils import send_email_via_smtp_proxy
+                    subject = f"Xác nhận đơn đặt món #{order.Id_post} - Suối Tiên Cuisine"
+                    prod_html = self._parse_food_products(order.meta_value)
+                    
+                    # Định dạng tổng tiền
+                    try:
+                        total_formatted = f"{int(order.meta_like):,}"
+                    except Exception:
+                        total_formatted = str(order.meta_like)
+                        
+                    body_html = f"""
+                    <html>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <h2 style="color: #059669;">Kính gửi {fullname},</h2>
+                        <p>Chúng tôi xin gửi lại thông tin xác nhận đơn đặt món ăn ẩm thực của quý khách tại Suối Tiên:</p>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                            <p style="margin: 5px 0;"><b>Mã đơn hàng (ID_post):</b> {order.Id_post}</p>
+                            <p style="margin: 5px 0;"><b>Thời gian đặt:</b> {order.date.strftime('%d/%m/%Y %H:%M:%S') if order.date else '---'}</p>
+                            <p style="margin: 5px 0;"><b>Địa chỉ giao hàng:</b> {order.address or '---'}</p>
+                            <p style="margin: 5px 0;"><b>Tổng cộng:</b> {total_formatted} đ</p>
+                        </div>
+                        <h3 style="border-bottom: 2px solid #059669; padding-bottom: 5px;">Món ăn đã đặt</h3>
+                        <div style="margin-bottom: 20px;">{prod_html}</div>
+                        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;"/>
+                        <p style="font-size: 12px; color: #6b7280;">Đây là thư tự động từ hệ thống ẩm thực Suối Tiên. Vui lòng không trả lời thư này.</p>
+                    </body>
+                    </html>
+                    """
+                    send_email_via_smtp_proxy(email.strip(), subject, body_html)
+                    sent_count += 1
+                else:
+                    error_count += 1
+            except Exception:
+                error_count += 1
+                
+        self.message_user(
+            request, 
+            f"Đã gửi lại email xác nhận cho {sent_count} đơn đặt món." + 
+            (f" Thất bại: {error_count} đơn đặt món do không có email hợp lệ hoặc lỗi kết nối." if error_count > 0 else "")
+        )
+    resend_confirmation_email.short_description = "Gửi lại email xác nhận đơn hàng"
 
 
 @admin.register(CommentProxy)
