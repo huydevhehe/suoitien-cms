@@ -518,13 +518,13 @@ body{{font-family:Inter,sans-serif;background:#ffffff;color:#18181b}}
 .empty{{text-align:center;padding:60px 20px;color:#71717a}}
 
 /* Dark Mode Styles */
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {{
   body{{background:#18181b;color:#e4e4e7}}
   .toolbar{{background:#09090b;border-bottom:1px solid #3f3f46}}
   .toolbar input[type=text]{{border:1px solid #3f3f46;background:#27272a;color:#e4e4e7}}
   .img-item{{border:1px solid transparent;background:#27272a}}
   .img-item .name{{background:rgba(0,0,0,.7);color:#e4e4e7}}
-}
+}}
 </style></head><body>
 <form class="toolbar" method="get">
   <input type="hidden" name="field_id" value="{field_id}">
