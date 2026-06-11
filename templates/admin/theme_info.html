@@ -1,0 +1,90 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+<div class="px-4 lg:px-12 py-3 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
+        <a href="{% url 'admin:index' %}" class="hover:text-primary-600">{% translate 'Home' %}</a>
+        <span>&rsaquo;</span>
+        <span>Cấu hình Giao diện</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 lg:px-12 py-8 max-w-[1600px] mx-auto space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Giao diện hiện tại</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-zinc-400">Xem thông tin chi tiết và trạng thái của theme đang hoạt động trên hệ thống Suối Tiên.</p>
+        </div>
+        <div>
+            <a href="/admin/suoi_tien/halinkwebsite/1/change/" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition">
+                <span class="material-symbols-outlined mr-2 text-base">settings</span>
+                Cấu hình Website
+            </a>
+        </div>
+    </div>
+
+    <!-- Theme Info Card -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Screenshot Column -->
+        <div class="lg:col-span-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+            <div class="p-4 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
+                <h3 class="font-medium text-gray-900 dark:text-white">Ảnh chụp Giao diện (Screenshot)</h3>
+            </div>
+            <div class="aspect-[4/3] bg-gray-100 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
+                {% if theme_info.screenshot_url %}
+                    <img src="{{ theme_info.screenshot_url }}" alt="{{ theme_info.title_theme }}" class="w-full h-full object-cover transition-transform hover:scale-105 duration-300" onerror="this.src='https://placehold.co/600x450/1e293b/ffffff?text=Suoi+Tien+Theme';">
+                {% else %}
+                    <div class="text-center p-6 text-gray-400 dark:text-zinc-600">
+                        <span class="material-symbols-outlined text-4xl mb-2">image</span>
+                        <p class="text-xs">Không có ảnh chụp màn hình</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details Column -->
+        <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="p-4 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
+                    <h3 class="font-medium text-gray-900 dark:text-white">Thông số kỹ thuật</h3>
+                </div>
+                <div class="divide-y divide-gray-100 dark:divide-zinc-800/50">
+                    <div class="grid grid-cols-3 gap-4 p-5">
+                        <div class="text-sm font-medium text-gray-500 dark:text-zinc-400">Tên giao diện</div>
+                        <div class="col-span-2 text-sm font-semibold text-gray-900 dark:text-white">{{ theme_info.title_theme }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 p-5">
+                        <div class="text-sm font-medium text-gray-500 dark:text-zinc-400">Mã thư mục (Key)</div>
+                        <div class="col-span-2 text-sm font-mono text-gray-700 dark:text-zinc-300 bg-gray-50 dark:bg-zinc-950/50 px-2 py-1 rounded w-fit text-xs">{{ theme_info.key_theme }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 p-5">
+                        <div class="text-sm font-medium text-gray-500 dark:text-zinc-400">Tác giả</div>
+                        <div class="col-span-2 text-sm text-gray-900 dark:text-white">{{ theme_info.author_theme }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 p-5">
+                        <div class="text-sm font-medium text-gray-500 dark:text-zinc-400">Phiên bản</div>
+                        <div class="col-span-2 text-sm text-gray-900 dark:text-white">v{{ theme_info.version_theme }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 p-5">
+                        <div class="text-sm font-medium text-gray-500 dark:text-zinc-400">Loại giao diện</div>
+                        <div class="col-span-2 text-sm text-gray-900 dark:text-white">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                {{ theme_info.type_theme }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-zinc-800/20 border-t border-gray-200 dark:border-zinc-800 flex items-center space-x-3">
+                <span class="material-symbols-outlined text-green-500 text-xl">check_circle</span>
+                <span class="text-sm text-gray-600 dark:text-zinc-300">Giao diện này đang hoạt động bình thường, kết nối trực tiếp với Django Backend và các thư mục tĩnh PHP.</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

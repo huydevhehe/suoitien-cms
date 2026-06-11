@@ -1,0 +1,18 @@
+<div class="multi-lang-widget-container space-y-3 p-4 border border-gray-200 dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+            <div class="flex items-center space-x-1.5 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Tiếng Việt</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">VI</span>
+            </div>
+            {% include widget.subwidgets.0.template_name with widget=widget.subwidgets.0 %}
+        </div>
+        <div class="space-y-1">
+            <div class="flex items-center space-x-1.5 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Tiếng Anh</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">EN</span>
+            </div>
+            {% include widget.subwidgets.1.template_name with widget=widget.subwidgets.1 %}
+        </div>
+    </div>
+</div>

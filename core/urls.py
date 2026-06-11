@@ -16,24 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from suoi_tien import views
+from django.views.generic import RedirectView
+from suoi_tien import views as suoi_tien_views
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
+    # Trang cấu hình giao diện & Widgets kéo thả
+    path('admin/suoi_tien/themes/', admin.site.admin_view(suoi_tien_views.theme_info_view), name='admin_theme_info'),
+    path('admin/suoi_tien/widgets/', admin.site.admin_view(suoi_tien_views.widgets_view), name='admin_widgets'),
+    path('admin/suoi_tien/widgets/save/', admin.site.admin_view(suoi_tien_views.widgets_save_ajax), name='admin_widgets_save'),
+
+    # Tự động chuyển hướng trang chủ gốc vào trang Admin Unfold
+    path('', RedirectView.as_view(url='/admin/', permanent=True)),
+    
     # Django Admin gốc với giao diện Unfold
     path('admin/', admin.site.urls),
-    
-    # Custom FE Admin
-    path('', views.admin_dashboard, name='admin_dashboard'),
-    path('login/', views.admin_login, name='admin_login'),
-    path('logout/', views.admin_logout, name='admin_logout'),
-    path('posts/', views.post_list, name='post_list'),
-    path('products/', views.product_list, name='product_list'),
-    path('comments/', views.comment_list, name='comment_list'),
-    path('comments/toggle/<int:pk>/', views.toggle_comment_status, name='toggle_comment_status'),
-    path('comments/reply/<int:pk>/', views.reply_comment, name='reply_comment'),
-    path('support/', views.support_list, name='support_list'),
-    path('support/toggle/<int:pk>/', views.toggle_support_status, name='toggle_support_status'),
-    path('orders/', views.ticket_orders, name='ticket_orders'),
-    path('food-orders/', views.food_orders, name='food_orders'),
-    path('settings/', views.settings_view, name='settings_view'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

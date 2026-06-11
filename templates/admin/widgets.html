@@ -1,0 +1,509 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+<div class="px-4 lg:px-12 py-3 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
+        <a href="{% url 'admin:index' %}" class="hover:text-primary-600">{% translate 'Home' %}</a>
+        <span>&rsaquo;</span>
+        <span>Quản lý Widgets</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 lg:px-12 py-8 max-w-[1600px] mx-auto space-y-8">
+    
+    <!-- Top Action Panel -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Widgets kéo thả</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-zinc-400">Kéo các widget bên trái và thả vào các khu vực hiển thị (Sidebar) bên phải để cấu hình bố cục trang web.</p>
+        </div>
+        <div class="flex space-x-3">
+            <button id="btn-save-widgets" class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 active:bg-green-800 shadow transition-all cursor-pointer">
+                <span class="material-symbols-outlined mr-2 text-base">save</span>
+                Lưu cấu hình
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast-notification" class="fixed bottom-5 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 border border-zinc-800 dark:border-gray-200">
+        <span id="toast-icon" class="material-symbols-outlined text-green-500">check_circle</span>
+        <span id="toast-message" class="text-sm font-medium">Đã lưu cấu hình thành công!</span>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        
+        <!-- Left Column: Available Widgets List -->
+        <div class="xl:col-span-1 space-y-4">
+            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm sticky top-5 max-h-[85vh] flex flex-col">
+                <div class="border-b border-gray-100 dark:border-zinc-800 pb-3 mb-4">
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2 text-primary-500">widgets</span>
+                        Widget sẵn có
+                    </h3>
+                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Kéo các thẻ bên dưới thả vào thanh sidebar bên phải.</p>
+                </div>
+                
+                <div class="overflow-y-auto space-y-3 flex-1 pr-1 custom-scrollbar">
+                    {% for key, widget in available_widgets.items %}
+                    <div class="widget-template bg-gray-50 dark:bg-zinc-950 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800 rounded-lg p-3 cursor-grab transition-all shadow-sm active:cursor-grabbing group" 
+                         draggable="true" 
+                         data-type="{{ key }}">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-800 dark:text-zinc-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ widget.name }}</h4>
+                                <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">{{ widget.desc }}</p>
+                            </div>
+                            <span class="material-symbols-outlined text-gray-400 dark:text-zinc-600 text-lg">drag_indicator</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sidebar Dropzones List -->
+        <div class="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for sidebar in sidebars %}
+            <div class="sidebar-container bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm flex flex-col min-h-[250px]"
+                 data-sidebar-id="{{ sidebar.id }}">
+                
+                <div class="border-b border-gray-100 dark:border-zinc-800 pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ sidebar.name }}</h3>
+                        <p class="text-xs text-gray-400 dark:text-zinc-500 font-mono mt-0.5">{{ sidebar.id }}</p>
+                    </div>
+                    <span class="inline-flex items-center justify-center bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 rounded-full px-2 py-0.5 text-xs font-semibold widget-counter">0</span>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div class="dropzone-area flex-1 space-y-3 p-3 bg-gray-50 dark:bg-zinc-950/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-zinc-800/80 transition-colors flex flex-col justify-start min-h-[150px] overflow-y-auto max-h-[400px]">
+                    
+                    <!-- Empty Message -->
+                    <div class="empty-message my-auto py-8 text-center text-gray-400 dark:text-zinc-600 pointer-events-none">
+                        <span class="material-symbols-outlined text-3xl mb-1.5 opacity-60">inbox</span>
+                        <p class="text-xs">Thả Widget vào đây</p>
+                    </div>
+                    
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Extra Styles for smooth interactions -->
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.3);
+        border-radius: 4px;
+    }
+    .dropzone-area.drag-over {
+        border-color: rgb(59, 130, 246);
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+    .widget-instance.dragging {
+        opacity: 0.5;
+    }
+</style>
+
+<!-- Safely pass JSON data via json_script to prevent IDE linter syntax errors -->
+{{ sidebar_mapping|json_script:"sidebar-mapping-data" }}
+{{ widget_contents|json_script:"widget-contents-data" }}
+{{ available_widgets|json_script:"available-widgets-data" }}
+{{ menus|json_script:"select-menus-data" }}
+{{ post_cats|json_script:"select-postcats-data" }}
+{{ product_cats|json_script:"select-productcats-data" }}
+
+<script type="text/javascript">
+    const AVAILABLE_WIDGETS_DATA = JSON.parse(document.getElementById("available-widgets-data").textContent);
+    const INITIAL_SIDEBAR_MAPPING = JSON.parse(document.getElementById("sidebar-mapping-data").textContent);
+    const INITIAL_WIDGET_CONTENTS = JSON.parse(document.getElementById("widget-contents-data").textContent);
+    
+    // Lists for select dropdowns
+    const SELECT_MENUS = JSON.parse(document.getElementById("select-menus-data").textContent);
+    const SELECT_POSTCATS = JSON.parse(document.getElementById("select-postcats-data").textContent);
+    const SELECT_PRODUCTCATS = JSON.parse(document.getElementById("select-productcats-data").textContent);
+</script>
+
+<!-- Drag and drop workspace logic -->
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+        let draggedTemplateType = null;
+        let draggedInstanceId = null;
+        let draggedSourceSidebar = null;
+
+        // 1. Setup template drag properties
+        document.querySelectorAll(".widget-template").forEach(template => {
+            template.addEventListener("dragstart", (e) => {
+                draggedTemplateType = template.getAttribute("data-type");
+                draggedInstanceId = null;
+                draggedSourceSidebar = null;
+                e.dataTransfer.setData("text/plain", draggedTemplateType);
+            });
+        });
+
+        // 2. Setup dropzones
+        document.querySelectorAll(".sidebar-container").forEach(sidebar => {
+            const dropzone = sidebar.querySelector(".dropzone-area");
+            
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("drag-over");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("drag-over");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("drag-over");
+
+                if (draggedTemplateType) {
+                    // Create new widget instance
+                    createWidgetInstance(draggedTemplateType, dropzone, null, true);
+                    draggedTemplateType = null;
+                } else if (draggedInstanceId && draggedSourceSidebar) {
+                    // Reorder or move existing widget instance
+                    const instEl = document.querySelector(`[data-instance-id="${draggedInstanceId}"]`);
+                    if (instEl && draggedSourceSidebar !== sidebar.getAttribute("data-sidebar-id")) {
+                        dropzone.appendChild(instEl);
+                        updateWidgetCounters();
+                    }
+                    draggedInstanceId = null;
+                    draggedSourceSidebar = null;
+                }
+            });
+        });
+
+        // 3. Update counter for each sidebar
+        function updateWidgetCounters() {
+            document.querySelectorAll(".sidebar-container").forEach(sidebar => {
+                const count = sidebar.querySelectorAll(".widget-instance").length;
+                sidebar.querySelector(".widget-counter").innerText = count;
+                
+                const emptyMsg = sidebar.querySelector(".empty-message");
+                if (count > 0) {
+                    if (emptyMsg) emptyMsg.style.display = "none";
+                } else {
+                    if (emptyMsg) emptyMsg.style.display = "block";
+                }
+            });
+        }
+
+        // 4. Create widget instance element
+        function createWidgetInstance(type, dropzone, initialId = null, expand = false) {
+            const widgetDef = AVAILABLE_WIDGETS_DATA[type];
+            if (!widgetDef) return;
+
+            // Generate unique instance ID matching PHP format
+            const instanceId = initialId || `${type}_id_wg_${Date.now().toString().slice(-4)}___htransferl____${Math.floor(Math.random() * 99) + 1}`;
+
+            const instDiv = document.createElement("div");
+            instDiv.className = "widget-instance bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-sm overflow-hidden transition-all duration-200";
+            instDiv.setAttribute("data-instance-id", instanceId);
+            instDiv.setAttribute("data-type", type);
+            instDiv.setAttribute("draggable", "true");
+
+            // Dragstart on instance
+            instDiv.addEventListener("dragstart", (e) => {
+                draggedInstanceId = instanceId;
+                draggedTemplateType = null;
+                draggedSourceSidebar = instDiv.closest(".sidebar-container").getAttribute("data-sidebar-id");
+                instDiv.classList.add("dragging");
+            });
+
+            instDiv.addEventListener("dragend", () => {
+                instDiv.classList.remove("dragging");
+            });
+
+            // Header UI of widget card
+            const header = document.createElement("div");
+            header.className = "px-4 py-3 bg-gray-50/50 dark:bg-zinc-800/40 border-b border-gray-100 dark:border-zinc-800/60 flex justify-between items-center cursor-pointer select-none";
+            
+            const titleSpan = document.createElement("span");
+            titleSpan.className = "font-semibold text-sm text-gray-800 dark:text-zinc-200 flex items-center";
+            titleSpan.innerHTML = `<span class="material-symbols-outlined text-primary-500 mr-2 text-base">settings_accessibility</span> ${widgetDef.name}`;
+            
+            const actionsDiv = document.createElement("div");
+            actionsDiv.className = "flex items-center space-x-2";
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded transition cursor-pointer";
+            editBtn.innerHTML = `<span class="material-symbols-outlined text-lg">expand_more</span>`;
+            
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "text-red-400 hover:text-red-600 p-1 rounded transition cursor-pointer";
+            deleteBtn.innerHTML = `<span class="material-symbols-outlined text-lg">delete</span>`;
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            header.appendChild(titleSpan);
+            header.appendChild(actionsDiv);
+            instDiv.appendChild(header);
+
+            // Form container
+            const body = document.createElement("div");
+            body.className = "p-4 space-y-4 border-t border-gray-100 dark:border-zinc-800";
+            body.style.display = expand ? "block" : "none";
+
+            // Render form fields dynamically
+            widgetDef.fields.forEach(field => {
+                const fieldWrapper = document.createElement("div");
+                fieldWrapper.className = "space-y-1.5";
+
+                if (field.multilang) {
+                    // Multilingual fields render two text inputs
+                    const label = document.createElement("label");
+                    label.className = "block text-xs font-bold text-gray-500 dark:text-zinc-400";
+                    label.innerText = field.label;
+                    fieldWrapper.appendChild(label);
+
+                    // Row for bilingual input
+                    const gridDiv = document.createElement("div");
+                    gridDiv.className = "grid grid-cols-2 gap-3";
+
+                    // VI input
+                    const viDiv = document.createElement("div");
+                    viDiv.className = "relative";
+                    const viInput = field.type === 'textarea' ? document.createElement("textarea") : document.createElement("input");
+                    viInput.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                    if (field.type === 'textarea') viInput.rows = 2;
+                    else viInput.type = "text";
+                    viInput.placeholder = "Tiếng Việt";
+                    viInput.setAttribute("data-field-name", `${field.name}_vi`);
+                    
+                    // Fill value if exists
+                    const oldContent = INITIAL_WIDGET_CONTENTS[instanceId];
+                    if (oldContent) {
+                        viInput.value = oldContent[`${field.name}_lg_vi`] || "";
+                    }
+                    
+                    viDiv.appendChild(viInput);
+                    gridDiv.appendChild(viDiv);
+
+                    // EN input
+                    const enDiv = document.createElement("div");
+                    enDiv.className = "relative";
+                    const enInput = field.type === 'textarea' ? document.createElement("textarea") : document.createElement("input");
+                    enInput.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                    if (field.type === 'textarea') enInput.rows = 2;
+                    else enInput.type = "text";
+                    enInput.placeholder = "Tiếng Anh (English)";
+                    enInput.setAttribute("data-field-name", `${field.name}_en`);
+                    
+                    if (oldContent) {
+                        enInput.value = oldContent[`${field.name}_lg_en`] || "";
+                    }
+
+                    enDiv.appendChild(enInput);
+                    gridDiv.appendChild(enDiv);
+
+                    fieldWrapper.appendChild(gridDiv);
+                } else {
+                    // Standard non-multilingual inputs
+                    const label = document.createElement("label");
+                    label.className = "block text-xs font-bold text-gray-500 dark:text-zinc-400";
+                    label.innerText = field.label;
+                    fieldWrapper.appendChild(label);
+
+                    let input;
+                    if (field.type === 'textarea') {
+                        input = document.createElement("textarea");
+                        input.rows = 3;
+                        input.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                    } else if (field.type.startsWith('select_')) {
+                        input = document.createElement("select");
+                        input.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                        
+                        // Add empty option
+                        const opt = document.createElement("option");
+                        opt.value = "";
+                        opt.innerText = "-- Chọn một mục --";
+                        input.appendChild(opt);
+
+                        // Populate select options
+                        let selectList = [];
+                        if (field.type === 'select_menu') selectList = SELECT_MENUS;
+                        else if (field.type === 'select_postcat') selectList = SELECT_POSTCATS;
+                        else if (field.type === 'select_productcat') selectList = SELECT_PRODUCTCATS;
+
+                        selectList.forEach(item => {
+                            const optItem = document.createElement("option");
+                            optItem.value = item.id;
+                            optItem.innerText = item.title;
+                            input.appendChild(optItem);
+                        });
+                    } else {
+                        input = document.createElement("input");
+                        input.type = field.type;
+                        input.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                        if (field.default) input.value = field.default;
+                    }
+
+                    input.setAttribute("data-field-name", field.name);
+                    
+                    // Populate existing value
+                    const oldContent = INITIAL_WIDGET_CONTENTS[instanceId];
+                    if (oldContent && oldContent[field.name] !== undefined) {
+                        input.value = oldContent[field.name];
+                    }
+
+                    fieldWrapper.appendChild(input);
+                }
+
+                body.appendChild(fieldWrapper);
+            });
+
+            instDiv.appendChild(body);
+
+            // Accordion click toggle
+            header.addEventListener("click", (e) => {
+                if (e.target.closest("button")) return; // Don't trigger when clicking delete/expand buttons
+                const isHidden = body.style.display === "none";
+                body.style.display = isHidden ? "block" : "none";
+                editBtn.innerHTML = isHidden ? `<span class="material-symbols-outlined text-lg">expand_less</span>` : `<span class="material-symbols-outlined text-lg">expand_more</span>`;
+            });
+
+            editBtn.addEventListener("click", () => {
+                const isHidden = body.style.display === "none";
+                body.style.display = isHidden ? "block" : "none";
+                editBtn.innerHTML = isHidden ? `<span class="material-symbols-outlined text-lg">expand_less</span>` : `<span class="material-symbols-outlined text-lg">expand_more</span>`;
+            });
+
+            // Delete action
+            deleteBtn.addEventListener("click", () => {
+                if (confirm("Bạn có chắc chắn muốn xóa widget này khỏi sidebar không?")) {
+                    instDiv.remove();
+                    updateWidgetCounters();
+                }
+            });
+
+            dropzone.appendChild(instDiv);
+            updateWidgetCounters();
+        }
+
+        // 5. Populate initial mapping from database config
+        Object.keys(INITIAL_SIDEBAR_MAPPING).forEach(sidebarId => {
+            const sidebarContainer = document.querySelector(`[data-sidebar-id="${sidebarId}"]`);
+            if (sidebarContainer) {
+                const dropzone = sidebarContainer.querySelector(".dropzone-area");
+                const widgetIdsStr = INITIAL_SIDEBAR_MAPPING[sidebarId];
+                
+                if (widgetIdsStr) {
+                    const ids = widgetIdsStr.split(",");
+                    ids.forEach(wid => {
+                        if (wid.trim()) {
+                            // Find the type of widget based on its prefix
+                            let type = null;
+                            for (const k of Object.keys(AVAILABLE_WIDGETS_DATA)) {
+                                if (wid.startsWith(k)) {
+                                    type = k;
+                                    break;
+                                }
+                            }
+                            if (type) {
+                                createWidgetInstance(type, dropzone, wid.trim(), false);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        updateWidgetCounters();
+
+        // 6. Save handler via AJAX
+        document.getElementById("btn-save-widgets").addEventListener("click", () => {
+            const sidebars = {};
+            const widget_data = {};
+
+            document.querySelectorAll(".sidebar-container").forEach(sidebar => {
+                const sidebarId = sidebar.getAttribute("data-sidebar-id");
+                const activeIds = [];
+                
+                sidebar.querySelectorAll(".widget-instance").forEach(inst => {
+                    const instId = inst.getAttribute("data-instance-id");
+                    activeIds.push(instId);
+
+                    // Collect fields inside widget form
+                    const fields = {};
+                    inst.querySelectorAll("[data-field-name]").forEach(input => {
+                        const name = input.getAttribute("data-field-name");
+                        fields[name] = input.value;
+                    });
+                    widget_data[instId] = fields;
+                });
+
+                sidebars[sidebarId] = activeIds.join(",");
+            });
+
+            // Loading state on button
+            const btn = document.getElementById("btn-save-widgets");
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined mr-2 text-base animate-spin">sync</span> Đang lưu...`;
+            btn.disabled = true;
+
+            // Send POST request
+            fetch("/admin/suoi_tien/widgets/save/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sidebars: sidebars,
+                    widget_data: widget_data
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                
+                if (data.status === 'success') {
+                    showToast("check_circle", "Đã lưu cấu hình Widgets thành công!", "text-green-500");
+                } else {
+                    showToast("error", "Lỗi: " + data.message, "text-red-500");
+                }
+            })
+            .catch(err => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                showToast("error", "Lỗi kết nối mạng: " + err, "text-red-500");
+            });
+        });
+
+        // Toast Helper
+        function showToast(icon, message, iconClass) {
+            const toast = document.getElementById("toast-notification");
+            const tIcon = document.getElementById("toast-icon");
+            const tMsg = document.getElementById("toast-message");
+
+            tIcon.className = `material-symbols-outlined ${iconClass}`;
+            tIcon.innerText = icon;
+            tMsg.innerText = message;
+
+            toast.style.transform = "translateY(0)";
+            toast.style.opacity = "1";
+            toast.style.pointerEvents = "auto";
+
+            setTimeout(() => {
+                toast.style.transform = "translateY(10px)";
+                toast.style.opacity = "0";
+                toast.style.pointerEvents = "none";
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %}

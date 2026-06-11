@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.forms',
     'suoi_tien',
 ]
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,14 +59,13 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'suoi_tien.context_processors.cms_counts',
             ],
         },
     },
@@ -78,7 +80,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'suoi_tien_db',
+        'NAME': 'suoi_tien_db_v2',
         'USER': 'root',
         'PASSWORD': 'huydev',
         'PORT': '3306',
@@ -120,10 +122,10 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'public_html' / 'halink-content' / 'uploads'
 
 UNFOLD = {
     "SITE_TITLE": "Hệ thống Quản trị Suối Tiên",
@@ -131,9 +133,127 @@ UNFOLD = {
     "SITE_SYMBOL": "park",
     "SHOW_HISTORY": True,
     "SHOW_SIDEBAR_FILTER": True,
+    "DASHBOARD_CALLBACK": "suoi_tien.dashboard.dashboard_callback",
     "SIDEBAR": {
         "show_search": True,
-        "show_all_applications": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Hệ thống chung",
+                "items": [
+                    {
+                        "title": "Bảng tin",
+                        "icon": "dashboard",
+                        "link": "/admin/",
+                    },
+                    {
+                        "title": "Trang chủ",
+                        "icon": "home",
+                        "link": "/admin/suoi_tien/halinkwebsite/",
+                    },
+                ],
+            },
+            {
+                "title": "Quản lý Nội dung",
+                "items": [
+                    {
+                        "title": "Bài viết",
+                        "icon": "article",
+                        "link": "/admin/suoi_tien/postproxy/",
+                    },
+                    {
+                        "title": "Chuyên mục",
+                        "icon": "category",
+                        "link": "/admin/suoi_tien/postcategoryproxy/",
+                    },
+                    {
+                        "title": "Thư viện",
+                        "icon": "photo_library",
+                        "link": "/admin/suoi_tien/halinkflash/",
+                    },
+                    {
+                        "title": "Trang",
+                        "icon": "description",
+                        "link": "/admin/suoi_tien/pageproxy/",
+                    },
+                    {
+                        "title": "Sản phẩm/Món ăn",
+                        "icon": "restaurant",
+                        "link": "/admin/suoi_tien/productproxy/",
+                    },
+                    {
+                        "title": "Danh mục sản phẩm",
+                        "icon": "folder",
+                        "link": "/admin/suoi_tien/productcategoryproxy/",
+                    },
+                ],
+            },
+            {
+                "title": "Tương tác & Bán hàng",
+                "items": [
+                    {
+                        "title": "Bình luận",
+                        "icon": "comment",
+                        "link": "/admin/suoi_tien/commentproxy/",
+                    },
+                    {
+                        "title": "Hỗ trợ",
+                        "icon": "support_agent",
+                        "link": "/admin/suoi_tien/supportproxy/",
+                    },
+                    {
+                        "title": "Đơn hàng",
+                        "icon": "shopping_cart",
+                        "link": "/admin/suoi_tien/ticketorderproxy/",
+                    },
+                    {
+                        "title": "Đơn đặt món",
+                        "icon": "receipt_long",
+                        "link": "/admin/suoi_tien/foodorderproxy/",
+                    },
+                ],
+            },
+            {
+                "title": "Quản trị & Cài đặt",
+                "items": [
+                    {
+                        "title": "Thống kê",
+                        "icon": "bar_chart",
+                        "link": "/admin/suoi_tien/halinkstatistic/",
+                    },
+                    {
+                        "title": "Thành viên",
+                        "icon": "group",
+                        "link": "/admin/suoi_tien/halinkuser/",
+                    },
+                    {
+                        "title": "Giao diện (Themes)",
+                        "icon": "palette",
+                        "link": "/admin/suoi_tien/themes/",
+                    },
+                    {
+                        "title": "Quản lý Widgets",
+                        "icon": "widgets",
+                        "link": "/admin/suoi_tien/widgets/",
+                    },
+                    {
+                        "title": "Quản lý Menu",
+                        "icon": "menu",
+                        "link": "/admin/suoi_tien/halinkmenu/",
+                    },
+                    {
+                        "title": "Quản trị viên",
+                        "icon": "admin_panel_settings",
+                        "link": "/admin/suoi_tien/halinkadmin/",
+                    },
+                    {
+                        "title": "Cài đặt",
+                        "icon": "settings",
+                        "link": "/admin/suoi_tien/halinkwebsite/",
+                    },
+                ],
+            },
+        ]
     },
 }
 
