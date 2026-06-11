@@ -37,3 +37,7 @@ test_widgets_save.py
 
 # Test directory (E2E Automated tests)
 tests/
+
+# Survey & Audit documents (FE Parity docs)
+suoi_tien_django_fe.md
+suoi_tien_php_goc_fe.md
