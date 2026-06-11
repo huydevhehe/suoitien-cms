@@ -127,14 +127,30 @@ class CategoryAdminMixin:
 
 
 class ImagePickerAdminMixin:
-    """Mixin gắn ImagePickerWidget vào field post_image."""
+    """Mixin gắn ImagePickerWidget vào các field hình ảnh."""
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
-        if db_field.name == 'post_image':
+        if db_field.name in ['post_image', 'post_banner']:
             from .widgets import ImagePickerWidget
             kwargs['widget'] = ImagePickerWidget(subfolder='hinhanh')
             return db_field.formfield(**kwargs)
+        elif db_field.name == 'file_vn':
+            from .widgets import ImagePickerWidget
+            kwargs['widget'] = ImagePickerWidget(subfolder='flash')
+            return db_field.formfield(**kwargs)
         return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+class SidebarAdminMixin:
+    """Mixin gắn SidebarCheckboxWidget vào field post_sidebar."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'post_sidebar':
+            from .widgets import SidebarCheckboxWidget
+            kwargs['widget'] = SidebarCheckboxWidget()
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
 
 
 
@@ -244,7 +260,7 @@ class HalinkUserAdmin(ModelAdmin):
 
 # 4. Quản lý Banner & Quảng cáo / Thư viện
 @admin.register(HalinkFlash)
-class HalinkFlashAdmin(PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkFlashAdmin(ImagePickerAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('get_filename', 'get_dimensions', 'get_size', 'get_status_display', 'get_date_display')
     search_fields = ('title_vn', 'file_vn', 'link')
@@ -327,7 +343,7 @@ class HalinkMetaAdmin(ModelAdmin):
 # ==============================================================================
 
 @admin.register(PostProxy)
-class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'  # Chuyên mục bài viết
     list_per_page = 20
     list_display = ('get_image', 'get_clean_title', 'get_category_display', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
@@ -348,7 +364,8 @@ class PostProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMixin
 
 
 @admin.register(PostCategoryProxy)
-class PostCategoryProxyAdmin(ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostCategoryProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+    category_type = 'postcat'
     list_per_page = 20
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
     list_display = ('get_image', 'get_clean_title', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
@@ -388,7 +405,7 @@ class PageProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, M
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
     list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'sort', 'get_status_display', 'get_date_display')
@@ -476,7 +493,8 @@ class ProductProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, PostDisplayMi
 
 
 @admin.register(ProductCategoryProxy)
-class ProductCategoryProxyAdmin(PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductCategoryProxyAdmin(CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+    category_type = 'productcat'
     list_display = ('Id', 'get_clean_title', 'alias', 'sort', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
     search_fields = ('title_vn', 'alias')
