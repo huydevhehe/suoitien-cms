@@ -6,6 +6,7 @@ from django import forms
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin
+import html
 from django.db.models import Subquery, OuterRef
 
 # Allow active staff and superusers to access Django Admin
@@ -200,7 +201,13 @@ class SortableAdminMixin:
         return custom_urls + urls
 
     def move_up(self, request, object_id):
+        if request.method != 'POST':
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("Must use POST request")
         obj = self.get_object(request, object_id)
+        if not self.has_change_permission(request, obj):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to edit this object.")
         if obj and hasattr(obj, 'sort'):
             # Lấy đối tượng liền trước (có sort nhỏ hơn)
             prev_obj = self.model.objects.filter(sort__lt=obj.sort).order_by('-sort').first()
@@ -215,7 +222,13 @@ class SortableAdminMixin:
         return redirect(request.META.get('HTTP_REFERER', '../'))
 
     def move_down(self, request, object_id):
+        if request.method != 'POST':
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("Must use POST request")
         obj = self.get_object(request, object_id)
+        if not self.has_change_permission(request, obj):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to edit this object.")
         if obj and hasattr(obj, 'sort'):
             # Lấy đối tượng liền sau (có sort lớn hơn)
             next_obj = self.model.objects.filter(sort__gt=obj.sort).order_by('sort').first()
@@ -232,13 +245,14 @@ class SortableAdminMixin:
     def display_sort_actions(self, obj):
         if not hasattr(obj, 'sort') or obj.sort is None:
             return '---'
+        js_onclick = "event.preventDefault(); var f=document.createElement('form'); f.method='post'; f.action=this.href; var c=document.querySelector('input[name=csrfmiddlewaretoken]'); if(c) f.appendChild(c.cloneNode(true)); document.body.appendChild(f); f.submit();"
         return format_html(
             '<div style="display:flex; gap:4px; align-items:center;">'
-            '<a href="{}/move-up/" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#e0f2fe; color:#0369a1; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển lên">▲</a>'
+            '<a href="{}/move-up/" onclick="{}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#e0f2fe; color:#0369a1; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển lên">▲</a>'
             '<span style="min-width:20px; text-align:center; font-weight:600;">{}</span>'
-            '<a href="{}/move-down/" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#fee2e2; color:#b91c1c; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển xuống">▼</a>'
+            '<a href="{}/move-down/" onclick="{}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:#fee2e2; color:#b91c1c; border-radius:4px; font-weight:bold; text-decoration:none;" title="Di chuyển xuống">▼</a>'
             '</div>',
-            obj.pk, obj.sort, obj.pk
+            obj.pk, js_onclick, obj.sort, obj.pk, js_onclick
         )
     display_sort_actions.short_description = "Thứ tự"
     display_sort_actions.admin_order_field = 'sort'
@@ -714,15 +728,24 @@ class TicketOrderProxyAdmin(ModelAdmin):
         return html
 
     def render_order_details(self, obj):
+        import html
         try:
             prod_html = self._parse_all_products(obj.info_product)
-            parts = obj.info_user.split('***+++***') if obj.info_user else []
-            fullname = parts[1] if len(parts) > 1 else '---'
-            phone = parts[2] if len(parts) > 2 else '---'
-            email = parts[3] if len(parts) > 3 else '---'
-            address = parts[4] if len(parts) > 4 else '---'
-            note = parts[5] if len(parts) > 5 else '---'
             
+            # Khử XSS: Bọc tất cả các biến vào html.escape()
+            fullname = '---'
+            phone = '---'
+            address = '---'
+            email = '---'
+            note = '---'
+            if obj.info_user:
+                parts = obj.info_user.split('***+++***')
+                fullname = html.escape(parts[1]) if len(parts) > 1 else '---'
+                phone = html.escape(parts[2]) if len(parts) > 2 else '---'
+                email = html.escape(parts[3]) if len(parts) > 3 else '---'
+                address = html.escape(parts[4]) if len(parts) > 4 else '---'
+                note = html.escape(parts[5]) if len(parts) > 5 else '---'
+
             dt = ""
             if obj.date:
                 try:
@@ -734,18 +757,27 @@ class TicketOrderProxyAdmin(ModelAdmin):
                      
             payment_map = {0: 'Chưa chọn', 1: 'Tiền mặt', 2: 'Chuyển khoản', 3: 'ShopeePay', 4: 'Momo', 5: 'ZaloPay'}
             payment_str = payment_map.get(obj.type_payment, f"Khác ({obj.type_payment})")
-            status_str = self.get_status_display(obj)
+            
+            status_map = {0: 'Chưa thanh toán', 1: 'Đang xử lý', 3: 'Hủy/Lỗi', 4: 'Đã thanh toán'}
+            status_str = status_map.get(obj.status, f"Trạng thái {obj.status}")
+            
+            if obj.status == 4:
+                status_html = f'<span style="color:#10b981; font-weight:bold;">✔ {status_str}</span>'
+            elif obj.status == 3:
+                status_html = f'<span style="color:#ef4444; font-weight:bold;">✘ {status_str}</span>'
+            else:
+                status_html = f'<span style="color:#fbbf24; font-weight:bold;">● {status_str}</span>'
     
-            html = f"""
+            html_content = f"""
             <div style="display: flex; gap: 20px; font-family: sans-serif; color:#ddd; font-size:14px; line-height:1.6;">
                 <div style="flex: 1; background: #1a1a1a; padding: 20px; border-radius: 8px; border:1px solid #333;">
-                    <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; color:#fff;">Thông tin đơn hàng</h3>
+                    <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; color:#fff;">Thông tin thanh toán</h3>
                     <p style="margin:5px 0;"><b>Mã đơn hàng:</b> {obj.id_cart}</p>
-                    <p style="margin:5px 0;"><b>Thời gian đặt:</b> {dt}</p>
+                    <p style="margin:5px 0;"><b>Thời gian:</b> {dt}</p>
                     <p style="margin:5px 0;"><b>Phương thức thanh toán:</b> {payment_str}</p>
-                    <p style="margin:5px 0;"><b>Trạng thái:</b> <span style="color:#10b981;">{status_str}</span></p>
+                    <p style="margin:5px 0;"><b>Trạng thái:</b> {status_html}</p>
                     <br/>
-                    <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; color:#fff;">Sản phẩm</h3>
+                    <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; color:#fff;">Dịch vụ đã đặt</h3>
                     <div>{prod_html}</div>
                 </div>
                 
@@ -822,7 +854,7 @@ class TicketOrderProxyAdmin(ModelAdmin):
                 if order.info_user:
                     parts = order.info_user.split('***+++***')
                     email = parts[3] if len(parts) > 3 else None
-                    fullname = parts[1] if len(parts) > 1 else 'Quý khách'
+                    fullname = html.escape(parts[1]) if len(parts) > 1 else 'Quý khách'
                     
                     if email and '@' in email:
                         from .utils import send_email_via_smtp_proxy
@@ -900,9 +932,9 @@ class FoodOrderProxyAdmin(ModelAdmin):
         try:
             items = json.loads(meta_value)
             if not isinstance(items, list):
-                return f"<span style='color:red;'>Dữ liệu không phải là JSON array</span><br/>Raw: {meta_value}"
+                return f"<span style='color:red;'>Dữ liệu không phải là JSON array</span><br/>Raw: {html.escape(meta_value)}"
             
-            html = ""
+            html_str = ""
             total_all = 0
             from .models import HalinkPost
             for item in items:
@@ -925,14 +957,17 @@ class FoodOrderProxyAdmin(ModelAdmin):
                     from .utils import clean_lang
                     title = clean_lang(title)
                 
+                # Chống XSS
+                title = html.escape(title)
+                
                 total = qty * price
                 total_all += total
-                html += f"<b>{title}</b><br/>Giá: {price:,} đ x {qty}<br/><br/>"
+                html_str += f"<b>{title}</b><br/>Giá: {price:,} đ x {qty}<br/><br/>"
                 
-            html += f"<span style='color:#ef4444;font-weight:bold;font-size:16px;'>Tổng cộng: {total_all:,} đ</span>"
-            return html
+            html_str += f"<span style='color:#ef4444;font-weight:bold;font-size:16px;'>Tổng cộng: {total_all:,} đ</span>"
+            return html_str
         except Exception as e:
-            return f"<span style='color:red;'>Lỗi đọc sản phẩm: {str(e)}</span><br/>Raw: {meta_value}"
+            return f"<span style='color:red;'>Lỗi đọc sản phẩm: {str(e)}</span><br/>Raw: {html.escape(meta_value)}"
 
     def render_order_details(self, obj):
         try:
@@ -950,7 +985,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
             
             for item in customer_data:
                 name = item.get('name')
-                value = item.get('value')
+                value = html.escape(str(item.get('value', '')))
                 if name == 'fullname':
                     fullname = value
                 elif name == 'phone':
@@ -1074,7 +1109,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
         for order in queryset:
             try:
                 email = order.get_customer_field('email')
-                fullname = order.fullname or 'Quý khách'
+                fullname = html.escape(str(order.fullname or 'Quý khách'))
                 
                 if email and '@' in email:
                     from .utils import send_email_via_smtp_proxy

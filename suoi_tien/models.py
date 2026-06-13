@@ -40,8 +40,13 @@ class HalinkAdmin(models.Model):
 
     def save(self, *args, **kwargs):
         # Hash password theo chuẩn PHP: md5(md5(password))
-        if self.password and not _is_md5_hash(self.password):
-            self.password = _md5_double_hash(self.password)
+        if self.password:
+            if self.pk:
+                old_obj = type(self).objects.get(pk=self.pk)
+                if old_obj.password != self.password:
+                    self.password = _md5_double_hash(self.password)
+            else:
+                self.password = _md5_double_hash(self.password)
         super().save(*args, **kwargs)
 
 
@@ -70,8 +75,13 @@ class HalinkUser(models.Model):
 
     def save(self, *args, **kwargs):
         # Hash password theo chuẩn PHP: md5(md5(password))
-        if self.password and not _is_md5_hash(self.password):
-            self.password = _md5_double_hash(self.password)
+        if self.password:
+            if self.pk:
+                old_obj = type(self).objects.get(pk=self.pk)
+                if old_obj.password != self.password:
+                    self.password = _md5_double_hash(self.password)
+            else:
+                self.password = _md5_double_hash(self.password)
         super().save(*args, **kwargs)
 
 

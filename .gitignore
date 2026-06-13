@@ -42,3 +42,19 @@ tests/
 suoi_tien_django_fe.md
 suoi_tien_php_goc_fe.md
 tai_lieu_du_an_django.md
+
+# Mọi file Markdown tài liệu không cần push lên server
+*.md
+
+# Thư mục và cấu hình Test Playwright NodeJS
+node_modules/
+package.json
+package-lock.json
+playwright.config.ts
+e2e/
+playwright-report/
+test-results/
+playwright/.auth/
+
+# Báo cáo tổng hợp
+bao_cao_toan_bo_bug.md
