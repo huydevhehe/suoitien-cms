@@ -170,7 +170,7 @@ class UnixTimestampDateTimeAdminMixin:
     """Mixin gắn UnixTimestampDateTimeWidget vào các trường lưu Unix Timestamp dạng số."""
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
-        if db_field.name == 'date' and db_field.model.__name__ in ['HalinkFlash', 'HalinkFlashAdmin']:
+        if db_field.name == 'date':
             from .widgets import UnixTimestampDateTimeWidget
             kwargs['widget'] = UnixTimestampDateTimeWidget()
             return db_field.formfield(**kwargs)
@@ -515,7 +515,7 @@ class HalinkMetaAdmin(ModelAdmin):
 # ==============================================================================
 
 @admin.register(PostProxy)
-class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'  # Chuyên mục bài viết
     list_per_page = 20
     list_display = ('get_image', 'get_clean_title', 'get_category_display', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
@@ -536,11 +536,18 @@ class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdmin
 
 
 @admin.register(PostCategoryProxy)
-class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'
     list_per_page = 20
+    
+    def display_hierarchical_title(self, obj):
+        if obj.idcat:
+            return format_html('<span style="color: #a78bfa; font-weight: bold;">|— </span>{}', obj.clean_title)
+        return obj.clean_title
+    display_hierarchical_title.short_description = "Tiêu đề"
+
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
-    list_display = ('get_image', 'get_clean_title', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
+    list_display = ('get_image', 'display_hierarchical_title', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
@@ -558,7 +565,7 @@ class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwi
 
 
 @admin.register(PageProxy)
-class PageProxyAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class PageProxyAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_display = ('Id', 'get_clean_title', 'alias', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
     search_fields = ('title_vn', 'content_vn', 'alias')
@@ -577,7 +584,7 @@ class PageProxyAdmin(StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
     list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'display_sort_actions', 'get_status_display', 'get_date_display')
@@ -665,9 +672,16 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
 
 
 @admin.register(ProductCategoryProxy)
-class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'
-    list_display = ('Id', 'get_clean_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
+    
+    def display_hierarchical_title(self, obj):
+        if obj.idcat:
+            return format_html('<span style="color: #a78bfa; font-weight: bold;">|— </span>{}', obj.clean_title)
+        return obj.clean_title
+    display_hierarchical_title.short_description = "Tiêu đề"
+    
+    list_display = ('Id', 'display_hierarchical_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
     list_display_links = ('Id', 'get_clean_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
@@ -791,7 +805,7 @@ class TicketOrderProxyAdmin(ModelAdmin):
                 </div>
             </div>
             """
-            return mark_safe(html)
+            return mark_safe(html_content)
         except Exception as e:
             return f"Xảy ra lỗi khi hiển thị giao diện: {str(e)}"
     render_order_details.short_description = ' '
@@ -1026,7 +1040,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
             else:
                 status_html = f'<span style="color:#fbbf24; font-weight:bold;">● {status_str}</span>'
     
-            html = f"""
+            html_content = f"""
             <div style="display: flex; gap: 20px; font-family: sans-serif; color:#ddd; font-size:14px; line-height:1.6;">
                 <div style="flex: 1; background: #1a1a1a; padding: 20px; border-radius: 8px; border:1px solid #333;">
                     <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; color:#fff;">Thông tin đơn đặt món</h3>
@@ -1050,7 +1064,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
                 </div>
             </div>
             """
-            return mark_safe(html)
+            return mark_safe(html_content)
         except Exception as e:
             return f"Xảy ra lỗi khi hiển thị giao diện: {str(e)}"
     render_order_details.short_description = ' '
