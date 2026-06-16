@@ -82,35 +82,35 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# CẤU HÌNH DATABASE LOCAL (MÁY CÁ NHÂN - ĐANG BẬT)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'suoi_tien_db_v2',
-        'USER': 'root',
-        'PASSWORD': 'huydev',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
-    }
-}
-
-# CẤU HÌNH DATABASE DEPLOY (SERVER CHẠY - ĐANG TẮT)
+# CẤU HÌNH DATABASE LOCAL (MÁY CÁ NHÂN - ĐANG TẮT ĐỂ ĐẨY LÊN SERVER)
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.environ.get('DB_NAME', 'suoitien'),
-#         'USER': os.environ.get('DB_USER', 'django_user'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', 'django_pass_2026'),
-#         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-#         'PORT': os.environ.get('DB_PORT', '3306'),
+#         'NAME': 'suoi_tien_db_v2',
+#         'USER': 'root',
+#         'PASSWORD': 'huydev',
+#         'HOST': '127.0.0.1',
+#         'PORT': '3306',
 #         'OPTIONS': {
 #             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
 #         }
 #     }
 # }
+
+# CẤU HÌNH DATABASE DEPLOY (SERVER CHẠY - ĐANG BẬT)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'suoitien'),
+        'USER': os.environ.get('DB_USER', 'django_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'django_pass_2026'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+}
 
 
 # Password validation
