@@ -91,7 +91,14 @@ class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, 
             if os.path.exists(local_path):
                 url = f"{settings.MEDIA_URL}{obj.file_vn}"
             else:
-                url = f"https://suoitien.vn/upload/flash/{obj.file_vn}"
+                # File không tồn tại ở local → hiển thị placeholder SVG (không gọi mạng)
+                url = (
+                    "data:image/svg+xml;utf8,"
+                    "<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'>"
+                    "<rect width='30' height='30' rx='4' fill='%23e5e7eb'/>"
+                    "<text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' "
+                    "font-size='12' fill='%239ca3af'>?</text></svg>"
+                )
             return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', url, name)
         return obj.title_vn
     get_filename.short_description = 'Tên tập tin'

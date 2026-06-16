@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.views.generic import RedirectView
 from suoi_tien import views as suoi_tien_views
 
@@ -23,6 +23,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # API endpoints & Swagger
+    path('api/', include('suoi_tien.api.urls')),
+
     # Trang cấu hình giao diện & Widgets kéo thả
     path('admin/suoi_tien/themes/', admin.site.admin_view(suoi_tien_views.theme_info_view), name='admin_theme_info'),
     path('admin/suoi_tien/widgets/', admin.site.admin_view(suoi_tien_views.widgets_view), name='admin_widgets'),
