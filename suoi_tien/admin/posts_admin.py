@@ -248,7 +248,7 @@ class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwi
 
     # Cột giống PHP: Ảnh, Tiêu đề, Nổi bật, Trạng thái, Tác giả, Thời gian
     list_display = ('get_image', 'display_hierarchical_title', 'display_sort_actions', 'get_hot_display', 'get_status_display', 'get_author_display', 'get_date_display')
-    list_display_links = ('get_image', 'get_clean_title')
+    list_display_links = ('get_image', 'display_hierarchical_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
 
@@ -378,8 +378,8 @@ class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, Status
         return obj.clean_title
     display_hierarchical_title.short_description = "Tiêu đề"
     
-    list_display = ('Id', 'display_hierarchical_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
-    list_display_links = ('Id', 'get_clean_title')
+    list_display = ('get_image', 'display_hierarchical_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
+    list_display_links = ('get_image', 'display_hierarchical_title')
     search_fields = ('title_vn', 'alias')
     list_filter = ('ticlock',)
 
