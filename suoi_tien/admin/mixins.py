@@ -110,6 +110,16 @@ class CategoryAdminMixin:
             return db_field.formfield(**kwargs)
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'idcat' in form.base_fields:
+            form.base_fields['idcat'].label = "Chuyên mục Cha"
+            widget = form.base_fields['idcat'].widget
+            # Truyền obj hiện tại vào widget để loại trừ khỏi danh sách (tránh Infinite Loop)
+            if hasattr(widget, 'exclude_id'):
+                widget.exclude_id = obj.Id if obj else None
+        return form
+
 
 class ImagePickerAdminMixin:
     """Mixin gắn ImagePickerWidget vào các field hình ảnh."""

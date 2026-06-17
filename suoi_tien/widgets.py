@@ -49,16 +49,18 @@ class CategoryCheckboxWidget(forms.Widget):
     Tự động cập nhật nhãn đã chọn và hỗ trợ giao diện tối/sáng của Unfold.
     """
 
-    def __init__(self, category_type='postcat', *args, **kwargs):
+    def __init__(self, category_type='postcat', exclude_id=None, *args, **kwargs):
         self.category_type = category_type
+        self.exclude_id = exclude_id
         super().__init__(*args, **kwargs)
 
     def render(self, name, value, attrs=None, renderer=None):
         from .models import HalinkPost
 
-        categories = HalinkPost.objects.filter(
-            post_type=self.category_type
-        ).order_by('sort', 'Id')
+        qs = HalinkPost.objects.filter(post_type=self.category_type)
+        if hasattr(self, 'exclude_id') and self.exclude_id:
+            qs = qs.exclude(Id=self.exclude_id)
+        categories = qs.order_by('sort', 'Id')
 
         selected_ids = []
         if value:
