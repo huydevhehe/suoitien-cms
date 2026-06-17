@@ -12,7 +12,7 @@
             <ul id="list-pages" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for page in pages %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}_pagehtml" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-pages')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -24,7 +24,7 @@
             <ul id="list-postcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in post_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}_cathtml" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-postcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -36,7 +36,7 @@
             <ul id="list-productcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in product_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}_procathtml" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-productcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -101,6 +101,9 @@
 <script type="application/json" id="title-map-data">
     {{ title_map|safe }}
 </script>
+<script type="application/json" id="type-map-data">
+    {{ type_map|safe }}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
     function toggleGroup(id) {
@@ -140,15 +143,15 @@
             alert('Vui lòng nhập đủ URL và Tên hiển thị');
             return;
         }
-        var val = url + "_linkhtml";
-        addMenuItem(val, title, true);
+        var val = url;
+        addMenuItem(val, title, true, 'Liên kết');
         document.getElementById('custom-url').value = '';
         document.getElementById('custom-title').value = '';
         updateTextarea();
     }
 
     // Add item to DOM
-    function addMenuItem(fullVal, title, isCustom=false) {
+    function addMenuItem(fullVal, title, isCustom=false, forcedTypeName='') {
         var li = document.createElement('li');
         li.className = 'sortable-item';
         li.setAttribute('data-val', fullVal);
@@ -156,13 +159,17 @@
             li.setAttribute('data-title', title);
         }
         
-        var parts = fullVal.split('_');
-        var typeName = parts[1] || '';
-        if (typeName === 'linkhtml') typeName = 'Liên kết';
-        else if (typeName === 'cathtml') typeName = 'Chuyên mục bài';
-        else if (typeName === 'pagehtml') typeName = 'Trang tĩnh';
-        else if (typeName === 'procathtml') typeName = 'Danh mục SP';
-        else typeName = typeName.replace('html', '');
+        var typeName = forcedTypeName;
+        if (!typeName && !isCustom) {
+            try {
+                var typeMap = JSON.parse(document.getElementById('type-map-data').textContent);
+                typeName = typeMap[fullVal] || 'Bài viết';
+                if (typeName === 'page') typeName = 'Trang tĩnh';
+                if (typeName === 'postcat') typeName = 'Chuyên mục bài';
+                if (typeName === 'productcat') typeName = 'Danh mục SP';
+                if (typeName === 'product') typeName = 'SP/Vé';
+            } catch(e) {}
+        }
         
         var content = document.createElement('div');
         content.style.display = 'flex';
@@ -200,8 +207,9 @@
             var title = li.getAttribute('data-title');
             
             // Support custom link storing format if needed
-            if (val.includes('_linkhtml') && title) {
-                // Halink CMS specific link format
+            if (title && isNaN(val)) {
+                // If it's a URL, we might need a way to store title.
+                // Assuming PHP just stored URL, and title was lost? Or maybe format is URL||Title
                 val = val + "||" + title;
             }
             result.push(val);
@@ -230,24 +238,23 @@
                 var isCustom = false;
                 var title = "";
                 var val = item;
+                var typeName = "";
                 
-                // Parse custom links if they have title attached (e.g. url_linkhtml||Title)
+                // Parse custom links if they have title attached
                 if (item.includes('||')) {
                     var linkParts = item.split('||');
                     val = linkParts[0];
                     title = linkParts[1];
                     isCustom = true;
+                    typeName = "Liên kết";
                 }
-                
-                var parts = val.split('_');
-                var idOrUrl = parts[0];
-                var type = parts[1] || '';
                 
                 if (!isCustom) {
-                    title = mapData[idOrUrl] || idOrUrl;
+                    // It's just an ID
+                    title = mapData[val] || val;
                 }
                 
-                addMenuItem(val, title, isCustom);
+                addMenuItem(val, title, isCustom, typeName);
             });
         }
     };

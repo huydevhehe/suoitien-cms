@@ -14,15 +14,20 @@ class MenuBuilderWidget(forms.Textarea):
         post_cats = list(HalinkPost.objects.filter(post_type='postcat', ticlock=1).values('Id', 'title_vn'))
         product_cats = list(HalinkPost.objects.filter(post_type='productcat', ticlock=1).values('Id', 'title_vn'))
         
-        # Tạo title_map để load lại tên hiển thị khi đọc chuỗi từ DB (vì DB chỉ lưu ID)
+        # Load toàn bộ bài viết, chuyên mục vào map để luôn dịch được ID -> Tên
         title_map = {}
-        for item in pages + post_cats + product_cats:
-            title_map[str(item['Id'])] = item['title_vn']
+        type_map = {}
+        all_posts = HalinkPost.objects.values('Id', 'title_vn', 'post_type')
+        for item in all_posts:
+            str_id = str(item['Id'])
+            title_map[str_id] = item['title_vn'] or f"Bài viết {str_id}"
+            type_map[str_id] = item['post_type'] or 'unknown'
             
         context['pages'] = pages
         context['post_cats'] = post_cats
         context['product_cats'] = product_cats
         context['title_map'] = json.dumps(title_map)
+        context['type_map'] = json.dumps(type_map)
         
         return context
 
