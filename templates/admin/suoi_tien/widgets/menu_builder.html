@@ -12,7 +12,7 @@
             <ul id="list-pages" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for page in pages %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}_***_pagehtml" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-pages')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -24,7 +24,7 @@
             <ul id="list-postcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in post_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}_***_cathtml" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-postcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -36,7 +36,7 @@
             <ul id="list-productcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in product_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}_***_procathtml" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-productcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -56,7 +56,7 @@
     <!-- RIGHT COLUMN: DRAG & DROP TREE -->
     <div class="menu-tree" style="flex: 2; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff;">
         <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Cấu trúc Menu hiện tại</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Kéo rê <span style="font-size:16px;">☰</span> để đổi thứ tự hiển thị.</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Kéo rê <span style="font-size:16px;">☰</span> để đổi thứ tự. Bấm nút ⬅️ ➡️ để đổi thụt lề (tạo menu con).</p>
         
         <ul id="sortable-menu" class="sortable-list" style="list-style: none; padding: 10px; min-height: 300px; border: 2px dashed #ccc; background: #fafafa; border-radius: 4px;">
             <!-- JS will populate this -->
@@ -95,7 +95,23 @@
         color: #a71d2a;
     }
     
-    .btn-indent { display: none; }
+    /* Indentation for levels */
+    .level-0 { margin-left: 0px; border-left: 4px solid #6c757d; }
+    .level-1 { margin-left: 40px; border-left: 4px solid #007bff; }
+    .level-2 { margin-left: 80px; border-left: 4px solid #28a745; }
+    
+    .btn-indent { 
+        cursor: pointer; 
+        padding: 3px 8px; 
+        background: #eee; 
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        margin-right: 5px; 
+        font-size: 12px;
+    }
+    .btn-indent:hover {
+        background: #ddd;
+    }
 </style>
 
 <script type="application/json" id="title-map-data">
@@ -143,40 +159,55 @@
             alert('Vui lòng nhập đủ URL và Tên hiển thị');
             return;
         }
-        var val = url;
-        addMenuItem(val, title, true, 'Liên kết');
+        var val = url + "_***_linkhtml";
+        var rawTitle = "[[[::vi]]]" + title + "[[[::end_vi]]]";
+        addMenuItem(val, rawTitle, '0');
         document.getElementById('custom-url').value = '';
         document.getElementById('custom-title').value = '';
         updateTextarea();
     }
 
+    // Clean multi-language title for display
+    function cleanTitle(str) {
+        if (!str) return '';
+        var viMatch = str.match(/\[\[\[::vi\]\]\](.*?)\[\[\[::end_vi\]\]\]/);
+        if (viMatch && viMatch[1]) {
+            return viMatch[1].trim();
+        }
+        return str.replace(/\[\[\[.*?\]\]\]/g, '').trim() || str;
+    }
+
     // Add item to DOM
-    function addMenuItem(fullVal, title, isCustom=false, forcedTypeName='') {
+    function addMenuItem(idAndType, rawTitle, level) {
         var li = document.createElement('li');
-        li.className = 'sortable-item';
-        li.setAttribute('data-val', fullVal);
-        if (isCustom) {
-            li.setAttribute('data-title', title);
-        }
+        li.className = 'sortable-item level-' + level;
         
-        var typeName = forcedTypeName;
-        if (!typeName && !isCustom) {
-            try {
-                var typeMap = JSON.parse(document.getElementById('type-map-data').textContent);
-                typeName = typeMap[fullVal] || 'Bài viết';
-                if (typeName === 'page') typeName = 'Trang tĩnh';
-                if (typeName === 'postcat') typeName = 'Chuyên mục bài';
-                if (typeName === 'productcat') typeName = 'Danh mục SP';
-                if (typeName === 'product') typeName = 'SP/Vé';
-            } catch(e) {}
-        }
+        var parts = idAndType.split('_***_');
+        var objId = parts[0];
+        var typeCode = parts[1] || '';
+        
+        li.setAttribute('data-id', objId);
+        li.setAttribute('data-type', typeCode);
+        li.setAttribute('data-level', level);
+        li.setAttribute('data-rawtitle', rawTitle);
+        
+        var typeName = typeCode;
+        if (typeName === 'linkhtml') typeName = 'Liên kết';
+        else if (typeName === 'cathtml') typeName = 'Chuyên mục bài';
+        else if (typeName === 'pagehtml') typeName = 'Trang tĩnh';
+        else if (typeName === 'procathtml') typeName = 'Danh mục SP';
+        else typeName = typeName.replace('html', '');
+        
+        var displayTitle = cleanTitle(rawTitle);
         
         var content = document.createElement('div');
         content.style.display = 'flex';
         content.style.alignItems = 'center';
         content.innerHTML = `
             <span class="sortable-handle" title="Kéo thả để di chuyển">☰</span>
-            <strong style="margin: 0 10px;">${title}</strong> 
+            <span class="btn-indent" onclick="changeLevel(this, -1)" title="Thụt lề trái">⬅️</span>
+            <span class="btn-indent" onclick="changeLevel(this, 1)" title="Thụt lề phải">➡️</span>
+            <strong style="margin: 0 10px;">${displayTitle}</strong> 
             <span style="background: #eee; padding: 2px 6px; border-radius: 10px; font-size: 11px; color:#666;">${typeName}</span>
         `;
         
@@ -195,23 +226,31 @@
         sortableList.appendChild(li);
     }
 
-    // Indentation logic is removed because PHP stores a flat array.
-    // Hierarchies are managed by parent category ID (id_cat).
+    // Indentation logic
+    function changeLevel(btn, delta) {
+        var li = btn.closest('li');
+        var currentLevel = parseInt(li.getAttribute('data-level') || '0');
+        var newLevel = currentLevel + delta;
+        if (newLevel < 0) newLevel = 0;
+        if (newLevel > 2) newLevel = 2; // max level 2
+        
+        li.className = 'sortable-item level-' + newLevel;
+        li.setAttribute('data-level', newLevel);
+        updateTextarea();
+    }
 
     // Sync DOM to textarea
     function updateTextarea() {
         var items = sortableList.querySelectorAll('.sortable-item');
         var result = [];
         items.forEach(function(li) {
-            var val = li.getAttribute('data-val'); 
-            var title = li.getAttribute('data-title');
+            var objId = li.getAttribute('data-id'); 
+            var typeCode = li.getAttribute('data-type');
+            var level = li.getAttribute('data-level');
+            var rawTitle = li.getAttribute('data-rawtitle');
             
-            // Support custom link storing format if needed
-            if (title && isNaN(val)) {
-                // If it's a URL, we might need a way to store title.
-                // Assuming PHP just stored URL, and title was lost? Or maybe format is URL||Title
-                val = val + "||" + title;
-            }
+            // Format of PHP DB: ID_***_TYPE_***_LEVEL_***_0_***_0_***_TITLE_***_0
+            var val = objId + "_***_" + typeCode + "_***_" + level + "_***_0_***_0_***_" + rawTitle + "_***_0";
             result.push(val);
         });
         document.getElementById('{{ widget.attrs.id }}').value = JSON.stringify(result);
@@ -235,27 +274,41 @@
             items.forEach(function(item) {
                 if (!item || !item.trim()) return;
                 
-                var isCustom = false;
-                var title = "";
-                var val = item;
-                var typeName = "";
+                // Parse PHP 7-part format: ID_***_TYPE_***_LEVEL_***_0_***_0_***_TITLE_***_0
+                var parts = item.split('_***_');
+                var objId = parts[0];
+                var typeCode = parts[1] || '';
+                var level = parts[2] || '0';
                 
-                // Parse custom links if they have title attached
-                if (item.includes('||')) {
-                    var linkParts = item.split('||');
-                    val = linkParts[0];
-                    title = linkParts[1];
-                    isCustom = true;
-                    typeName = "Liên kết";
+                // Dữ liệu cũ có thể thiếu field (vd chỉ có 3 phần), do đó phải check kỹ phần tử có chứa tiêu đề
+                var rawTitle = "";
+                if (parts.length >= 6) {
+                    rawTitle = parts[5];
+                } else {
+                    // Nếu là custom format hoặc chuỗi cũ
+                    var titleFromMap = mapData[objId] || objId;
+                    rawTitle = "[[[::vi]]]" + titleFromMap + "[[[::end_vi]]]";
                 }
                 
-                if (!isCustom) {
-                    // It's just an ID
-                    title = mapData[val] || val;
-                }
-                
-                addMenuItem(val, title, isCustom, typeName);
+                addMenuItem(objId + "_***_" + typeCode, rawTitle, level);
             });
         }
     };
+    
+    // Khi thêm từ Checkbox vào menu
+    document.querySelector('.menu-panel').addEventListener('click', function(e) {
+        if(e.target && e.target.nodeName == "BUTTON" && e.target.innerText === "Thêm vào menu") {
+            var ul = e.target.previousElementSibling;
+            var checkboxes = ul.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(function(cb) {
+                var title = cb.getAttribute('data-title');
+                var idAndType = cb.value; // ex: 158_***_pagehtml
+                var rawTitle = "[[[::vi]]]" + title + "[[[::end_vi]]]";
+                addMenuItem(idAndType, rawTitle, '0');
+                cb.checked = false; // uncheck after add
+            });
+            updateTextarea();
+            e.stopPropagation();
+        }
+    }, true);
 </script>
