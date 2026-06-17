@@ -58,3 +58,7 @@ playwright/.auth/
 
 # Báo cáo tổng hợp
 bao_cao_toan_bo_bug.md
+
+# Các file Word báo cáo
+*.docx
+~$*.docx

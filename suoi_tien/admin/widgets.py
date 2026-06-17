@@ -1,0 +1,31 @@
+import json
+from django import forms
+from django.template.loader import render_to_string
+from ..models import HalinkPost
+
+class MenuBuilderWidget(forms.Textarea):
+    template_name = 'admin/suoi_tien/widgets/menu_builder.html'
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        
+        # Lấy danh sách các trang, chuyên mục để hiển thị ở cột trái
+        pages = list(HalinkPost.objects.filter(post_type='page', ticlock=1).values('Id', 'title_vn'))
+        post_cats = list(HalinkPost.objects.filter(post_type='postcat', ticlock=1).values('Id', 'title_vn'))
+        product_cats = list(HalinkPost.objects.filter(post_type='productcat', ticlock=1).values('Id', 'title_vn'))
+        
+        # Tạo title_map để load lại tên hiển thị khi đọc chuỗi từ DB (vì DB chỉ lưu ID)
+        title_map = {}
+        for item in pages + post_cats + product_cats:
+            title_map[str(item['Id'])] = item['title_vn']
+            
+        context['pages'] = pages
+        context['post_cats'] = post_cats
+        context['product_cats'] = product_cats
+        context['title_map'] = json.dumps(title_map)
+        
+        return context
+
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        return render_to_string(self.template_name, context)

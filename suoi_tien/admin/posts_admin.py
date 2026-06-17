@@ -38,13 +38,35 @@ from .mixins import (
     JSONSchemaAdminMixin,
     SortableAdminMixin,
 )
-
+from .widgets import MenuBuilderWidget
 
 # ==================== FORMS ====================
 
+class HalinkMenuForm(forms.ModelForm):
+    class Meta:
+        model = HalinkMenu
+        fields = '__all__'
+        widgets = {
+            'content_menu': MenuBuilderWidget()
+        }
+
 class ProductAdminForm(forms.ModelForm):
-    price = forms.IntegerField(label="Giá bán", required=False, min_value=0)
-    promo_price = forms.IntegerField(label="Giá khuyến mãi", required=False, min_value=0)
+    price = forms.IntegerField(
+        label="Giá bán", 
+        required=False, 
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
+        })
+    )
+    promo_price = forms.IntegerField(
+        label="Giá khuyến mãi", 
+        required=False, 
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
+        })
+    )
 
     class Meta:
         model = ProductProxy
@@ -128,6 +150,7 @@ class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, 
 # 5. Quản lý Menu
 @admin.register(HalinkMenu)
 class HalinkMenuAdmin(StatusSwitchAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
+    form = HalinkMenuForm
     list_per_page = 20
     list_display = ('Id', 'get_clean_title', 'id_cat', 'get_status_display')
     search_fields = ('title_cat',)

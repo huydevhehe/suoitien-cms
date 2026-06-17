@@ -184,7 +184,7 @@ UNFOLD = {
                         "link": "/admin/suoi_tien/postproxy/",
                     },
                     {
-                        "title": "Chuyên mục",
+                        "title": "Chuyên mục bài viết",
                         "icon": "category",
                         "link": "/admin/suoi_tien/postcategoryproxy/",
                     },

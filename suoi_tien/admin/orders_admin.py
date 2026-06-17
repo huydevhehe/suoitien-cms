@@ -90,7 +90,6 @@ class TicketOrderProxyAdmin(ModelAdmin):
         lines = info_product.split(',')
         html = ""
         total_all = 0
-        from .models import HalinkPost
         try:
             for line in lines:
                 parts = line.split('***+++***')
@@ -236,7 +235,7 @@ class TicketOrderProxyAdmin(ModelAdmin):
                     fullname = html.escape(parts[1]) if len(parts) > 1 else 'Quý khách'
                     
                     if email and '@' in email:
-                        from .utils import send_email_via_smtp_proxy
+                        from ..utils import send_email_via_smtp_proxy
                         subject = f"Xác nhận đơn đặt vé #{order.id_cart} - Công viên văn hóa Suối Tiên"
                         prod_html = self._parse_all_products(order.info_product)
                         body_html = f"""
@@ -314,7 +313,6 @@ class FoodOrderProxyAdmin(ModelAdmin):
             
             html_str = ""
             total_all = 0
-            from .models import HalinkPost
             for item in items:
                 pid = item.get('id')
                 qty = item.get('qtv') or item.get('qty') or 1
@@ -332,7 +330,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
                 post = HalinkPost.objects.filter(Id=pid).first()
                 title = post.title_vn if post else f"Sản phẩm/Món ăn #{pid}"
                 if title and '[[[:' in title:
-                    from .utils import clean_lang
+                    from ..utils import clean_lang
                     title = clean_lang(title)
                 
                 # Chống XSS
@@ -490,7 +488,7 @@ class FoodOrderProxyAdmin(ModelAdmin):
                 fullname = html.escape(str(order.fullname or 'Quý khách'))
                 
                 if email and '@' in email:
-                    from .utils import send_email_via_smtp_proxy
+                    from ..utils import send_email_via_smtp_proxy
                     subject = f"Xác nhận đơn đặt món #{order.Id_post} - Suối Tiên Cuisine"
                     prod_html = self._parse_food_products(order.meta_value)
                     

@@ -1,0 +1,271 @@
+{% load static %}
+<div class="menu-builder-container" style="display: flex; gap: 20px; font-family: sans-serif; margin-bottom: 20px;">
+    <!-- Hidden textarea for Django to save -->
+    <textarea name="{{ widget.name }}" id="{{ widget.attrs.id }}" style="display:none;">{{ widget.value|default:"" }}</textarea>
+
+    <!-- LEFT COLUMN: AVAILABLE ITEMS -->
+    <div class="available-items" style="flex: 1; border: 1px solid #ddd; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+        <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Thêm vào Menu</h3>
+        
+        <div class="item-group" style="margin-bottom: 10px;">
+            <h4 style="margin: 0; cursor: pointer; background: #e0e0e0; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between;" onclick="toggleGroup('pages')">Trang tĩnh <span>[+]</span></h4>
+            <ul id="list-pages" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
+                {% for page in pages %}
+                <li style="margin-bottom: 5px;">
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}***_page_" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
+                </li>
+                {% endfor %}
+                <button type="button" onclick="addSelected('list-pages')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
+            </ul>
+        </div>
+
+        <div class="item-group" style="margin-bottom: 10px;">
+            <h4 style="margin: 0; cursor: pointer; background: #e0e0e0; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between;" onclick="toggleGroup('postcats')">Chuyên mục bài viết <span>[+]</span></h4>
+            <ul id="list-postcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
+                {% for cat in post_cats %}
+                <li style="margin-bottom: 5px;">
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}***_news_" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                </li>
+                {% endfor %}
+                <button type="button" onclick="addSelected('list-postcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
+            </ul>
+        </div>
+
+        <div class="item-group" style="margin-bottom: 10px;">
+            <h4 style="margin: 0; cursor: pointer; background: #e0e0e0; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between;" onclick="toggleGroup('productcats')">Danh mục Sản phẩm/Vé <span>[+]</span></h4>
+            <ul id="list-productcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
+                {% for cat in product_cats %}
+                <li style="margin-bottom: 5px;">
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}***_product_" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                </li>
+                {% endfor %}
+                <button type="button" onclick="addSelected('list-productcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
+            </ul>
+        </div>
+
+        <div class="item-group" style="margin-bottom: 10px;">
+            <h4 style="margin: 0; cursor: pointer; background: #e0e0e0; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between;" onclick="toggleGroup('customlink')">Liên kết tùy chỉnh <span>[+]</span></h4>
+            <div id="list-customlink" style="display: none; padding: 10px; border: 1px solid #ddd; background: #fff; border-top: none;">
+                <label style="display:block; margin-bottom:10px;">URL: <input type="text" id="custom-url" placeholder="https://" style="width:100%; box-sizing: border-box; padding: 5px; margin-top: 5px;"></label>
+                <label style="display:block; margin-bottom:10px;">Tên hiển thị: <input type="text" id="custom-title" placeholder="Tên hiển thị" style="width:100%; box-sizing: border-box; padding: 5px; margin-top: 5px;"></label>
+                <button type="button" onclick="addCustomLink()" style="margin-top: 5px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: DRAG & DROP TREE -->
+    <div class="menu-tree" style="flex: 2; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff;">
+        <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Cấu trúc Menu hiện tại</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Kéo rê <span style="font-size:16px;">☰</span> để đổi thứ tự. Bấm nút ⬅️ ➡️ để đổi thụt lề (tạo menu con).</p>
+        
+        <ul id="sortable-menu" class="sortable-list" style="list-style: none; padding: 10px; min-height: 300px; border: 2px dashed #ccc; background: #fafafa; border-radius: 4px;">
+            <!-- JS will populate this -->
+        </ul>
+    </div>
+</div>
+
+<style>
+    .sortable-item {
+        border: 1px solid #ccc;
+        background: #fff;
+        margin-bottom: 8px;
+        padding: 10px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .sortable-handle {
+        cursor: grab;
+        margin-right: 15px;
+        color: #888;
+        font-size: 16px;
+    }
+    .sortable-handle:active {
+        cursor: grabbing;
+    }
+    .btn-remove {
+        color: #dc3545;
+        cursor: pointer;
+        font-weight: bold;
+        padding: 5px;
+    }
+    .btn-remove:hover {
+        color: #a71d2a;
+    }
+    
+    /* Indentation for levels */
+    .level-0 { margin-left: 0px; border-left: 4px solid #6c757d; }
+    .level-1 { margin-left: 40px; border-left: 4px solid #007bff; }
+    .level-2 { margin-left: 80px; border-left: 4px solid #28a745; }
+    
+    .btn-indent { 
+        cursor: pointer; 
+        padding: 3px 8px; 
+        background: #eee; 
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        margin-right: 5px; 
+        font-size: 12px;
+    }
+    .btn-indent:hover {
+        background: #ddd;
+    }
+</style>
+
+<script type="application/json" id="title-map-data">
+    {{ title_map|safe }}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    function toggleGroup(id) {
+        var el = document.getElementById('list-' + id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Initialize Sortable
+    var sortableList = document.getElementById('sortable-menu');
+    var sortable = Sortable.create(sortableList, {
+        handle: '.sortable-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            updateTextarea();
+        }
+    });
+
+    // Add selected items from checkboxes
+    function addSelected(listId) {
+        var list = document.getElementById(listId);
+        var checkboxes = list.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach(function(cb) {
+            var val = cb.value; // e.g. 15***_news_
+            var title = cb.getAttribute('data-title');
+            addMenuItem(val, title, 0);
+            cb.checked = false; // uncheck after adding
+        });
+        updateTextarea();
+    }
+
+    // Add custom link
+    function addCustomLink() {
+        var url = document.getElementById('custom-url').value;
+        var title = document.getElementById('custom-title').value;
+        if (!url || !title) {
+            alert('Vui lòng nhập đủ URL và Tên hiển thị');
+            return;
+        }
+        var val = url + "***_link_";
+        addMenuItem(val, title, 0, true);
+        document.getElementById('custom-url').value = '';
+        document.getElementById('custom-title').value = '';
+        updateTextarea();
+    }
+
+    // Add item to DOM
+    function addMenuItem(baseVal, title, level, isCustom=false) {
+        var li = document.createElement('li');
+        li.className = 'sortable-item level-' + level;
+        li.setAttribute('data-val', baseVal);
+        li.setAttribute('data-level', level);
+        if (isCustom) {
+            li.setAttribute('data-title', title);
+        }
+        
+        var typeName = baseVal.split('***')[1].replace(/_/g,'');
+        if (typeName === 'link') typeName = 'Liên kết';
+        if (typeName === 'news') typeName = 'Tin tức';
+        if (typeName === 'page') typeName = 'Trang';
+        if (typeName === 'product') typeName = 'Vé/SP';
+        
+        var content = document.createElement('div');
+        content.style.display = 'flex';
+        content.style.alignItems = 'center';
+        content.innerHTML = `
+            <span class="sortable-handle" title="Kéo thả để di chuyển">☰</span>
+            <span class="btn-indent" onclick="changeLevel(this, -1)" title="Thụt lề trái">⬅️</span>
+            <span class="btn-indent" onclick="changeLevel(this, 1)" title="Thụt lề phải">➡️</span>
+            <strong style="margin: 0 10px;">${title}</strong> 
+            <span style="background: #eee; padding: 2px 6px; border-radius: 10px; font-size: 11px; color:#666;">${typeName}</span>
+        `;
+        
+        var removeBtn = document.createElement('span');
+        removeBtn.className = 'btn-remove';
+        removeBtn.innerHTML = 'Xóa ✕';
+        removeBtn.onclick = function() {
+            if(confirm('Xóa mục này khỏi menu?')) {
+                li.remove();
+                updateTextarea();
+            }
+        };
+
+        li.appendChild(content);
+        li.appendChild(removeBtn);
+        sortableList.appendChild(li);
+    }
+
+    // Indentation logic
+    function changeLevel(btn, delta) {
+        var li = btn.closest('li');
+        var currentLevel = parseInt(li.getAttribute('data-level') || '0');
+        var newLevel = currentLevel + delta;
+        if (newLevel < 0) newLevel = 0;
+        if (newLevel > 2) newLevel = 2; // max level 2
+        
+        li.className = 'sortable-item level-' + newLevel;
+        li.setAttribute('data-level', newLevel);
+        updateTextarea();
+    }
+
+    // Sync DOM to textarea
+    function updateTextarea() {
+        var items = sortableList.querySelectorAll('.sortable-item');
+        var result = [];
+        items.forEach(function(li) {
+            var baseVal = li.getAttribute('data-val'); 
+            var level = li.getAttribute('data-level'); 
+            var title = li.getAttribute('data-title');
+            
+            var str = baseVal + "***" + level;
+            // append title for custom links
+            if (baseVal.includes('_link_') && title) {
+                str += "***" + title;
+            }
+            result.push(str);
+        });
+        document.getElementById('{{ widget.attrs.id }}').value = result.join(',');
+    }
+
+    // Load initial data
+    window.onload = function() {
+        // Lấy ID của textarea thông qua template (đặt trong chuỗi nên VS Code không báo lỗi)
+        var widgetId = '{{ widget.attrs.id }}';
+        var initialData = document.getElementById(widgetId).value;
+        if (initialData) {
+            var items = initialData.split(',');
+            // Đọc JSON mapData từ script tag để VS Code không bắt lỗi cú pháp object
+            var mapData = JSON.parse(document.getElementById('title-map-data').textContent);
+            
+            items.forEach(function(item) {
+                if (!item.trim()) return;
+                var parts = item.split('***');
+                var idOrUrl = parts[0];
+                var type = parts[1];
+                var level = parts[2] || '0';
+                
+                var title = mapData[idOrUrl] || idOrUrl;
+                var isCustom = false;
+                
+                if (type === '_link_') {
+                    isCustom = true;
+                    if (parts.length > 3) {
+                        title = parts[3]; 
+                    }
+                }
+                
+                addMenuItem(idOrUrl + "***" + type, title, level, isCustom);
+            });
+        }
+    };
+</script>
