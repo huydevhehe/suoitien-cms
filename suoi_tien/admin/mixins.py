@@ -167,7 +167,9 @@ class StatusSwitchAdminMixin:
             from django.db import models
             from ..widgets import StatusSwitchWidget
             is_char = isinstance(db_field, (models.CharField, models.TextField))
-            kwargs['widget'] = StatusSwitchWidget(is_char=is_char)
+            # ticlock bị ngược logic (0 = Duyệt/Hiện, 1 = Khóa/Ẩn)
+            is_reversed = (db_field.name == 'ticlock')
+            kwargs['widget'] = StatusSwitchWidget(is_char=is_char, reversed=is_reversed)
             return db_field.formfield(**kwargs)
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
