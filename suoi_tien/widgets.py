@@ -487,11 +487,8 @@ class StatusSwitchWidget(UnfoldBooleanSwitchWidget):
     def __init__(self, is_char=False, attrs=None):
         self.is_char = is_char
         super().__init__(attrs)
-
-    def format_value(self, value):
-        if value in (1, '1', True, 'True'):
-            return True
-        return False
+        # Ghi đè check_test vì UnfoldBooleanSwitchWidget mặc định ép None cho CheckboxInput
+        self.check_test = lambda v: str(v) in ('1', 'True', 'true')
 
     def value_from_datadict(self, data, files, name):
         val = super().value_from_datadict(data, files, name)
