@@ -23,19 +23,31 @@ class PostDisplayMixin:
 
     def get_image(self, obj):
         if obj.post_image:
-            local_path = os.path.join(settings.MEDIA_ROOT, obj.post_image)
+            name = obj.post_image.split('/')[-1] if '/' in obj.post_image else obj.post_image
+            
+            # Thử đường dẫn gốc
+            local_path = os.path.join(settings.MEDIA_ROOT, obj.post_image.lstrip('/'))
+            url = f"{settings.MEDIA_URL}{obj.post_image.lstrip('/')}"
+            
+            # Nếu không thấy, thử tìm file nằm phẳng trong media/
+            if not os.path.exists(local_path):
+                fallback_path = os.path.join(settings.MEDIA_ROOT, name)
+                if os.path.exists(fallback_path):
+                    local_path = fallback_path
+                    url = f"{settings.MEDIA_URL}{name}"
+
             if os.path.exists(local_path):
-                url = f"{settings.MEDIA_URL}{obj.post_image}"
+                return format_html('<img src="{}" width="40" height="40" style="object-fit:cover; border-radius:50%;" />', url)
             else:
                 # Ảnh không tồn tại ở local → hiển thị placeholder SVG (không gọi mạng)
-                url = (
+                placeholder = (
                     "data:image/svg+xml;utf8,"
                     "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'>"
                     "<rect width='40' height='40' rx='20' fill='%23e5e7eb'/>"
                     "<text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' "
                     "font-size='16' fill='%239ca3af'>?</text></svg>"
                 )
-            return format_html('<img src="{}" width="40" height="40" style="object-fit:cover; border-radius:50%;" />', url)
+                return format_html('<img src="{}" width="40" height="40" style="object-fit:cover; border-radius:50%;" />', placeholder)
         return ''
     get_image.short_description = 'Ảnh'
 

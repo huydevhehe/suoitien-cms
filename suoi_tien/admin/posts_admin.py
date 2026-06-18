@@ -109,19 +109,30 @@ class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, 
     def get_filename(self, obj):
         if obj.file_vn:
             name = obj.file_vn.split('/')[-1] if '/' in obj.file_vn else obj.file_vn
-            local_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn)
+            
+            # Thử đường dẫn gốc
+            local_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn.lstrip('/'))
+            url = f"{settings.MEDIA_URL}{obj.file_vn.lstrip('/')}"
+            
+            # Nếu không thấy, thử tìm file rác nằm trực tiếp trong thư mục media/ (do migrate từ PHP)
+            if not os.path.exists(local_path):
+                fallback_path = os.path.join(settings.MEDIA_ROOT, name)
+                if os.path.exists(fallback_path):
+                    local_path = fallback_path
+                    url = f"{settings.MEDIA_URL}{name}"
+
             if os.path.exists(local_path):
-                url = f"{settings.MEDIA_URL}{obj.file_vn}"
+                return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', url, name)
             else:
                 # File không tồn tại ở local → hiển thị placeholder SVG (không gọi mạng)
-                url = (
+                placeholder = (
                     "data:image/svg+xml;utf8,"
                     "<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'>"
                     "<rect width='30' height='30' rx='4' fill='%23e5e7eb'/>"
                     "<text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' "
                     "font-size='12' fill='%239ca3af'>?</text></svg>"
                 )
-            return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', url, name)
+                return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', placeholder, name)
         return obj.title_vn
     get_filename.short_description = 'Tên tập tin'
 
