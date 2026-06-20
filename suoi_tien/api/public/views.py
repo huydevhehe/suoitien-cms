@@ -21,19 +21,29 @@ from .throttles import PublicWriteThrottle
 WEBSITE_SETTINGS_PK = 1
 
 
-class WebsiteSettingsView(generics.RetrieveAPIView):
+class PublicAPIMixin:
+    """
+    Mọi API Public đều mở cho khách vãng lai (không đăng nhập), nên KHÔNG gắn
+    bất kỳ cơ chế xác thực nào (không JWT, không session) — tránh Swagger hiển
+    thị nhầm icon khóa khiến người test tưởng phải có token mới gọi được.
+    Việc sửa/xóa dữ liệu của người khác vẫn chỉ thực hiện được qua API Admin
+    (IsAdminUser) — API Public chỉ có hành động đọc (GET) và tạo mới (POST).
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+
+class WebsiteSettingsView(PublicAPIMixin, generics.RetrieveAPIView):
     """Cấu hình chung của website: liên hệ, mạng xã hội, SEO trang chủ."""
     queryset = HalinkWebsite.objects.all()
     serializer_class = WebsiteSettingsSerializer
-    permission_classes = [AllowAny]
 
     def get_object(self):
         return generics.get_object_or_404(self.get_queryset(), pk=WEBSITE_SETTINGS_PK)
 
 
-class MenuListView(APIView):
+class MenuListView(PublicAPIMixin, APIView):
     """Trả về danh sách menu đã dựng sẵn dạng cây, sẵn sàng để FE render."""
-    permission_classes = [AllowAny]
 
     @extend_schema(responses=MenuSerializer(many=True))
     def get(self, request):
@@ -49,11 +59,10 @@ class MenuListView(APIView):
         return Response(data)
 
 
-class BannerListView(generics.ListAPIView):
+class BannerListView(PublicAPIMixin, generics.ListAPIView):
     """Banner/Slideshow đang hiển thị (dùng cho trang chủ, combo khuyến mãi)."""
     queryset = HalinkFlash.objects.filter(ticlock=0)
     serializer_class = BannerSerializer
-    permission_classes = [AllowAny]
 
 
 @extend_schema_view(
@@ -68,14 +77,13 @@ class BannerListView(generics.ListAPIView):
         ),
     ]),
 )
-class PostViewSet(viewsets.ReadOnlyModelViewSet):
+class PostViewSet(PublicAPIMixin, viewsets.ReadOnlyModelViewSet):
     """
     Nội dung công khai: bài viết / trang tĩnh / sản phẩm / chuyên mục.
     Lọc theo `post_type` và `idcat`, tìm kiếm theo `search`.
     Tra chi tiết theo `alias` (slug) để FE có URL đẹp.
     """
     serializer_class = PostSummarySerializer
-    permission_classes = [AllowAny]
     lookup_field = 'alias'
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['title_vn', 'description_vn']
@@ -107,12 +115,11 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class CommentListCreateView(generics.ListCreateAPIView):
+class CommentListCreateView(PublicAPIMixin, generics.ListCreateAPIView):
     """
     GET: Bình luận/đánh giá ĐÃ DUYỆT của một bài viết hoặc sản phẩm (?id_post=).
     POST: Gửi bình luận mới dạng khách. Bình luận mới luôn ở trạng thái chờ duyệt.
     """
-    permission_classes = [AllowAny]
 
     def get_throttles(self):
         if self.request.method == 'POST':
@@ -144,9 +151,8 @@ class CommentListCreateView(generics.ListCreateAPIView):
         )
 
 
-class _PublicWriteCreateView(generics.CreateAPIView):
+class _PublicWriteCreateView(PublicAPIMixin, generics.CreateAPIView):
     """Lớp cơ sở dùng chung cho mọi API ghi dữ liệu công khai (guest)."""
-    permission_classes = [AllowAny]
     throttle_classes = [PublicWriteThrottle]
 
 
@@ -168,9 +174,8 @@ class TicketOrderCreateView(_PublicWriteCreateView):
         )
 
 
-class TicketOrderLookupView(APIView):
+class TicketOrderLookupView(PublicAPIMixin, APIView):
     """Tra cứu đơn vé theo mã đơn + số điện thoại đã dùng để đặt."""
-    permission_classes = [AllowAny]
 
     @extend_schema(
         parameters=[
