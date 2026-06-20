@@ -1,0 +1,61 @@
+from django.urls import path, include
+from rest_framework.permissions import AllowAny
+from rest_framework.routers import DefaultRouter
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
+from .views import (
+    WebsiteSettingsView, MenuListView, BannerListView, PostViewSet,
+    CommentListCreateView, TicketOrderCreateView, TicketOrderLookupView,
+    FoodOrderCreateView, SupportCreateView,
+)
+
+router = DefaultRouter()
+router.register(r'posts', PostViewSet, basename='public-post')
+
+# Swagger/Redoc riêng cho API Public: chỉ quét đúng các endpoint trong file này
+# (không lẫn API Admin), ai cũng xem được (AllowAny) để FE/sếp test trực tiếp.
+# SERVERS trỏ vào "/api/public/" để nút "Try it out" gọi đúng URL thật.
+PUBLIC_SCHEMA_SETTINGS = {
+    'TITLE': 'Suối Tiên - Public API (Frontend)',
+    'DESCRIPTION': 'API công khai, không cần đăng nhập, dùng cho Frontend khách (suoitien.vercel.app).',
+    'SERVERS': [{'url': '/api/public'}],
+    'SECURITY': [],
+}
+
+urlpatterns = [
+    path(
+        'schema/',
+        SpectacularAPIView.as_view(
+            urlconf='suoi_tien.api.public.urls',
+            permission_classes=[AllowAny],
+            custom_settings=PUBLIC_SCHEMA_SETTINGS,
+        ),
+        name='public-schema',
+    ),
+    path(
+        'schema/swagger-ui/',
+        SpectacularSwaggerView.as_view(url_name='public-schema', permission_classes=[AllowAny]),
+        name='public-swagger-ui',
+    ),
+    path(
+        'schema/redoc/',
+        SpectacularRedocView.as_view(url_name='public-schema', permission_classes=[AllowAny]),
+        name='public-redoc',
+    ),
+
+    path('settings/', WebsiteSettingsView.as_view(), name='public-settings'),
+    path('menus/', MenuListView.as_view(), name='public-menus'),
+    path('banners/', BannerListView.as_view(), name='public-banners'),
+    path('comments/', CommentListCreateView.as_view(), name='public-comments'),
+
+    path('ticket-orders/', TicketOrderCreateView.as_view(), name='public-ticket-order-create'),
+    path('ticket-orders/lookup/', TicketOrderLookupView.as_view(), name='public-ticket-order-lookup'),
+    path('food-orders/', FoodOrderCreateView.as_view(), name='public-food-order-create'),
+    path('supports/', SupportCreateView.as_view(), name='public-support-create'),
+
+    path('', include(router.urls)),
+]

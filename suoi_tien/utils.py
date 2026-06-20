@@ -28,6 +28,21 @@ def clean_lang(text):
     return text.strip()
 
 
+def build_media_url(request, filename):
+    """
+    Ghép tên file lưu trong DB (vd: "0012-11zon.webp") thành URL tuyệt đối
+    trỏ tới MEDIA_URL, để FE không cần tự suy ra đường dẫn ảnh.
+    """
+    from django.conf import settings
+
+    if not filename:
+        return None
+    relative_url = f"{settings.MEDIA_URL}{filename}"
+    if request is not None:
+        return request.build_absolute_uri(relative_url)
+    return relative_url
+
+
 def paginate_queryset(request, queryset, per_page=20):
     """
     Helper function dùng chung để phân trang cho QuerySet

@@ -26,6 +26,9 @@ urlpatterns = [
     # API endpoints & Swagger
     path('api/', include('suoi_tien.api.urls')),
 
+    # API Public — dùng cho Frontend khách (không cần đăng nhập)
+    path('api/public/', include('suoi_tien.api.public.urls')),
+
     # Trang cấu hình giao diện & Widgets kéo thả
     path('admin/suoi_tien/themes/', admin.site.admin_view(suoi_tien_views.theme_info_view), name='admin_theme_info'),
     path('admin/suoi_tien/widgets/', admin.site.admin_view(suoi_tien_views.widgets_view), name='admin_widgets'),

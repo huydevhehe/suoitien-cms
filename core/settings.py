@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.forms',
+    'corsheaders',
     'suoi_tien',
     'rest_framework',
     'drf_spectacular',
@@ -51,12 +52,25 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Danh sách domain Frontend được phép gọi API bằng CORS.
+# Khai báo qua biến môi trường CORS_ALLOWED_ORIGINS (phân tách bằng dấu phẩy),
+# luôn có sẵn localhost cho môi trường phát triển.
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'CORS_ALLOWED_ORIGINS',
+        'https://suoitien.vercel.app,http://localhost:3000'
+    ).split(',')
+    if origin.strip()
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -283,7 +297,18 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # Cho phép Admin đã đăng nhập session /admin/ (cùng trình duyệt) xem
+        # trực tiếp Swagger Admin (/api/schema/swagger-ui/) mà không cần tự
+        # tay đính kèm JWT Bearer token.
+        'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',
+        'public_write': '20/min',
+    },
 }
 
 SPECTACULAR_SETTINGS = {
