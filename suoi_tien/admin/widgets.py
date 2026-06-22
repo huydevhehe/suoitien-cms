@@ -10,9 +10,9 @@ class MenuBuilderWidget(forms.Textarea):
         context = super().get_context(name, value, attrs)
         
         # Lấy danh sách các trang, chuyên mục để hiển thị ở cột trái
-        pages = list(HalinkPost.objects.filter(post_type='page', ticlock=1).values('Id', 'title_vn'))
-        post_cats = list(HalinkPost.objects.filter(post_type='postcat', ticlock=1).values('Id', 'title_vn'))
-        product_cats = list(HalinkPost.objects.filter(post_type='productcat', ticlock=1).values('Id', 'title_vn'))
+        pages = list(HalinkPost.objects.filter(post_type='page', ticlock='0').values('Id', 'title_vn'))
+        post_cats = list(HalinkPost.objects.filter(post_type='postcat', ticlock='0').values('Id', 'title_vn'))
+        product_cats = list(HalinkPost.objects.filter(post_type='productcat', ticlock='0').values('Id', 'title_vn'))
         
         # Load toàn bộ bài viết, chuyên mục vào map để luôn dịch được ID -> Tên
         title_map = {}

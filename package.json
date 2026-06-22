@@ -1,0 +1,12 @@
+{
+  "name": "suoitien-e2e",
+  "version": "1.0.0",
+  "scripts": {
+    "test:ui": "playwright test --ui",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.0.0"
+  }
+}
