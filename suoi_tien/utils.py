@@ -1,30 +1,33 @@
 import re
 
-def clean_lang(text):
+def clean_lang(text, lang='vi'):
     """
     Hàm bóc tách ngôn ngữ từ chuỗi định dạng của CMS cũ:
     [[[:vi]]]Tiêu đề tiếng Việt[[[:end_vi]]][[[:en]]]English Title[[[:end_en]]]
+
+    `lang` chọn ngôn ngữ ưu tiên ('vi' hoặc 'en'); nếu bài chưa dịch sang
+    ngôn ngữ đó thì tự fallback sang ngôn ngữ còn lại để không bao giờ trả rỗng.
     """
     if not text:
         return ""
     if not isinstance(text, str):
         return text
-        
-    # Tìm kiếm nội dung tiếng Việt
-    vi_match = re.search(r'\[\[\[:vi\]\]\](.*?)\[\[\[:end_vi\]\]\]', text, re.DOTALL)
-    if vi_match:
-        return vi_match.group(1).strip()
-        
-    # Nếu không có tiếng Việt, tìm tiếng Anh làm fallback
-    en_match = re.search(r'\[\[\[:en\]\]\](.*?)\[\[\[:end_en\]\]\]', text, re.DOTALL)
-    if en_match:
-        return en_match.group(1).strip()
-        
+
+    primary, fallback = ('en', 'vi') if lang == 'en' else ('vi', 'en')
+
+    primary_match = re.search(rf'\[\[\[:{primary}\]\]\](.*?)\[\[\[:end_{primary}\]\]\]', text, re.DOTALL)
+    if primary_match:
+        return primary_match.group(1).strip()
+
+    fallback_match = re.search(rf'\[\[\[:{fallback}\]\]\](.*?)\[\[\[:end_{fallback}\]\]\]', text, re.DOTALL)
+    if fallback_match:
+        return fallback_match.group(1).strip()
+
     # Nếu có các thẻ ngôn ngữ khác nhưng không phải vi/en, loại bỏ toàn bộ thẻ và trả về
     if '[[[:' in text:
         cleaned = re.sub(r'\[\[\[:[a-z_]+\]\]\]|\[\[\[:end_[a-z_]+\]\]\]', '', text)
         return cleaned.strip()
-        
+
     return text.strip()
 
 

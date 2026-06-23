@@ -8,15 +8,69 @@ from suoi_tien.models import (
     HalinkWebsite, HalinkFlash, HalinkPost, HalinkCart,
     TicketOrderProxy, FoodOrderProxy, CommentProxy, SupportProxy,
 )
-from suoi_tien.utils import build_media_url
+from suoi_tien.utils import build_media_url, clean_lang
+
+SUPPORTED_LANGS = ('vi', 'en')
+
+
+def get_request_lang(context):
+    """Đọc ?lang=vi|en từ request trong serializer context, mặc định 'vi'."""
+    request = context.get('request')
+    lang = request.query_params.get('lang', 'vi') if request is not None else 'vi'
+    return lang if lang in SUPPORTED_LANGS else 'vi'
 
 PRODUCT_SEPARATOR = '***+++***'
 USER_INFO_SEPARATOR = '***+++***'
 GUEST_USER_INDEX = 'null'
 
-# Trạng thái mặc định cho đơn mới do khách tự đặt (xem suoi_tien/admin/orders_admin.py).
+# Trạng thái mặc định cho đơn mới do khách tự đặt (xem suoi_tien/admin/ticket_orders_admin.py, food_orders_admin.py).
 ORDER_STATUS_UNPAID = 0
 ORDER_LOCKED_PENDING_REVIEW = 1
+
+# Nhãn trạng thái đơn hàng (đồng bộ map trong suoi_tien/admin/ticket_orders_admin.py).
+ORDER_STATUS_LABELS = {
+    0: 'Chưa thanh toán',
+    1: 'Đang xử lý',
+    3: 'Đã hủy',
+    4: 'Thành công',
+}
+
+
+def get_order_status_label(status):
+    return ORDER_STATUS_LABELS.get(status, 'Không xác định')
+
+
+def parse_ticket_order_items(info_product):
+    """
+    Tách chuỗi info_product (ID***+++***SL***+++***GIÁ, cách nhau bằng dấu phẩy)
+    thành danh sách item kèm tên sản phẩm tra từ HalinkPost. Dùng cho tra cứu đơn.
+    """
+    if not info_product:
+        return []
+
+    raw_items = []
+    for line in info_product.split(','):
+        parts = line.strip().split(PRODUCT_SEPARATOR)
+        if len(parts) == 3:
+            try:
+                raw_items.append((int(parts[0]), int(parts[1]), int(parts[2])))
+            except ValueError:
+                continue
+
+    titles = {
+        post.Id: post.clean_title
+        for post in HalinkPost.objects.filter(Id__in=[pid for pid, _, _ in raw_items])
+    }
+    return [
+        {
+            'post_id': pid,
+            'title': titles.get(pid, 'Sản phẩm đã xóa'),
+            'quantity': qty,
+            'unit_price': price,
+            'line_total': qty * price,
+        }
+        for pid, qty, price in raw_items
+    ]
 
 
 def generate_order_code(prefix):
@@ -25,17 +79,90 @@ def generate_order_code(prefix):
     return f"{prefix}{timestamp}{random_suffix}"
 
 
+def resolve_ticket_items(items):
+    """
+    Validate danh sách {post_id, quantity} và tra giá thật từ HalinkPost.
+    Giá luôn lấy từ DB (post_amount), không tin giá do client gửi lên.
+    """
+    if not items:
+        raise serializers.ValidationError("Đơn hàng phải có ít nhất 1 sản phẩm.")
+
+    post_ids = [item['post_id'] for item in items]
+    products = HalinkPost.objects.filter(
+        Id__in=post_ids, post_type='product', ticlock='0',
+    )
+    products_by_id = {product.Id: product for product in products}
+
+    missing_ids = set(post_ids) - set(products_by_id.keys())
+    if missing_ids:
+        raise serializers.ValidationError(
+            f"Sản phẩm không tồn tại hoặc đã ngừng bán: {sorted(missing_ids)}"
+        )
+
+    resolved_items = []
+    for item in items:
+        product = products_by_id[item['post_id']]
+        resolved_items.append({
+            'post_id': product.Id,
+            'quantity': item['quantity'],
+            'unit_price': product.post_amount,
+        })
+    return resolved_items
+
+
+def build_ticket_order(*, fullname, phone, email='', address='', note='',
+                        dateoforg, type_payment, resolved_items, id_user=None,
+                        voucher_code=''):
+    """
+    Tạo và lưu 1 TicketOrderProxy từ danh sách item đã resolve giá (xem
+    resolve_ticket_items). voucher_code chỉ lưu thô để Admin tự đối soát,
+    KHÔNG tự tính giảm giá (chưa có bảng/quy tắc mã giảm giá).
+    """
+    from django.utils import timezone
+
+    info_product = ','.join(
+        PRODUCT_SEPARATOR.join([
+            str(item['post_id']), str(item['quantity']), str(item['unit_price']),
+        ])
+        for item in resolved_items
+    )
+    info_user = USER_INFO_SEPARATOR.join([
+        GUEST_USER_INDEX,
+        fullname,
+        phone,
+        email,
+        address,
+        note,
+    ])
+
+    cart = TicketOrderProxy(
+        id_cart=generate_order_code('DH'),
+        id_user=id_user,
+        info_product=info_product,
+        info_user=info_user,
+        type_payment=type_payment,
+        voucher_code=voucher_code or None,
+        dateoforg=dateoforg,
+        date=timezone.now(),
+        status=ORDER_STATUS_UNPAID,
+        ticlock=ORDER_LOCKED_PENDING_REVIEW,
+    )
+    cart.save()
+    return cart
+
+
 class WebsiteSettingsSerializer(serializers.ModelSerializer):
     """
-    Thông tin cấu hình website công khai: liên hệ, mạng xã hội, SEO.
-    Không trả các field nội bộ (st_accesstoken, theme, active_chonve...).
+    Thông tin cấu hình website công khai: liên hệ, mạng xã hội, SEO, cờ hiển thị.
+    Ẩn các field nhạy cảm: st_accesstoken, st_accesstoken_ex, theme.
+    Hỗ trợ song ngữ qua ?lang=vi|en (mặc định vi, tự fallback nếu chưa dịch).
     """
-    title = serializers.CharField(source='clean_title', read_only=True)
-    slogan = serializers.CharField(source='clean_slogan', read_only=True)
-    message = serializers.CharField(source='clean_message', read_only=True)
-    description = serializers.CharField(source='clean_description', read_only=True)
-    address = serializers.CharField(source='clean_diachi', read_only=True)
-    company_name = serializers.CharField(source='clean_tencty', read_only=True)
+    title = serializers.SerializerMethodField()
+    slogan = serializers.SerializerMethodField()
+    message = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    company_name = serializers.SerializerMethodField()
     logo_url = serializers.SerializerMethodField()
     favicon_url = serializers.SerializerMethodField()
 
@@ -47,7 +174,26 @@ class WebsiteSettingsSerializer(serializers.ModelSerializer):
             'twitter', 'google', 'instagram', 'linkedin', 'googlemap',
             'opentime', 'closetime', 'logo_url', 'favicon_url',
             'googleanalytics', 'schema_home',
+            'thugon_menu', 'active_chonve', 'enable', 'stamp',
         ]
+
+    def get_title(self, obj) -> str:
+        return clean_lang(obj.title, get_request_lang(self.context))
+
+    def get_slogan(self, obj) -> str:
+        return clean_lang(obj.slogan, get_request_lang(self.context))
+
+    def get_message(self, obj) -> str:
+        return clean_lang(obj.message, get_request_lang(self.context))
+
+    def get_description(self, obj) -> str:
+        return clean_lang(obj.description, get_request_lang(self.context))
+
+    def get_address(self, obj) -> str:
+        return clean_lang(obj.diachi, get_request_lang(self.context))
+
+    def get_company_name(self, obj) -> str:
+        return clean_lang(obj.tencty, get_request_lang(self.context))
 
     def get_logo_url(self, obj) -> str | None:
         return build_media_url(self.context.get('request'), obj.logo)
@@ -57,13 +203,20 @@ class WebsiteSettingsSerializer(serializers.ModelSerializer):
 
 
 class BannerSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(source='clean_title', read_only=True)
-    description = serializers.CharField(source='description_vn', read_only=True)
+    """Hỗ trợ song ngữ qua ?lang=vi|en cho title/description."""
+    title = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = HalinkFlash
-        fields = ['Id', 'title', 'description', 'image_url', 'link', 'width', 'height']
+        fields = ['Id', 'title', 'description', 'image_url', 'link', 'width', 'height', 'date']
+
+    def get_title(self, obj) -> str:
+        return clean_lang(obj.title_vn, get_request_lang(self.context))
+
+    def get_description(self, obj) -> str:
+        return clean_lang(obj.description_vn, get_request_lang(self.context))
 
     def get_image_url(self, obj) -> str | None:
         return build_media_url(self.context.get('request'), obj.file_vn)
@@ -87,31 +240,43 @@ class MenuSerializer(serializers.Serializer):
 
 
 class PostSummarySerializer(serializers.ModelSerializer):
-    """Dữ liệu rút gọn dùng cho danh sách bài viết/trang/sản phẩm."""
-    title = serializers.CharField(source='clean_title', read_only=True)
-    description = serializers.CharField(source='clean_description', read_only=True)
+    """Dữ liệu rút gọn dùng cho danh sách bài viết/trang/sản phẩm. Hỗ trợ ?lang=vi|en."""
+    title = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = HalinkPost
         fields = [
             'Id', 'title', 'alias', 'description', 'image_url', 'post_type',
-            'post_amount', 'home', 'sort', 'date', 'post_views',
+            'post_amount', 'home', 'sort', 'date', 'post_views', 'idcat',
         ]
+
+    def get_title(self, obj) -> str:
+        return clean_lang(obj.title_vn, get_request_lang(self.context))
+
+    def get_description(self, obj) -> str:
+        return clean_lang(obj.description_vn, get_request_lang(self.context))
 
     def get_image_url(self, obj) -> str | None:
         return build_media_url(self.context.get('request'), obj.post_image)
 
 
 class PostDetailSerializer(PostSummarySerializer):
-    """Dữ liệu đầy đủ dùng cho trang chi tiết, gồm nội dung và SEO."""
-    content = serializers.CharField(source='clean_content', read_only=True)
+    """Dữ liệu đầy đủ dùng cho trang chi tiết: nội dung, SEO, banner, cờ hiển thị."""
+    content = serializers.SerializerMethodField()
     gallery_urls = serializers.SerializerMethodField()
+    banner_url = serializers.SerializerMethodField()
+    sidebar = serializers.CharField(source='post_sidebar', read_only=True)
+
+    def get_content(self, obj) -> str:
+        return clean_lang(obj.content_vn, get_request_lang(self.context))
 
     class Meta(PostSummarySerializer.Meta):
         fields = PostSummarySerializer.Meta.fields + [
-            'content', 'gallery_urls', 'idcat', 'post_tags',
+            'content', 'gallery_urls', 'banner_url', 'sidebar', 'post_tags',
             'meta_title', 'meta_keyword', 'meta_description', 'schema_org',
+            'fullwidth', 'status', 'post_type_show', 'id_user',
         ]
 
     def get_gallery_urls(self, obj) -> list[str]:
@@ -120,6 +285,9 @@ class PostDetailSerializer(PostSummarySerializer):
         request = self.context.get('request')
         filenames = [name.strip() for name in obj.post_gallery.split(',') if name.strip()]
         return [build_media_url(request, name) for name in filenames]
+
+    def get_banner_url(self, obj) -> str | None:
+        return build_media_url(self.context.get('request'), obj.post_banner)
 
 
 class CommentSerializer(serializers.Serializer):
@@ -165,70 +333,57 @@ class TicketOrderCreateSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default='')
     dateoforg = serializers.CharField(max_length=255)
     type_payment = serializers.IntegerField(min_value=0, max_value=5)
+    voucher_code = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
     items = TicketItemInputSerializer(many=True)
 
     def validate_items(self, items):
-        if not items:
-            raise serializers.ValidationError("Đơn hàng phải có ít nhất 1 sản phẩm.")
-
-        post_ids = [item['post_id'] for item in items]
-        products = HalinkPost.objects.filter(
-            Id__in=post_ids, post_type='product', ticlock='0',
-        )
-        products_by_id = {product.Id: product for product in products}
-
-        missing_ids = set(post_ids) - set(products_by_id.keys())
-        if missing_ids:
-            raise serializers.ValidationError(
-                f"Sản phẩm không tồn tại hoặc đã ngừng bán: {sorted(missing_ids)}"
-            )
-
-        resolved_items = []
-        for item in items:
-            product = products_by_id[item['post_id']]
-            resolved_items.append({
-                'post_id': product.Id,
-                'quantity': item['quantity'],
-                'unit_price': product.post_amount,
-            })
-        return resolved_items
+        return resolve_ticket_items(items)
 
     def create(self, validated_data):
-        info_product = ','.join(
-            PRODUCT_SEPARATOR.join([
-                str(item['post_id']), str(item['quantity']), str(item['unit_price']),
-            ])
-            for item in validated_data['items']
-        )
-        info_user = USER_INFO_SEPARATOR.join([
-            GUEST_USER_INDEX,
-            validated_data['fullname'],
-            validated_data['phone'],
-            validated_data.get('email', ''),
-            validated_data.get('address', ''),
-            validated_data.get('note', ''),
-        ])
-
-        from django.utils import timezone
-        cart = TicketOrderProxy(
-            id_cart=generate_order_code('DH'),
-            info_product=info_product,
-            info_user=info_user,
-            type_payment=validated_data['type_payment'],
+        return build_ticket_order(
+            fullname=validated_data['fullname'],
+            phone=validated_data['phone'],
+            email=validated_data.get('email', ''),
+            address=validated_data.get('address', ''),
+            note=validated_data.get('note', ''),
             dateoforg=validated_data['dateoforg'],
-            date=timezone.now(),
-            status=ORDER_STATUS_UNPAID,
-            ticlock=ORDER_LOCKED_PENDING_REVIEW,
+            type_payment=validated_data['type_payment'],
+            voucher_code=validated_data.get('voucher_code', ''),
+            resolved_items=validated_data['items'],
         )
-        cart.save()
-        return cart
 
 
 class TicketOrderLookupResultSerializer(serializers.Serializer):
+    """Tra cứu đơn vé — trả đầy đủ thông tin đơn + danh sách item để FE hiển thị."""
     id_cart = serializers.CharField()
     date = serializers.DateTimeField()
     status = serializers.IntegerField()
+    status_label = serializers.SerializerMethodField()
     total_price = serializers.CharField(source='computed_total_price_formatted')
+    type_payment = serializers.IntegerField()
+    dateoforg = serializers.CharField()
+    voucher_code = serializers.CharField()
+    note_for_user = serializers.CharField()
+    fullname = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+    items = serializers.SerializerMethodField()
+
+    def get_status_label(self, obj) -> str:
+        return get_order_status_label(obj.status)
+
+    def _info_user_parts(self, obj):
+        return (obj.info_user or '').split(USER_INFO_SEPARATOR)
+
+    def get_fullname(self, obj) -> str:
+        parts = self._info_user_parts(obj)
+        return parts[1] if len(parts) > 1 else ''
+
+    def get_phone(self, obj) -> str:
+        parts = self._info_user_parts(obj)
+        return parts[2] if len(parts) > 2 else ''
+
+    def get_items(self, obj) -> list:
+        return parse_ticket_order_items(obj.info_product)
 
 
 class FoodItemInputSerializer(serializers.Serializer):

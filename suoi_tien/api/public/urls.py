@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -11,6 +12,10 @@ from .views import (
     WebsiteSettingsView, MenuListView, BannerListView, PostViewSet,
     CommentListCreateView, TicketOrderCreateView, TicketOrderLookupView,
     FoodOrderCreateView, SupportCreateView,
+)
+from .auth_views import (
+    CustomerRegisterView, CustomerLoginView, CustomerProfileView,
+    ChangePasswordView, CustomerOrderHistoryView,
 )
 
 router = DefaultRouter()
@@ -56,6 +61,15 @@ urlpatterns = [
     path('ticket-orders/lookup/', TicketOrderLookupView.as_view(), name='public-ticket-order-lookup'),
     path('food-orders/', FoodOrderCreateView.as_view(), name='public-food-order-create'),
     path('supports/', SupportCreateView.as_view(), name='public-support-create'),
+
+    # Đăng ký/đăng nhập khách hàng — JWT riêng, tách biệt hoàn toàn JWT Admin
+    # (xem suoi_tien/api/public/customer_auth.py).
+    path('auth/register/', CustomerRegisterView.as_view(), name='public-customer-register'),
+    path('auth/login/', CustomerLoginView.as_view(), name='public-customer-login'),
+    path('auth/token/refresh/', TokenRefreshView.as_view(), name='public-customer-token-refresh'),
+    path('auth/profile/', CustomerProfileView.as_view(), name='public-customer-profile'),
+    path('auth/profile/change-password/', ChangePasswordView.as_view(), name='public-customer-change-password'),
+    path('auth/orders/', CustomerOrderHistoryView.as_view(), name='public-customer-orders'),
 
     path('', include(router.urls)),
 ]

@@ -24,10 +24,11 @@ def _parse_menu_items(content_menu):
     return parsed
 
 
-def build_menu_tree(content_menu):
+def build_menu_tree(content_menu, lang='vi'):
     """
     Dựng cây menu lồng nhau từ chuỗi thô `content_menu` (xem ke_hoach_menu_builder.md):
     mỗi mục có dạng "ID_hoặc_Link***Loại_Menu***Độ_Sâu", ngăn cách bằng dấu phẩy.
+    `lang` ('vi'/'en') chọn ngôn ngữ hiển thị tiêu đề menu trỏ tới bài viết.
     """
     parsed_items = _parse_menu_items(content_menu)
 
@@ -42,7 +43,7 @@ def build_menu_tree(content_menu):
     last_node_at_depth = {}
 
     for target, kind, depth in parsed_items:
-        node = _build_menu_node(target, kind, posts_by_id)
+        node = _build_menu_node(target, kind, posts_by_id, lang)
 
         parent = last_node_at_depth.get(depth - 1)
         if depth == 0 or parent is None:
@@ -57,7 +58,7 @@ def build_menu_tree(content_menu):
     return roots
 
 
-def _build_menu_node(target, kind, posts_by_id):
+def _build_menu_node(target, kind, posts_by_id, lang='vi'):
     node = {'type': kind.strip('_'), 'children': []}
 
     if kind == MENU_KIND_LINK:
@@ -66,7 +67,7 @@ def _build_menu_node(target, kind, posts_by_id):
 
     post = posts_by_id.get(int(target)) if target.isdigit() else None
     if post:
-        node.update(title=clean_lang(post.title_vn), url=None, alias=post.alias, post_id=post.Id)
+        node.update(title=clean_lang(post.title_vn, lang), url=None, alias=post.alias, post_id=post.Id)
     else:
         node.update(title=f"#{target}", url=None, alias=None, post_id=target)
     return node

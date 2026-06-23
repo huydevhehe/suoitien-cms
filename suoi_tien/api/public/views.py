@@ -1,7 +1,8 @@
-from django.db.models import F
+from django.db.models import F, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -9,16 +10,49 @@ from rest_framework.views import APIView
 
 from suoi_tien.models import HalinkWebsite, HalinkFlash, HalinkPost, HalinkMenu
 from suoi_tien.models.proxies import CommentProxy, TicketOrderProxy
+from suoi_tien.utils import clean_lang
 from .menu_tree import build_menu_tree
 from .serializers import (
     WebsiteSettingsSerializer, BannerSerializer, MenuSerializer,
     PostSummarySerializer, PostDetailSerializer, CommentSerializer,
     TicketOrderCreateSerializer, TicketOrderLookupResultSerializer,
     FoodOrderCreateSerializer, SupportCreateSerializer, CommentCreateSerializer,
+    SUPPORTED_LANGS,
 )
 from .throttles import PublicWriteThrottle
 
 WEBSITE_SETTINGS_PK = 1
+
+DEFAULT_RELATED_LIMIT = 4
+MAX_LIMIT = 50
+
+
+def idcat_member_filter(category_id):
+    """
+    Trả về Q lọc bài có `category_id` là 1 phần tử trong chuỗi idcat (nối bằng
+    dấu phẩy, không có phẩy đầu/cuối, vd '701,408,705'). Xét đủ 4 vị trí:
+    đứng một mình / đầu / cuối / giữa — tránh lỗi cũ chỉ khớp ',X,'.
+    """
+    cid = str(category_id)
+    return (
+        Q(idcat=cid)
+        | Q(idcat__startswith=f'{cid},')
+        | Q(idcat__endswith=f',{cid}')
+        | Q(idcat__contains=f',{cid},')
+    )
+
+
+def parse_limit(raw_limit, default=None):
+    """Đọc query param limit, chặn trên MAX_LIMIT. Trả None nếu không hợp lệ/không có."""
+    if raw_limit is None:
+        return default
+    try:
+        value = int(raw_limit)
+    except (TypeError, ValueError):
+        return default
+    if value <= 0:
+        return default
+    return min(value, MAX_LIMIT)
 
 
 class PublicAPIMixin:
@@ -43,16 +77,23 @@ class WebsiteSettingsView(PublicAPIMixin, generics.RetrieveAPIView):
 
 
 class MenuListView(PublicAPIMixin, APIView):
-    """Trả về danh sách menu đã dựng sẵn dạng cây, sẵn sàng để FE render."""
+    """Trả về danh sách menu đã dựng sẵn dạng cây, sẵn sàng để FE render. Hỗ trợ ?lang=vi|en."""
 
-    @extend_schema(responses=MenuSerializer(many=True))
+    @extend_schema(
+        parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                                      description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+        responses=MenuSerializer(many=True),
+    )
     def get(self, request):
+        lang = request.query_params.get('lang', 'vi')
+        lang = lang if lang in SUPPORTED_LANGS else 'vi'
+
         menus = HalinkMenu.objects.filter(ticlock=0)
         data = [
             {
                 'Id': menu.Id,
-                'title': menu.clean_title,
-                'items': build_menu_tree(menu.content_menu),
+                'title': clean_lang(menu.title_cat, lang),
+                'items': build_menu_tree(menu.content_menu, lang),
             }
             for menu in menus
         ]
@@ -73,15 +114,27 @@ class BannerListView(PublicAPIMixin, generics.ListAPIView):
         ),
         OpenApiParameter(
             'idcat', OpenApiTypes.STR, OpenApiParameter.QUERY,
-            description="Lọc theo ID danh mục/chuyên mục cha.",
+            description="Lọc theo ID danh mục/chuyên mục.",
         ),
+        OpenApiParameter(
+            'limit', OpenApiTypes.INT, OpenApiParameter.QUERY,
+            description=f"Giới hạn số bài trả về (tối đa {MAX_LIMIT}).",
+        ),
+        OpenApiParameter(
+            'lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+            description="Ngôn ngữ hiển thị title/description/content: vi hoặc en (mặc định vi).",
+        ),
+    ]),
+    retrieve=extend_schema(parameters=[
+        OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                          description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi)."),
     ]),
 )
 class PostViewSet(PublicAPIMixin, viewsets.ReadOnlyModelViewSet):
     """
     Nội dung công khai: bài viết / trang tĩnh / sản phẩm / chuyên mục.
-    Lọc theo `post_type` và `idcat`, tìm kiếm theo `search`.
-    Tra chi tiết theo `alias` (slug) để FE có URL đẹp.
+    Lọc theo `post_type` và `idcat`, tìm kiếm theo `search`, giới hạn `limit`.
+    Tra chi tiết theo `alias` (slug) để FE có URL đẹp. Hỗ trợ song ngữ qua `?lang=vi|en`.
     """
     serializer_class = PostSummarySerializer
     lookup_field = 'alias'
@@ -98,9 +151,17 @@ class PostViewSet(PublicAPIMixin, viewsets.ReadOnlyModelViewSet):
 
         category_id = self.request.query_params.get('idcat')
         if category_id:
-            queryset = queryset.filter(idcat__contains=f',{category_id},')
+            queryset = queryset.filter(idcat_member_filter(category_id))
 
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        limit = parse_limit(request.query_params.get('limit'))
+        if limit is not None:
+            queryset = queryset[:limit]
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -112,6 +173,44 @@ class PostViewSet(PublicAPIMixin, viewsets.ReadOnlyModelViewSet):
         HalinkPost.objects.filter(pk=instance.pk).update(post_views=F('post_views') + 1)
         instance.refresh_from_db(fields=['post_views'])
         serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'limit', OpenApiTypes.INT, OpenApiParameter.QUERY,
+                description=f"Số bài gợi ý (mặc định {DEFAULT_RELATED_LIMIT}, tối đa {MAX_LIMIT}).",
+            ),
+            OpenApiParameter(
+                'lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).",
+            ),
+        ],
+        responses=PostSummarySerializer(many=True),
+    )
+    def related(self, request, alias=None):
+        """
+        Bài/sản phẩm liên quan: cùng `post_type` + chia sẻ ít nhất 1 chuyên mục
+        `idcat` với bài đang xem, loại bỏ chính nó. Nếu bài hiện tại không có
+        chuyên mục → trả các bài mới nhất cùng `post_type`.
+        """
+        instance = self.get_object()
+        limit = parse_limit(request.query_params.get('limit'), default=DEFAULT_RELATED_LIMIT)
+
+        queryset = HalinkPost.objects.filter(
+            ticlock='0', post_type=instance.post_type,
+        ).exclude(pk=instance.pk)
+
+        category_ids = [c.strip() for c in (instance.idcat or '').split(',') if c.strip()]
+        if category_ids:
+            cat_filter = Q()
+            for cid in category_ids:
+                cat_filter |= idcat_member_filter(cid)
+            queryset = queryset.filter(cat_filter)
+
+        queryset = queryset.order_by('-date')[:limit]
+        serializer = PostSummarySerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
 

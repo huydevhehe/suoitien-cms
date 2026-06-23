@@ -1,25 +1,17 @@
 """
 Quản lý Nội dung: Bài viết, Chuyên mục bài viết, Trang tĩnh,
-Sản phẩm, Chuyên mục sản phẩm, Banner/Quảng cáo, Menu, Cấu hình Website.
+Sản phẩm, Chuyên mục sản phẩm.
 """
-import os
 import time
 
 from django.contrib import admin
 from django import forms
-from django.conf import settings
 from django.db.models import Subquery, OuterRef
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
 from ..models import (
-    HalinkPost,
-    HalinkFlash,
-    HalinkMenu,
     HalinkMeta,
-    HalinkMetabox,
-    HalinkStatistic,
-    HalinkWebsite,
     PostProxy,
     PostCategoryProxy,
     PageProxy,
@@ -38,30 +30,21 @@ from .mixins import (
     JSONSchemaAdminMixin,
     SortableAdminMixin,
 )
-from .widgets import MenuBuilderWidget
 
 # ==================== FORMS ====================
 
-class HalinkMenuForm(forms.ModelForm):
-    class Meta:
-        model = HalinkMenu
-        fields = '__all__'
-        widgets = {
-            'content_menu': MenuBuilderWidget()
-        }
-
 class ProductAdminForm(forms.ModelForm):
     price = forms.IntegerField(
-        label="Giá bán", 
-        required=False, 
+        label="Giá bán",
+        required=False,
         min_value=0,
         widget=forms.NumberInput(attrs={
             'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
         })
     )
     promo_price = forms.IntegerField(
-        label="Giá khuyến mãi", 
-        required=False, 
+        label="Giá khuyến mãi",
+        required=False,
         min_value=0,
         widget=forms.NumberInput(attrs={
             'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
@@ -71,8 +54,8 @@ class ProductAdminForm(forms.ModelForm):
     class Meta:
         model = ProductProxy
         fields = [
-            'title_vn', 'alias', 'description_vn', 'content_vn', 
-            'price', 'promo_price', 'post_image', 'post_gallery', 
+            'title_vn', 'alias', 'description_vn', 'content_vn',
+            'price', 'promo_price', 'post_image', 'post_gallery',
             'idcat', 'sort', 'ticlock', 'home'
         ]
 
@@ -86,7 +69,7 @@ class ProductAdminForm(forms.ModelForm):
                     self.fields['price'].initial = int(price_meta.meta_value)
                 except (ValueError, TypeError):
                     self.fields['price'].initial = price_meta.meta_value
-            
+
             # Truy vấn giá khuyến mãi hiện tại
             promo_meta = HalinkMeta.objects.filter(Id_post=self.instance.pk, meta_title='halink_metabox_gia_khuyen_mai').first()
             if promo_meta and promo_meta.meta_value:
@@ -94,132 +77,6 @@ class ProductAdminForm(forms.ModelForm):
                     self.fields['promo_price'].initial = int(promo_meta.meta_value)
                 except (ValueError, TypeError):
                     self.fields['promo_price'].initial = promo_meta.meta_value
-
-
-# ==================== MODEL ADMINS ====================
-
-# 4. Quản lý Banner & Quảng cáo / Thư viện
-@admin.register(HalinkFlash)
-class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
-    list_per_page = 20
-    list_display = ('get_filename', 'get_dimensions', 'get_size', 'get_status_display', 'get_date_display')
-    search_fields = ('title_vn', 'file_vn', 'link')
-    list_filter = ('ticlock',)
-
-    def get_filename(self, obj):
-        if obj.file_vn:
-            name = obj.file_vn.split('/')[-1] if '/' in obj.file_vn else obj.file_vn
-            
-            # Thử đường dẫn gốc
-            local_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn.lstrip('/'))
-            url = f"{settings.MEDIA_URL}{obj.file_vn.lstrip('/')}"
-            
-            # Nếu không thấy, thử tìm file rác nằm trực tiếp trong thư mục media/ (do migrate từ PHP)
-            if not os.path.exists(local_path):
-                fallback_path = os.path.join(settings.MEDIA_ROOT, name)
-                if os.path.exists(fallback_path):
-                    local_path = fallback_path
-                    url = f"{settings.MEDIA_URL}{name}"
-
-            if os.path.exists(local_path):
-                return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', url, name)
-            else:
-                # File không tồn tại ở local → hiển thị placeholder SVG (không gọi mạng)
-                placeholder = (
-                    "data:image/svg+xml;utf8,"
-                    "<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'>"
-                    "<rect width='30' height='30' rx='4' fill='%23e5e7eb'/>"
-                    "<text x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' "
-                    "font-size='12' fill='%239ca3af'>?</text></svg>"
-                )
-                return format_html('<img src="{}" width="30" height="30" style="object-fit:cover; border-radius:4px; margin-right:10px; vertical-align:middle;"/> {}', placeholder, name)
-        return obj.title_vn
-    get_filename.short_description = 'Tên tập tin'
-
-    def get_dimensions(self, obj):
-        if obj.width and obj.height:
-            return f"{obj.width}x{obj.height} px"
-        return "---"
-    get_dimensions.short_description = 'Kích thước'
-
-    def get_size(self, obj):
-        # Database gốc không lưu dung lượng. PHP cũ đọc trực tiếp dung lượng từ file trong thư mục upload/.
-        # Đoạn code dưới đây giả lập tính năng đó của PHP: nếu có file thực tế trên server, nó sẽ tính ra dung lượng.
-        if obj.file_vn:
-            file_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn.replace('/', '\\'))
-            if os.path.exists(file_path):
-                try:
-                    size_bytes = os.path.getsize(file_path)
-                    if size_bytes >= 1048576:
-                        return f"{size_bytes / 1048576:.0f} MB"
-                    return f"{size_bytes / 1024:.0f} KB"
-                except:
-                    pass
-        return "---"
-    get_size.short_description = 'Dung lượng'
-
-# 5. Quản lý Menu
-@admin.register(HalinkMenu)
-class HalinkMenuAdmin(StatusSwitchAdminMixin, PostDisplayMixin, MultiLangAdminMixin, ModelAdmin):
-    form = HalinkMenuForm
-    list_per_page = 20
-    list_display = ('Id', 'get_clean_title', 'id_cat', 'get_status_display')
-    search_fields = ('title_cat',)
-    list_filter = ('ticlock',)
-
-# 6. Cấu hình Website
-@admin.register(HalinkWebsite)
-class HalinkWebsiteAdmin(JSONSchemaAdminMixin, StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
-    list_per_page = 20
-    list_display = ('id', 'get_clean_title', 'hotline', 'email', 'get_clean_diachi')
-    search_fields = ('title', 'email', 'hotline')
-    
-    fieldsets = (
-        ('Nhận dạng site', {
-            'classes': ('tab',),
-            'fields': ('tencty', 'slogan', 'logo', 'fav', 'opentime', 'closetime'),
-        }),
-        ('Cấu hình Địa chỉ/Mạng xã hội', {
-            'classes': ('tab',),
-            'fields': ('hotline', 'hotline2', 'email', 'diachi', 'fanpage', 'youtube', 'twitter', 'google', 'instagram', 'linkedin'),
-        }),
-        ('Cấu hình SEO', {
-            'classes': ('tab',),
-            'fields': ('title', 'keyword', 'description', 'googleanalytics', 'googlemap', 'schema_home'),
-        }),
-        ('Cấu hình hệ thống', {
-            'classes': ('tab',),
-            'fields': ('enable', 'thugon_menu', 'theme', 'st_accesstoken', 'st_accesstoken_ex'),
-        }),
-    )
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-# 7. Thống kê truy cập
-@admin.register(HalinkStatistic)
-class HalinkStatisticAdmin(ModelAdmin):
-    list_per_page = 20
-    list_display = ('id', 'ip', 'id_post', 'url', 'browser', 'date')
-    search_fields = ('ip', 'url')
-    list_filter = ('date', 'browser')
-
-# 8. Cấu hình Metabox và Meta
-@admin.register(HalinkMetabox)
-class HalinkMetaboxAdmin(ModelAdmin):
-    list_per_page = 20
-    list_display = ('Id', 'meta_title', 'meta_key', 'meta_type', 'post_type', 'ticlock')
-    search_fields = ('meta_title', 'meta_key')
-
-@admin.register(HalinkMeta)
-class HalinkMetaAdmin(ModelAdmin):
-    list_per_page = 20
-    list_display = ('Id', 'Id_post', 'meta_title', 'meta_type', 'date', 'ticlock')
-    search_fields = ('meta_title', 'meta_value')
-    list_filter = ('meta_type', 'ticlock')
 
 
 # ==============================================================================
@@ -250,7 +107,7 @@ class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdmin
 class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'postcat'
     list_per_page = 20
-    
+
     def display_hierarchical_title(self, obj):
         if obj.idcat:
             return format_html('<span style="color: #a78bfa; font-weight: bold;">|— </span>{}', obj.clean_title)
@@ -311,7 +168,7 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             Id_post=OuterRef('Id'),
             meta_title='halink_metabox_gia_khuyen_mai'
         ).values('meta_value')[:1]
-        
+
         return super().get_queryset(request).filter(post_type='product').annotate(
             price_val=Subquery(price_subquery),
             promo_val=Subquery(promo_subquery)
@@ -320,7 +177,7 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
     def get_price(self, obj):
         p_str = getattr(obj, 'price_val', None)
         pr_str = getattr(obj, 'promo_val', None)
-        
+
         p_val = 0
         pr_val = 0
         if p_str:
@@ -342,7 +199,7 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             )
         elif p_val > 0:
             return format_html('<span style="font-weight: 500;">{} đ</span>', f"{p_val:,}")
-        
+
         if p_str:
             return p_str
         return "Liên hệ"
@@ -382,13 +239,13 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
 @admin.register(ProductCategoryProxy)
 class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'
-    
+
     def display_hierarchical_title(self, obj):
         if obj.idcat:
             return format_html('<span style="color: #a78bfa; font-weight: bold;">|— </span>{}', obj.clean_title)
         return obj.clean_title
     display_hierarchical_title.short_description = "Tiêu đề"
-    
+
     list_display = ('get_image', 'display_hierarchical_title', 'alias', 'display_sort_actions', 'get_status_display', 'get_date_display')
     list_display_links = ('get_image', 'display_hierarchical_title')
     search_fields = ('title_vn', 'alias')

@@ -218,12 +218,12 @@ def parse_theme_info(theme_key):
         'author_theme': 'Halink',
         'screenshot_url': f'/static/halink-content/themes/{theme_key}/screenshot.png'
     }
-    
+
     if os.path.exists(functions_path):
         try:
             with open(functions_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
-            
+
             # Phân tích hàm setup để lấy meta
             setup_match = re.search(r'function\s+setup\s*\(\s*\)\s*\{(.*?)\}', content, re.DOTALL)
             if setup_match:
@@ -234,23 +234,23 @@ def parse_theme_info(theme_key):
                         theme_info[key] = match.group(1)
         except Exception:
             pass
-            
+
     # Kiểm tra screenshot thực tế
     screenshot_jpg = BASE_DIR / 'public_html' / 'halink-content' / 'themes' / theme_key / 'screenshot.jpg'
     if os.path.exists(screenshot_jpg):
         theme_info['screenshot_url'] = f'/static/halink-content/themes/{theme_key}/screenshot.jpg'
-        
+
     return theme_info
 
 def parse_sidebars_from_theme(theme_key):
     functions_path = BASE_DIR / 'public_html' / 'halink-content' / 'themes' / theme_key / 'functions.php'
     sidebars = []
-    
+
     if os.path.exists(functions_path):
         try:
             with open(functions_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
-            
+
             setup_match = re.search(r'function\s+halink_widgets_setup\s*\(\s*\)\s*\{(.*?)\}', content, re.DOTALL)
             if setup_match:
                 body = setup_match.group(1)
@@ -258,7 +258,7 @@ def parse_sidebars_from_theme(theme_key):
                 arrays = re.findall(r'array\s*\((.*?)\)', body, re.DOTALL)
                 if not arrays:
                     arrays = re.findall(r'\[(.*?)\]', body, re.DOTALL)
-                    
+
                 for arr in arrays:
                     name_m = re.search(r"'(?:name|title)'\s*=>\s*'([^']*)'", arr)
                     id_m = re.search(r"'id'\s*=>\s*'([^']*)'", arr)
@@ -269,7 +269,7 @@ def parse_sidebars_from_theme(theme_key):
                         })
         except Exception:
             pass
-            
+
     # Fallback nếu không parse được hoặc rỗng
     if not sidebars:
         sidebars = [
@@ -303,7 +303,7 @@ def theme_info_view(request):
 def widgets_view(request):
     theme_key = get_active_theme()
     sidebars = parse_sidebars_from_theme(theme_key)
-    
+
     # Lấy cấu hình các widget từ database
     widgets_meta = HalinkMeta.objects.filter(meta_type='widgets').first()
     sidebar_mapping = {}
@@ -312,7 +312,7 @@ def widgets_view(request):
             sidebar_mapping = json.loads(widgets_meta.meta_value)
         except Exception:
             pass
-            
+
     # Lấy nội dung chi tiết của các widget đang lưu trong DB
     content_meta = HalinkMeta.objects.filter(meta_type='widget_content')
     widget_contents = {}
@@ -327,12 +327,12 @@ def widgets_view(request):
                 widget_contents[item.meta_title] = fields_dict
             except Exception:
                 pass
-                
+
     # Chuẩn bị danh sách dropdown cho các Widget có chọn Menu hoặc Danh mục
     menus = [{'id': m.Id, 'title': clean_lang(m.title_cat)} for m in HalinkMenu.objects.all()]
     post_cats = [{'id': p.Id, 'title': clean_lang(p.title_vn)} for p in HalinkPost.objects.filter(post_type='postcat')]
     product_cats = [{'id': p.Id, 'title': clean_lang(p.title_vn)} for p in HalinkPost.objects.filter(post_type='productcat')]
-    
+
     context = {
         'sidebars': sidebars,
         'available_widgets': AVAILABLE_WIDGETS,
@@ -351,23 +351,23 @@ def widgets_view(request):
 def widgets_save_ajax(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Chỉ chấp nhận phương thức POST'}, status=400)
-        
+
     try:
         data = json.loads(request.body)
         sidebars_data = data.get('sidebars', {})  # Map: sidebar_id -> [widget_instance_id, ...]
         widget_contents = data.get('widget_data', {})  # Map: widget_instance_id -> {field_name: value}
-        
+
         # Bắt đầu transaction để đảm bảo dữ liệu ghi xuống an toàn
         with transaction.atomic():
             # 1. Lưu cấu hình vị trí Widgets
             widgets_meta = HalinkMeta.objects.filter(meta_type='widgets').first()
             if not widgets_meta:
                 widgets_meta = HalinkMeta(meta_type='widgets', ticlock=0)
-                
+
             widgets_meta.meta_value = json.dumps(sidebars_data, ensure_ascii=False)
             widgets_meta.date = timezone.now()
             widgets_meta.save()
-            
+
             # Thu thập tất cả các Widget ID đang hoạt động
             active_widget_ids = set()
             for w_list in sidebars_data.values():
@@ -380,14 +380,14 @@ def widgets_save_ajax(request):
                     for wid in w_list.split(','):
                         if wid.strip():
                             active_widget_ids.add(wid.strip())
-                            
+
             # 2. Xóa các widget_content trong DB không còn được dùng nữa (để tránh rác DB)
             HalinkMeta.objects.filter(meta_type='widget_content').exclude(meta_title__in=active_widget_ids).delete()
-            
+
             # 3. Cập nhật hoặc thêm mới nội dung từng Widget hoạt động
             for wid in active_widget_ids:
                 w_fields = widget_contents.get(wid, {})
-                
+
                 # Định dạng dữ liệu của widget_content dưới dạng list các đối tượng name-value
                 # Để lưu trữ chuẩn PHP, ta cần duyệt qua định nghĩa widget và tự động bọc thẻ đa ngôn ngữ
                 # Tìm xem widget thuộc loại nào
@@ -397,18 +397,18 @@ def widgets_save_ajax(request):
                     if wid.startswith(key):
                         widget_type = key
                         break
-                        
+
                 # Nếu không tìm thấy, fallback lấy mặc định hoặc bỏ qua bọc đa ngôn ngữ
                 widget_def = AVAILABLE_WIDGETS.get(widget_type) if widget_type else None
-                
+
                 # Danh sách lưu trữ JSON
                 saved_fields = []
-                
+
                 if widget_def:
                     for field in widget_def['fields']:
                         f_name = field['name']
                         is_multilang = field['multilang']
-                        
+
                         if is_multilang:
                             # Với trường đa ngôn ngữ, hệ thống cũ mong đợi:
                             # 1. Trường gốc (e.g. title) chứa: [[[:vi]]]Tiêu đề vi[[[:end_vi]]][[[:en]]]Tiêu đề en[[[:end_en]]]
@@ -416,9 +416,9 @@ def widgets_save_ajax(request):
                             # 3. Trường {name}_lg_en chứa: Tiêu đề en
                             vi_val = w_fields.get(f"{f_name}_vi", "").strip()
                             en_val = w_fields.get(f"{f_name}_en", "").strip()
-                            
+
                             wrapped_val = f"[[[:vi]]]{vi_val}[[[:end_vi]]][[[:en]]]{en_val}[[[:end_en]]]"
-                            
+
                             saved_fields.append({"name": f_name, "value": wrapped_val})
                             saved_fields.append({"name": f"{f_name}_lg_vi", "value": vi_val})
                             saved_fields.append({"name": f"{f_name}_lg_en", "value": en_val})
@@ -426,7 +426,7 @@ def widgets_save_ajax(request):
                             # Trường thường không có ngôn ngữ
                             val = w_fields.get(f_name, "")
                             saved_fields.append({"name": f_name, "value": str(val).strip()})
-                            
+
                     # Thêm các trường ngoài định nghĩa nếu có gửi lên
                     for k, v in w_fields.items():
                         # Kiểm tra xem k có nằm trong danh sách đã lưu chưa
@@ -436,166 +436,18 @@ def widgets_save_ajax(request):
                     # Nếu widget không nằm trong danh sách có sẵn, lưu thô các cặp key-value
                     for k, v in w_fields.items():
                         saved_fields.append({"name": k, "value": str(v).strip()})
-                        
+
                 # Cập nhật hoặc lưu vào DB
                 meta_item = HalinkMeta.objects.filter(meta_type='widget_content', meta_title=wid).first()
                 if not meta_item:
                     meta_item = HalinkMeta(meta_type='widget_content', meta_title=wid, ticlock=0)
-                    
+
                 meta_item.meta_value = json.dumps(saved_fields, ensure_ascii=False)
                 meta_item.date = timezone.now()
                 meta_item.save()
-                
+
         return JsonResponse({'status': 'success', 'message': 'Đã lưu cấu hình widgets thành công!'})
     except Exception as e:
         import traceback
         print(traceback.format_exc())
         return JsonResponse({'status': 'error', 'message': f'Lỗi hệ thống: {str(e)}'}, status=500)
-
-
-# ==============================================================================
-# IMAGE BROWSER VIEW
-# ==============================================================================
-
-IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'}
-
-
-@csrf_exempt
-def image_browser_view(request):
-    """
-    Popup trình duyệt ảnh - liệt kê tất cả ảnh từ thư mục uploads.
-    Hỗ trợ tải lên ảnh trực tiếp từ máy để phục vụ kiểm thử.
-    Params: field_id = id input cần gán, subfolder = thư mục con (mặc định: hinhanh)
-    """
-    from django.conf import settings
-    from django.http import HttpResponse, HttpResponseRedirect
-    from django.utils.text import get_valid_filename
-
-    field_id  = request.GET.get('field_id', request.POST.get('field_id', 'id_post_image'))
-    subfolder = request.GET.get('subfolder', request.POST.get('subfolder', 'hinhanh'))
-    search    = request.GET.get('q', '').lower().strip()
-
-    image_dir = os.path.join(settings.MEDIA_ROOT, subfolder)
-
-    # Xử lý tải file lên nếu là POST request
-    if request.method == 'POST' and request.FILES.get('upload_file'):
-        uploaded_file = request.FILES['upload_file']
-        fname = get_valid_filename(uploaded_file.name)
-        ext = os.path.splitext(fname)[1].lower()
-        
-        # Hỗ trợ cả ảnh và các file flash/video thông dụng
-        allowed_exts = IMAGE_EXTENSIONS | {'.swf', '.flv', '.mp4'}
-        if ext in allowed_exts:
-            os.makedirs(image_dir, exist_ok=True)
-            target_path = os.path.join(image_dir, fname)
-            
-            # Tránh ghi đè file trùng tên
-            base, ext = os.path.splitext(fname)
-            counter = 1
-            while os.path.exists(target_path):
-                fname = f"{base}_{counter}{ext}"
-                target_path = os.path.join(image_dir, fname)
-                counter += 1
-                
-            with open(target_path, 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    destination.write(chunk)
-            
-            # Redirect lại về GET để tránh reload submit lại form
-            return HttpResponseRedirect(f"{request.path}?field_id={field_id}&subfolder={subfolder}")
-
-    images = []
-    if os.path.isdir(image_dir):
-        allowed_exts = IMAGE_EXTENSIONS | {'.swf', '.flv', '.mp4'}
-        for fname in sorted(os.listdir(image_dir), reverse=True):
-            ext = os.path.splitext(fname)[1].lower()
-            if ext in allowed_exts:
-                if search and search not in fname.lower():
-                    continue
-                rel_path = f"{subfolder}/{fname}"
-                url = f"{settings.MEDIA_URL}{rel_path}"
-                images.append({'path': rel_path, 'url': url, 'name': fname})
-
-    img_grid = ""
-    if images:
-        for img in images:
-            # Nếu là file video hoặc flash, hiển thị hình đại diện tương ứng
-            ext = os.path.splitext(img['name'])[1].lower()
-            if ext in {'.swf', '.flv', '.mp4'}:
-                thumb_url = "https://placehold.co/120x120/1e1b4b/e0e7ff?text=FILE"
-                img_grid += (
-                    f'<div class="img-item" onclick="selectImage(\'{img["path"]}\', \'{img["name"]}\')">'
-                    f'<img src="{thumb_url}" alt="{img["name"]}">'
-                    f'<div class="name">{img["name"]}</div>'
-                    f'</div>'
-                )
-            else:
-                img_grid += (
-                    f'<div class="img-item" onclick="selectImage(\'{img["path"]}\', \'{img["name"]}\')">'
-                    f'<img src="{img["url"]}" alt="{img["name"]}" loading="lazy"'
-                    f' onerror="this.src=\'https://placehold.co/120x120/27272a/71717a?text=Err\'">'
-                    f'<div class="name">{img["name"]}</div>'
-                    f'</div>'
-                )
-    else:
-        img_grid = '<div class="empty">Không tìm thấy ảnh nào.</div>'
-
-    html = f"""<!DOCTYPE html>
-<html lang="vi"><head>
-<meta charset="UTF-8"><title>Chọn file</title>
-<style>
-*{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:Inter,sans-serif;background:#ffffff;color:#18181b}}
-.toolbar{{position:sticky;top:0;z-index:10;display:flex;gap:8px;padding:10px 14px;background:#f4f4f5;border-bottom:1px solid #e4e4e7;align-items:center}}
-.toolbar input[type=text]{{flex:1;padding:6px 10px;border-radius:6px;border:1px solid #e4e4e7;background:#ffffff;color:#18181b;font-size:13px;outline:none}}
-.toolbar input[type=text]:focus{{border-color:#7c3aed}}
-.toolbar button{{padding:6px 14px;border-radius:6px;border:none;background:#7c3aed;color:#fff;font-size:13px;cursor:pointer}}
-.toolbar button:hover{{background:#6d28d9}}
-.upload-btn{{padding:6px 14px;border-radius:6px;background:#10b981;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;display:inline-block}}
-.upload-btn:hover{{background:#059669}}
-.count{{font-size:12px;color:#71717a;align-self:center;white-space:nowrap}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:12px}}
-.img-item{{position:relative;border-radius:8px;overflow:hidden;border:1px solid #e4e4e7;cursor:pointer;background:#f4f4f5;aspect-ratio:1;transition:border-color .15s,transform .15s}}
-.img-item:hover{{border-color:#7c3aed;transform:scale(1.03)}}
-.img-item img{{width:100%;height:100%;object-fit:cover;display:block}}
-.img-item .name{{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);color:#18181b;font-size:10px;padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
-.empty{{text-align:center;padding:60px 20px;color:#71717a}}
-
-/* Dark Mode Styles */
-@media (prefers-color-scheme: dark) {{
-  body{{background:#18181b;color:#e4e4e7}}
-  .toolbar{{background:#09090b;border-bottom:1px solid #3f3f46}}
-  .toolbar input[type=text]{{border:1px solid #3f3f46;background:#27272a;color:#e4e4e7}}
-  .img-item{{border:1px solid transparent;background:#27272a}}
-  .img-item .name{{background:rgba(0,0,0,.7);color:#e4e4e7}}
-}}
-</style></head><body>
-<div class="toolbar">
-  <form method="get" style="display:flex;flex:1;gap:8px;">
-    <input type="hidden" name="field_id" value="{field_id}">
-    <input type="hidden" name="subfolder" value="{subfolder}">
-    <input type="text" name="q" placeholder="Tìm theo tên file..." value="{search}" autofocus>
-    <button type="submit">Tìm</button>
-  </form>
-  <form method="post" enctype="multipart/form-data" style="display:flex;align-items:center;">
-    <input type="hidden" name="field_id" value="{field_id}">
-    <input type="hidden" name="subfolder" value="{subfolder}">
-    <label class="upload-btn">
-      Tải lên
-      <input type="file" name="upload_file" onchange="this.form.submit()" accept="image/*,application/x-shockwave-flash,video/*" style="display:none;">
-    </label>
-  </form>
-  <span class="count">{len(images)} file</span>
-</div>
-<div class="grid">{img_grid}</div>
-<script>
-function selectImage(path, name) {{
-  if (window.opener && window.opener.receiveImageFromBrowser) {{
-    window.opener.receiveImageFromBrowser('{field_id}', path, name);
-    window.close();
-  }}
-}}
-</script>
-</body></html>"""
-
-    return HttpResponse(html)
