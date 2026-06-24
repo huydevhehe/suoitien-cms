@@ -26,7 +26,9 @@ class ImagePickerWidget(forms.TextInput):
         # Preview ảnh nếu có giá trị
         preview_html = ''
         if value:
-            img_url = '%s%s' % (settings.MEDIA_URL, value)
+            # Dữ liệu cũ (vd: logo/fav) chỉ lưu tên file trần, không có tiền tố thư mục con
+            rel_path = value if '/' in value else '%s/%s' % (self.subfolder, value)
+            img_url = '%s%s' % (settings.MEDIA_URL, rel_path)
             preview_html = (
                 '<div id="%s_preview" style="margin-top:8px;">'
                 '<img src="%s" style="max-height:120px;max-width:240px;'

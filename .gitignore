@@ -40,12 +40,12 @@ suoi_tien_django_fe.md
 suoi_tien_php_goc_fe.md
 tai_lieu_du_an_django.md
 
-# Mọi file Markdown tài liệu không cần push lên server (trừ README của bộ test)
+
 *.md
 !tests/README.md
 
 # Thư mục và cấu hình Test Playwright NodeJS — node_modules/báo cáo/cookie đăng
-# nhập là file rác/sinh ra tự động, không push; code test (tests/) thì giữ lại.
+
 node_modules/
 playwright-report/
 test-results/

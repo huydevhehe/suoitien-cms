@@ -236,6 +236,24 @@
         textarea.dispatchEvent(new Event('input'));
     };
 
+    // Vẽ dải ảnh xem trước (demo) cho field "Danh sách ảnh" - đọc trực tiếp từ nội dung textarea
+    function renderImageListPreview(textarea, previewRow) {
+        previewRow.innerHTML = "";
+        const names = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+        names.forEach(name => {
+            const img = document.createElement("img");
+            img.src = `/media/hinhanh/${name}`;
+            img.title = name;
+            img.style.width = "56px";
+            img.style.height = "56px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "6px";
+            img.style.border = "1px solid #e4e4e7";
+            img.onerror = () => { img.style.display = "none"; };
+            previewRow.appendChild(img);
+        });
+    }
+
     // Lists for select dropdowns
     const SELECT_MENUS = JSON.parse(document.getElementById("select-menus-data").textContent);
     const SELECT_POSTCATS = JSON.parse(document.getElementById("select-postcats-data").textContent);
@@ -452,6 +470,18 @@
                     rowDiv.appendChild(textarea);
                     rowDiv.appendChild(pickBtn);
                     fieldWrapper.appendChild(rowDiv);
+
+                    // Dải ảnh xem trước (demo) cho dễ hình dung đang chọn ảnh gì
+                    const previewRow = document.createElement("div");
+                    previewRow.id = `${fieldDomId}_preview`;
+                    previewRow.style.display = "flex";
+                    previewRow.style.gap = "6px";
+                    previewRow.style.flexWrap = "wrap";
+                    previewRow.style.marginTop = "8px";
+                    fieldWrapper.appendChild(previewRow);
+
+                    renderImageListPreview(textarea, previewRow);
+                    textarea.addEventListener("input", () => renderImageListPreview(textarea, previewRow));
                 } else {
                     // Standard non-multilingual inputs
                     const label = document.createElement("label");

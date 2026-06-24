@@ -93,7 +93,9 @@ class TinyMCEAdminMixin:
     class Media:
         js = (
             'https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js',
-            'admin/js/tinymce_init.js',
+            # ?v= để ép trình duyệt tải lại file mới mỗi khi sửa, tránh bị cache JS cũ
+            # (đã gặp: sửa promotion:false xong nhưng browser vẫn hiện nút Upgrade do cache).
+            'admin/js/tinymce_init.js?v=2',
         )
 
 

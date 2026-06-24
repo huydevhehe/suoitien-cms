@@ -187,6 +187,10 @@ UNFOLD = {
                         "title": "Trang chủ",
                         "icon": "home",
                         "link": "https://suoitien.vn/",
+                        # Link ngoài (FE site) có path là "/" -> Unfold so khớp "active" bằng kiểu
+                        # "path in request.path" nên "/" luôn khớp với MỌI trang admin. Ép cứng False
+                        # để mục này không bị sáng nhầm khi đang ở trang khác (vd: Cài đặt).
+                        "active": False,
                     },
                 ],
             },

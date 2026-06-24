@@ -188,4 +188,5 @@ def dashboard_callback(request, context):
 def get_prevent_double_submit_script(request):
     """Cấp URL JS chống lưu trùng khi bấm nút Lưu 2 lần liên tiếp (đăng ký qua UNFOLD['SCRIPTS'])."""
     from django.templatetags.static import static
-    return static('admin/js/prevent_double_submit.js')
+    # ?v= để ép trình duyệt tải lại khi file này có sửa đổi, tránh bị cache JS cũ
+    return static('admin/js/prevent_double_submit.js') + '?v=1'
