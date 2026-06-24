@@ -170,6 +170,7 @@ UNFOLD = {
     "SHOW_HISTORY": True,
     "SHOW_SIDEBAR_FILTER": True,
     "DASHBOARD_CALLBACK": "suoi_tien.dashboard.dashboard_callback",
+    "SCRIPTS": ["suoi_tien.dashboard.get_prevent_double_submit_script"],
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": False,

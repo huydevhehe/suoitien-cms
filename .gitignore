@@ -57,3 +57,7 @@ bao_cao_toan_bo_bug.md
 # Các file Word báo cáo
 *.docx
 ~$*.docx
+
+# File sơ đồ drawio 
+*.drawio
+*.drawio.bkp

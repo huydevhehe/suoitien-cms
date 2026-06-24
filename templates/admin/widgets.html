@@ -215,7 +215,27 @@
     const AVAILABLE_WIDGETS_DATA = JSON.parse(document.getElementById("available-widgets-data").textContent);
     const INITIAL_SIDEBAR_MAPPING = JSON.parse(document.getElementById("sidebar-mapping-data").textContent);
     const INITIAL_WIDGET_CONTENTS = JSON.parse(document.getElementById("widget-contents-data").textContent);
-    
+
+    // Mở popup chọn nhiều ảnh (dùng chung image-browser, chỉ thêm tham số multi=1)
+    function openImageBrowserMulti(fieldId) {
+        const url = `/admin/suoi_tien/image-browser/?field_id=${fieldId}&subfolder=hinhanh&multi=1`;
+        const w = 900, h = 600;
+        const left = (screen.width - w) / 2;
+        const top = (screen.height - h) / 2;
+        window.open(url, 'image_browser_multi',
+            `width=${w},height=${h},top=${top},left=${left},resizable=yes,scrollbars=yes`);
+    }
+
+    // Popup gọi hàm này khi bấm "Xong" - nối thêm ảnh đã chọn vào danh sách cũ (không xóa ảnh đang có)
+    window.receiveImagesFromBrowser = function (fieldId, paths) {
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) return;
+        const existing = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+        paths.forEach(p => { if (!existing.includes(p)) existing.push(p); });
+        textarea.value = existing.join(',');
+        textarea.dispatchEvent(new Event('input'));
+    };
+
     // Lists for select dropdowns
     const SELECT_MENUS = JSON.parse(document.getElementById("select-menus-data").textContent);
     const SELECT_POSTCATS = JSON.parse(document.getElementById("select-postcats-data").textContent);
@@ -397,6 +417,41 @@
                     gridDiv.appendChild(enDiv);
 
                     fieldWrapper.appendChild(gridDiv);
+                } else if (field.type === 'image_list') {
+                    // Danh sách ảnh: textarea (gõ tay nếu cần) + nút mở popup chọn nhiều ảnh từ thư viện
+                    const label = document.createElement("label");
+                    label.className = "block text-xs font-bold text-gray-500 dark:text-zinc-400";
+                    label.innerText = field.label;
+                    fieldWrapper.appendChild(label);
+
+                    const rowDiv = document.createElement("div");
+                    rowDiv.style.display = "flex";
+                    rowDiv.style.gap = "8px";
+                    rowDiv.style.alignItems = "flex-start";
+
+                    const fieldDomId = `img_list_${instanceId}_${field.name}`;
+                    const textarea = document.createElement("textarea");
+                    textarea.id = fieldDomId;
+                    textarea.rows = 3;
+                    textarea.style.flex = "1";
+                    textarea.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                    textarea.setAttribute("data-field-name", field.name);
+
+                    const oldContentImg = INITIAL_WIDGET_CONTENTS[instanceId];
+                    if (oldContentImg && oldContentImg[field.name] !== undefined) {
+                        textarea.value = oldContentImg[field.name];
+                    }
+
+                    const pickBtn = document.createElement("button");
+                    pickBtn.type = "button";
+                    pickBtn.innerText = "📷 Chọn ảnh";
+                    pickBtn.style.whiteSpace = "nowrap";
+                    pickBtn.className = "px-3 py-2 rounded-lg text-xs font-medium bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-700";
+                    pickBtn.addEventListener("click", () => openImageBrowserMulti(fieldDomId));
+
+                    rowDiv.appendChild(textarea);
+                    rowDiv.appendChild(pickBtn);
+                    fieldWrapper.appendChild(rowDiv);
                 } else {
                     // Standard non-multilingual inputs
                     const label = document.createElement("label");

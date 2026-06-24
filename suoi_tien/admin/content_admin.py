@@ -100,6 +100,10 @@ class PostProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdmin
             obj.post_type = 'post'
             if not obj.date:  # PHP: date = time() khi tao moi
                 obj.date = int(time.time())
+            if obj.sort is None:
+                # Gán thứ tự cuối danh sách để mục mới có ngay nút di chuyển Lên/Xuống
+                max_sort = self.model.objects.filter(post_type='post').exclude(sort__isnull=True).order_by('-sort').values_list('sort', flat=True).first()
+                obj.sort = (max_sort or 0) + 1
         super().save_model(request, obj, form, change)
 
 
@@ -128,6 +132,9 @@ class PostCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwi
             obj.post_type = 'postcat'
             if not obj.date:
                 obj.date = int(time.time())
+            if obj.sort is None:
+                max_sort = self.model.objects.filter(post_type='postcat').exclude(sort__isnull=True).order_by('-sort').values_list('sort', flat=True).first()
+                obj.sort = (max_sort or 0) + 1
         super().save_model(request, obj, form, change)
 
 
@@ -211,6 +218,9 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             obj.post_type = 'product'
             if not obj.date:
                 obj.date = int(time.time())
+            if obj.sort is None:
+                max_sort = self.model.objects.filter(post_type='product').exclude(sort__isnull=True).order_by('-sort').values_list('sort', flat=True).first()
+                obj.sort = (max_sort or 0) + 1
         super().save_model(request, obj, form, change)
 
         # Lưu metadata giá bán từ form
@@ -259,4 +269,7 @@ class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, Status
             obj.post_type = 'productcat'
             if not obj.date:
                 obj.date = int(time.time())
+            if obj.sort is None:
+                max_sort = self.model.objects.filter(post_type='productcat').exclude(sort__isnull=True).order_by('-sort').values_list('sort', flat=True).first()
+                obj.sort = (max_sort or 0) + 1
         super().save_model(request, obj, form, change)

@@ -89,10 +89,17 @@ class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, 
         # Database gốc không lưu dung lượng. PHP cũ đọc trực tiếp dung lượng từ file trong thư mục upload/.
         # Đoạn code dưới đây giả lập tính năng đó của PHP: nếu có file thực tế trên server, nó sẽ tính ra dung lượng.
         if obj.file_vn:
-            file_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn.replace('/', '\\'))
-            if os.path.exists(file_path):
+            name = obj.file_vn.split('/')[-1] if '/' in obj.file_vn else obj.file_vn
+            local_path = os.path.join(settings.MEDIA_ROOT, obj.file_vn.lstrip('/'))
+            
+            if not os.path.exists(local_path):
+                fallback_path = os.path.join(settings.MEDIA_ROOT, name)
+                if os.path.exists(fallback_path):
+                    local_path = fallback_path
+
+            if os.path.exists(local_path):
                 try:
-                    size_bytes = os.path.getsize(file_path)
+                    size_bytes = os.path.getsize(local_path)
                     if size_bytes >= 1048576:
                         return f"{size_bytes / 1048576:.0f} MB"
                     return f"{size_bytes / 1024:.0f} KB"
@@ -100,6 +107,12 @@ class HalinkFlashAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, 
                     pass
         return "---"
     get_size.short_description = 'Dung lượng'
+
+    def save_model(self, request, obj, form, change):
+        if not obj.date:
+            import time
+            obj.date = int(time.time())
+        super().save_model(request, obj, form, change)
 
 # 5. Quản lý Menu
 @admin.register(HalinkMenu)
@@ -112,7 +125,7 @@ class HalinkMenuAdmin(StatusSwitchAdminMixin, PostDisplayMixin, MultiLangAdminMi
 
 # 6. Cấu hình Website
 @admin.register(HalinkWebsite)
-class HalinkWebsiteAdmin(JSONSchemaAdminMixin, StatusSwitchAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class HalinkWebsiteAdmin(JSONSchemaAdminMixin, StatusSwitchAdminMixin, ImagePickerAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     list_per_page = 20
     list_display = ('id', 'get_clean_title', 'hotline', 'email', 'get_clean_diachi')
     search_fields = ('title', 'email', 'hotline')

@@ -20,7 +20,7 @@ AVAILABLE_WIDGETS = {
         'fields': [
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'halink_widget_input_link', 'label': 'Đường dẫn liên kết (Link)', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
         ]
     },
     'halink_widget_company_info': {
@@ -39,7 +39,7 @@ AVAILABLE_WIDGETS = {
         'desc': 'Hiển thị các phản hồi, đánh giá từ khách hàng (Testimonials).',
         'fields': [
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh đại diện (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh đại diện (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
             {'name': 'halink_widget_input_link', 'label': 'Ý kiến khách hàng (Họ tên|Ý kiến, mỗi dòng 1 người)', 'type': 'textarea', 'multilang': True},
         ]
     },
@@ -48,7 +48,7 @@ AVAILABLE_WIDGETS = {
         'desc': 'Hiển thị lưới hình ảnh hoạt động của công viên.',
         'fields': [
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
             {'name': 'halink_widget_input_link', 'label': 'Mô tả / Liên kết (mỗi dòng 1 liên kết hoặc nhãn)', 'type': 'textarea', 'multilang': True},
         ]
     },
@@ -59,8 +59,8 @@ AVAILABLE_WIDGETS = {
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'halink_widget_input_numtab', 'label': 'Số lượng Tab', 'type': 'text', 'multilang': False, 'default': '2'},
             {'name': 'halink_widget_input_tab', 'label': 'Tiêu đề các Tab (ngăn cách bởi dấu |)', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content1', 'label': 'Ảnh Tab 1 (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
-            {'name': 'halink_widget_input_content2', 'label': 'Ảnh Tab 2 (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content1', 'label': 'Ảnh Tab 1 (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
+            {'name': 'halink_widget_input_content2', 'label': 'Ảnh Tab 2 (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
             {'name': 'halink_widget_input_list_video', 'label': 'Danh sách link video Youtube (mỗi dòng 1 link)', 'type': 'textarea', 'multilang': False},
             {'name': 'halink_widget_input_link', 'label': 'Link xem thêm', 'type': 'text', 'multilang': True},
         ]
@@ -80,7 +80,7 @@ AVAILABLE_WIDGETS = {
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'halink_widget_input_title_link', 'label': 'Tiêu đề liên kết', 'type': 'text', 'multilang': True},
             {'name': 'halink_widget_input_link', 'label': 'Link liên kết', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
         ]
     },
     'halink_widget_map': {
@@ -145,7 +145,7 @@ AVAILABLE_WIDGETS = {
         'desc': 'Trình chiếu ảnh Slider trang chủ chính.',
         'fields': [
             {'name': 'halink_widget_input_title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
-            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'textarea', 'multilang': False},
+            {'name': 'halink_widget_input_content', 'label': 'Danh sách ảnh (ngăn cách bởi dấu phẩy)', 'type': 'image_list', 'multilang': False},
             {'name': 'halink_widget_input_link', 'label': 'Link liên kết khi click', 'type': 'text', 'multilang': True},
         ]
     },

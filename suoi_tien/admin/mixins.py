@@ -137,7 +137,7 @@ class ImagePickerAdminMixin:
     """Mixin gắn ImagePickerWidget vào các field hình ảnh."""
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
-        if db_field.name in ['post_image', 'post_banner']:
+        if db_field.name in ['post_image', 'post_banner', 'logo', 'fav']:
             from ..widgets import ImagePickerWidget
             kwargs['widget'] = ImagePickerWidget(subfolder='hinhanh')
             return db_field.formfield(**kwargs)

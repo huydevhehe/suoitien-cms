@@ -6,23 +6,75 @@
     border-color: rgb(63 63 70) !important;       /* zinc-700 */
     color: rgb(244 244 245) !important;           /* zinc-100 */
 }
+.multi-lang-widget-container .lang-tab-btn {
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #71717a;
+}
+.multi-lang-widget-container .lang-tab-btn.active {
+    background: #ede9fe;
+    color: #6d28d9;
+    border-color: #c4b5fd;
+}
+.dark .multi-lang-widget-container .lang-tab-btn.active {
+    background: rgba(124, 58, 237, 0.2);
+    color: #c4b5fd;
+    border-color: #6d28d9;
+}
+.multi-lang-widget-container .lang-pane-wrap {
+    position: relative;
+}
+.multi-lang-widget-container .lang-pane.lang-inactive {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    visibility: hidden;
+    pointer-events: none;
+}
 </style>
 
-<div class="multi-lang-widget-container space-y-3 p-4 border border-gray-200 dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="space-y-1">
-            <div class="flex items-center space-x-1.5 mb-1">
-                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Tiếng Việt</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">VI</span>
-            </div>
+<div class="multi-lang-widget-container space-y-2 p-4 border border-gray-200 dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
+    <div class="lang-tabs flex items-center gap-2">
+        <button type="button" class="lang-tab-btn active" data-lang-target="vi">Tiếng Việt (VI)</button>
+        <button type="button" class="lang-tab-btn" data-lang-target="en">Tiếng Anh (EN)</button>
+    </div>
+    <div class="lang-pane-wrap">
+        <div class="lang-pane" data-lang="vi">
             {% include widget.subwidgets.0.template_name with widget=widget.subwidgets.0 %}
         </div>
-        <div class="space-y-1">
-            <div class="flex items-center space-x-1.5 mb-1">
-                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Tiếng Anh</span>
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">EN</span>
-            </div>
+        <div class="lang-pane lang-inactive" data-lang="en">
             {% include widget.subwidgets.1.template_name with widget=widget.subwidgets.1 %}
         </div>
     </div>
 </div>
+
+<script>
+if (!window._multiLangTabsReady) {
+    window._multiLangTabsReady = true;
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.lang-tab-btn');
+        if (!btn) return;
+        var container = btn.closest('.multi-lang-widget-container');
+        if (!container) return;
+
+        container.querySelectorAll('.lang-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+
+        var target = btn.getAttribute('data-lang-target');
+        container.querySelectorAll('.lang-pane').forEach(function (pane) {
+            pane.classList.toggle('lang-inactive', pane.getAttribute('data-lang') !== target);
+        });
+
+        // Báo cho TinyMCE (nếu có) tính lại kích thước sau khi đổi tab, tránh hiển thị méo/lệch
+        window.dispatchEvent(new Event('resize'));
+    });
+}
+</script>

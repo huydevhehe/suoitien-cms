@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Tránh parse đường dẫn URL tuyệt đối thành tương đối
             convert_urls: false,
+            
+            // Tắt nút Upgrade (gỡ bỏ logo tia sét)
+            promotion: false,
 
             // Hỗ trợ tiếng Việt
             language: 'vi',
