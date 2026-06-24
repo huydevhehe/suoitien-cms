@@ -201,6 +201,43 @@
     .widget-instance.dragging {
         opacity: 0.5;
     }
+    .lang-tab-btn {
+        padding: 4px 14px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #71717a;
+    }
+    .lang-tab-btn.active {
+        background: #ede9fe;
+        color: #6d28d9;
+        border-color: #c4b5fd;
+    }
+    .dark .lang-tab-btn.active {
+        background: rgba(124, 58, 237, 0.2);
+        color: #c4b5fd;
+        border-color: #6d28d9;
+    }
+    .img-thumb-remove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #ef4444;
+        color: #fff;
+        font-size: 11px;
+        line-height: 18px;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+    }
 </style>
 
 <!-- Safely pass JSON data via json_script to prevent IDE linter syntax errors -->
@@ -237,20 +274,40 @@
     };
 
     // Vẽ dải ảnh xem trước (demo) cho field "Danh sách ảnh" - đọc trực tiếp từ nội dung textarea
+    // Mỗi ảnh có nút "x" nhỏ để gỡ khỏi danh sách (textarea) mà không cần xóa tay
     function renderImageListPreview(textarea, previewRow) {
         previewRow.innerHTML = "";
         const names = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
         names.forEach(name => {
+            const thumb = document.createElement("div");
+            thumb.style.position = "relative";
+            thumb.style.width = "56px";
+            thumb.style.height = "56px";
+
             const img = document.createElement("img");
             img.src = `/media/hinhanh/${name}`;
             img.title = name;
-            img.style.width = "56px";
-            img.style.height = "56px";
+            img.style.width = "100%";
+            img.style.height = "100%";
             img.style.objectFit = "cover";
             img.style.borderRadius = "6px";
             img.style.border = "1px solid #e4e4e7";
             img.onerror = () => { img.style.display = "none"; };
-            previewRow.appendChild(img);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "img-thumb-remove";
+            removeBtn.innerText = "✕";
+            removeBtn.title = `Gỡ ${name}`;
+            removeBtn.addEventListener("click", () => {
+                const remaining = textarea.value.split(',').map(s => s.trim()).filter(n => n && n !== name);
+                textarea.value = remaining.join(',');
+                renderImageListPreview(textarea, previewRow);
+            });
+
+            thumb.appendChild(img);
+            thumb.appendChild(removeBtn);
+            previewRow.appendChild(thumb);
         });
     }
 
@@ -388,53 +445,78 @@
                 fieldWrapper.className = "space-y-1.5";
 
                 if (field.multilang) {
-                    // Multilingual fields render two text inputs
+                    // Field song ngữ: 1 khung lớn + tab chuyển VI/EN (đồng bộ giao diện với multi_lang.html)
                     const label = document.createElement("label");
                     label.className = "block text-xs font-bold text-gray-500 dark:text-zinc-400";
                     label.innerText = field.label;
                     fieldWrapper.appendChild(label);
 
-                    // Row for bilingual input
-                    const gridDiv = document.createElement("div");
-                    gridDiv.className = "grid grid-cols-2 gap-3";
+                    const tabsDiv = document.createElement("div");
+                    tabsDiv.className = "flex items-center gap-2 mb-1";
+                    const viTab = document.createElement("button");
+                    viTab.type = "button";
+                    viTab.className = "lang-tab-btn active";
+                    viTab.innerText = "Tiếng Việt (VI)";
+                    const enTab = document.createElement("button");
+                    enTab.type = "button";
+                    enTab.className = "lang-tab-btn";
+                    enTab.innerText = "Tiếng Anh (EN)";
+                    tabsDiv.appendChild(viTab);
+                    tabsDiv.appendChild(enTab);
+                    fieldWrapper.appendChild(tabsDiv);
 
-                    // VI input
-                    const viDiv = document.createElement("div");
-                    viDiv.className = "relative";
+                    const paneWrap = document.createElement("div");
+                    paneWrap.style.position = "relative";
+
+                    const inputClass = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
+                    const oldContent = INITIAL_WIDGET_CONTENTS[instanceId];
+
                     const viInput = field.type === 'textarea' ? document.createElement("textarea") : document.createElement("input");
-                    viInput.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
-                    if (field.type === 'textarea') viInput.rows = 2;
+                    viInput.className = inputClass;
+                    if (field.type === 'textarea') viInput.rows = 3;
                     else viInput.type = "text";
                     viInput.placeholder = "Tiếng Việt";
                     viInput.setAttribute("data-field-name", `${field.name}_vi`);
-                    
-                    // Fill value if exists
-                    const oldContent = INITIAL_WIDGET_CONTENTS[instanceId];
-                    if (oldContent) {
-                        viInput.value = oldContent[`${field.name}_lg_vi`] || "";
-                    }
-                    
-                    viDiv.appendChild(viInput);
-                    gridDiv.appendChild(viDiv);
+                    if (oldContent) viInput.value = oldContent[`${field.name}_lg_vi`] || "";
 
-                    // EN input
-                    const enDiv = document.createElement("div");
-                    enDiv.className = "relative";
                     const enInput = field.type === 'textarea' ? document.createElement("textarea") : document.createElement("input");
-                    enInput.className = "w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 text-gray-950 dark:text-zinc-200 focus:ring-1 focus:ring-primary-500 focus:outline-none";
-                    if (field.type === 'textarea') enInput.rows = 2;
+                    enInput.className = inputClass;
+                    if (field.type === 'textarea') enInput.rows = 3;
                     else enInput.type = "text";
                     enInput.placeholder = "Tiếng Anh (English)";
                     enInput.setAttribute("data-field-name", `${field.name}_en`);
-                    
-                    if (oldContent) {
-                        enInput.value = oldContent[`${field.name}_lg_en`] || "";
-                    }
+                    if (oldContent) enInput.value = oldContent[`${field.name}_lg_en`] || "";
+                    enInput.style.position = "absolute";
+                    enInput.style.top = "0";
+                    enInput.style.left = "0";
+                    enInput.style.width = "100%";
+                    enInput.style.visibility = "hidden";
+                    enInput.style.pointerEvents = "none";
 
-                    enDiv.appendChild(enInput);
-                    gridDiv.appendChild(enDiv);
+                    paneWrap.appendChild(viInput);
+                    paneWrap.appendChild(enInput);
+                    fieldWrapper.appendChild(paneWrap);
 
-                    fieldWrapper.appendChild(gridDiv);
+                    viTab.addEventListener("click", () => {
+                        viTab.classList.add("active");
+                        enTab.classList.remove("active");
+                        viInput.style.position = "";
+                        viInput.style.visibility = "";
+                        viInput.style.pointerEvents = "";
+                        enInput.style.position = "absolute";
+                        enInput.style.visibility = "hidden";
+                        enInput.style.pointerEvents = "none";
+                    });
+                    enTab.addEventListener("click", () => {
+                        enTab.classList.add("active");
+                        viTab.classList.remove("active");
+                        enInput.style.position = "";
+                        enInput.style.visibility = "";
+                        enInput.style.pointerEvents = "";
+                        viInput.style.position = "absolute";
+                        viInput.style.visibility = "hidden";
+                        viInput.style.pointerEvents = "none";
+                    });
                 } else if (field.type === 'image_list') {
                     // Danh sách ảnh: textarea (gõ tay nếu cần) + nút mở popup chọn nhiều ảnh từ thư viện
                     const label = document.createElement("label");
