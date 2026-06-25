@@ -12,7 +12,7 @@
             <ul id="list-pages" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for page in pages %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}|_page_" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ page.Id }}|pagehtml" data-title="{{ page.title_vn }}"> {{ page.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-pages')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -24,7 +24,7 @@
             <ul id="list-postcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in post_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}|_news_" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}|catnews" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-postcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -36,7 +36,7 @@
             <ul id="list-productcats" style="list-style: none; padding: 10px; margin: 0; display: none; background: #fff; border: 1px solid #ddd; border-top: none;">
                 {% for cat in product_cats %}
                 <li style="margin-bottom: 5px;">
-                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}|_productcat_" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
+                    <label style="cursor: pointer;"><input type="checkbox" value="{{ cat.Id }}|catelog" data-title="{{ cat.title_vn }}"> {{ cat.title_vn }}</label>
                 </li>
                 {% endfor %}
                 <button type="button" onclick="addSelected('list-productcats')" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">Thêm vào menu</button>
@@ -129,11 +129,11 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
-    // Định dạng lưu THẬT trong content_menu (khớp suoi_tien/api/public/menu_tree.py):
-    // mỗi mục là "target***kind***depth", nhiều mục ngăn bởi dấu phẩy.
-    // kind chỉ có 4 giá trị: _page_ | _news_ (chuyên mục bài) | _productcat_ | _link_
-    var LEGACY_KIND_MAP = { 'pagehtml': '_page_', 'cathtml': '_news_', 'procathtml': '_productcat_', 'linkhtml': '_link_' };
-    var KIND_LABELS = { '_page_': 'Trang tĩnh', '_news_': 'Chuyên mục bài', '_productcat_': 'Danh mục SP', '_link_': 'Liên kết' };
+    // Định dạng lưu THẬT - giống chính xác PHP gốc (halink_save_menu() trong
+    // halink-admin/public/js/main.js, khớp suoi_tien/api/public/menu_tree.py):
+    // content_menu là 1 mảng JSON các chuỗi, mỗi chuỗi 7 phần nối bằng "_***_":
+    // id, type, link_url, link_text, level, title, blank.
+    var KIND_LABELS = { 'pagehtml': 'Trang tĩnh', 'catnews': 'Chuyên mục bài', 'catelog': 'Danh mục SP', 'link': 'Liên kết' };
 
     function toggleGroup(id) {
         var el = document.getElementById('list-' + id);
@@ -156,9 +156,9 @@
         var list = document.getElementById(listId);
         var checkboxes = list.querySelectorAll('input[type="checkbox"]:checked');
         checkboxes.forEach(function(cb) {
-            var parts = cb.value.split('|'); // "15|_page_"
+            var parts = cb.value.split('|'); // "15|pagehtml"
             var title = cb.getAttribute('data-title');
-            addMenuItem(parts[0], parts[1], title, 0);
+            addMenuItem(parts[0], parts[1], title, 0, '0');
             cb.checked = false; // uncheck after adding
         });
         updateTextarea();
@@ -173,7 +173,7 @@
             return;
         }
         var rawTitle = "[[[:vi]]]" + title + "[[[:end_vi]]]";
-        addMenuItem(url, '_link_', rawTitle, '0');
+        addMenuItem('link-' + Date.now(), 'link', rawTitle, '0', url);
         document.getElementById('custom-url').value = '';
         document.getElementById('custom-title').value = '';
         updateTextarea();
@@ -191,7 +191,7 @@
     }
 
     // Add item to DOM
-    function addMenuItem(target, kind, rawTitle, level) {
+    function addMenuItem(target, kind, rawTitle, level, linkUrl) {
         var li = document.createElement('li');
         li.className = 'sortable-item level-' + level;
 
@@ -199,6 +199,7 @@
         li.setAttribute('data-kind', kind);
         li.setAttribute('data-level', level);
         li.setAttribute('data-rawtitle', rawTitle);
+        li.setAttribute('data-linkurl', linkUrl || '0');
 
         var typeName = KIND_LABELS[kind] || kind;
         var displayTitle = cleanTitle(rawTitle);
@@ -261,18 +262,22 @@
         updateTextarea();
     }
 
-    // Sync DOM to textarea - đúng định dạng "target***kind***depth", ngăn cách dấu phẩy
+    // Sync DOM to textarea - đúng định dạng PHP gốc thật: mảng JSON các chuỗi
+    // "id_***_type_***_link_url_***_link_text_***_level_***_title_***_blank"
     // (khớp suoi_tien/api/public/menu_tree.py: build_menu_tree).
     function updateTextarea() {
         var items = sortableList.querySelectorAll('.sortable-item');
         var result = [];
         items.forEach(function(li) {
-            var target = li.getAttribute('data-target');
+            var id = li.getAttribute('data-target');
             var kind = li.getAttribute('data-kind');
             var level = li.getAttribute('data-level');
-            result.push(target + '***' + kind + '***' + level);
+            var rawTitle = li.getAttribute('data-rawtitle');
+            var linkUrl = li.getAttribute('data-linkurl') || '0';
+            var linkText = (kind === 'link') ? rawTitle : '0';
+            result.push([id, kind, linkUrl, linkText, level, rawTitle, '0'].join('_***_'));
         });
-        document.getElementById('{{ widget.attrs.id }}').value = result.join(',');
+        document.getElementById('{{ widget.attrs.id }}').value = JSON.stringify(result);
         refreshAllParentLabels();
     }
 
@@ -307,48 +312,45 @@
 
         var mapData = JSON.parse(document.getElementById('title-map-data').textContent);
 
-        // Dữ liệu cũ (do 1 phiên bản code trước đây lưu sai) ở dạng JSON array của chuỗi
-        // 7 phần nối bằng "_***_" - khôi phục lại id/loại/tên ở đây, KHÔNG khôi phục được
-        // đúng cấp thật (vì bản cũ ghi cấp vào sai vị trí) nên đặt về cấp 0, admin tự bấm
-        // lại ➡️ nếu mục đó cần làm con. Lưu lại 1 lần sau khi mở là tự chuyển về đúng
-        // định dạng chuẩn, không cần làm gì thêm cho các lần sau.
-        var legacyItems = null;
+        // Định dạng chuẩn (giống PHP gốc thật): mảng JSON các chuỗi 7 phần nối
+        // bằng "_***_": id, type, link_url, link_text, level, title, blank.
+        var items = null;
         try {
             var maybeJson = JSON.parse(raw);
             if (Array.isArray(maybeJson)) {
-                legacyItems = maybeJson.map(function(legacy) {
-                    var p = legacy.split('_***_');
-                    return {
-                        target: p[0],
-                        kind: LEGACY_KIND_MAP[p[1]] || '_page_',
-                        level: '0',
-                        legacyTitle: p.length >= 6 ? p[5] : null,
-                    };
-                });
+                items = maybeJson.map(function(line) {
+                    var p = line.split('_***_');
+                    if (p.length !== 7) return null;
+                    return { id: p[0], kind: p[1], linkUrl: p[2], linkText: p[3], level: p[4], title: p[5], blank: p[6] };
+                }).filter(Boolean);
             }
         } catch (e) {
-            // Không parse được dạng JSON -> đúng định dạng chuẩn (chuỗi phẩy), xử lý ở dưới.
+            // Không parse được JSON -> dữ liệu cũ lưu sai, xử lý ở dưới.
         }
 
-        if (legacyItems) {
-            legacyItems.forEach(function(it) {
-                var rawTitle = it.legacyTitle || mapData[it.target] || it.target;
-                addMenuItem(it.target, it.kind, rawTitle, it.level);
+        if (items) {
+            items.forEach(function(it) {
+                addMenuItem(it.id, it.kind, it.title, it.level, it.linkUrl);
             });
-            updateTextarea(); // tự sửa lại đúng định dạng ngay, không chờ admin bấm Lưu mới hết lỗi hiển thị
+            refreshAllParentLabels();
             return;
         }
 
+        // Dữ liệu cũ lưu nhầm dạng "id***kind***level" ngăn bởi dấu phẩy (do 1 bản
+        // code trước đây lưu sai, không đúng định dạng PHP gốc) - khôi phục lại rồi
+        // tự lưu về đúng định dạng chuẩn ngay, không cần làm gì thêm cho lần sau.
+        var OLD_KIND_MAP = { '_page_': 'pagehtml', '_news_': 'catnews', '_productcat_': 'catelog', '_link_': 'link' };
         raw.split(',').forEach(function(item) {
             item = item.trim();
             if (!item) return;
             var parts = item.split('***');
             if (parts.length !== 3) return; // bỏ qua mục dữ liệu hỏng, không cố đoán bừa
 
-            var target = parts[0], kind = parts[1], level = parts[2];
-            var rawTitle = (kind === '_link_') ? target : (mapData[target] || target);
-            addMenuItem(target, kind, rawTitle, level);
+            var target = parts[0], oldKind = parts[1], level = parts[2];
+            var kind = OLD_KIND_MAP[oldKind] || 'pagehtml';
+            var rawTitle = (kind === 'link') ? target : (mapData[target] || target);
+            addMenuItem(target, kind, rawTitle, level, kind === 'link' ? target : '0');
         });
-        refreshAllParentLabels();
+        updateTextarea(); // tự sửa lại đúng định dạng chuẩn ngay, không chờ admin bấm Lưu mới hết lỗi
     };
 </script>
