@@ -1,6 +1,6 @@
 from django.db.models import F, Q
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiExample
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -117,6 +117,40 @@ class WidgetSidebarView(PublicAPIMixin, APIView):
     @extend_schema(
         parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
                                       description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+        responses={200: OpenApiTypes.OBJECT},
+        examples=[
+            OpenApiExample(
+                'Ví dụ phản hồi',
+                value=[
+                    {
+                        "type": "halink_widget_slider",
+                        "type_label": "Trình chiếu Slider",
+                        "data": {
+                            "halink_widget_input_title": "Banner slider",
+                            "halink_widget_input_content": [
+                                "http://.../media/hinhanh/banner.jpg",
+                                "http://.../media/hinhanh/4games-web.jpg"
+                            ],
+                            "halink_widget_input_link": ""
+                        }
+                    },
+                    {
+                        "type": "halink_widget_post_by_cat",
+                        "type_label": "Bài viết theo chuyên mục",
+                        "data": {
+                            "halink_widget_input_title": "Ưu đãi và sự kiện",
+                            "halink_widget_input_content": {
+                                "idcat": "121",
+                                "items": [
+                                    {"Id": 1423, "title": "Sôi động lễ hội trái cây...", "image_url": "..."}
+                                ]
+                            }
+                        }
+                    }
+                ],
+                response_only=True,
+            ),
+        ],
     )
     def get(self, request, position_id):
         from .widgets import resolve_sidebar_widgets

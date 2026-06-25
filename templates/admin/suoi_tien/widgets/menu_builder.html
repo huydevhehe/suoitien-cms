@@ -56,7 +56,7 @@
     <!-- RIGHT COLUMN: DRAG & DROP TREE -->
     <div class="menu-tree" style="flex: 2; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff;">
         <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Cấu trúc Menu hiện tại</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Kéo rê <span style="font-size:16px;">☰</span> để đổi thứ tự. Bấm nút ⬅️ ➡️ để đổi thụt lề (tạo menu con).</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Kéo rê <span style="font-size:16px;">☰</span> để đổi thứ tự. Bấm <strong>➡️</strong> để biến mục thành con của mục ngay phía trên (tối đa cấp 2), bấm <strong>⬅️</strong> để đưa ra lại. Chữ in nghiêng cạnh mỗi mục cho biết đang ở cấp nào.</p>
         
         <ul id="sortable-menu" class="sortable-list" style="list-style: none; padding: 10px; min-height: 300px; border: 2px dashed #ccc; background: #fafafa; border-radius: 4px;">
             <!-- JS will populate this -->
@@ -111,6 +111,12 @@
     }
     .btn-indent:hover {
         background: #ddd;
+    }
+    .level-label {
+        font-size: 11px;
+        font-weight: 600;
+        font-style: italic;
+        margin-right: 8px;
     }
 </style>
 
@@ -205,9 +211,10 @@
         content.style.alignItems = 'center';
         content.innerHTML = `
             <span class="sortable-handle" title="Kéo thả để di chuyển">☰</span>
-            <span class="btn-indent" onclick="changeLevel(this, -1)" title="Thụt lề trái">⬅️</span>
-            <span class="btn-indent" onclick="changeLevel(this, 1)" title="Thụt lề phải">➡️</span>
-            <strong style="margin: 0 10px;">${displayTitle}</strong> 
+            <span class="btn-indent" onclick="changeLevel(this, -1)" title="Thụt lề trái (đưa lên cấp cao hơn)">⬅️</span>
+            <span class="btn-indent" onclick="changeLevel(this, 1)" title="Thụt lề phải (biến thành mục con)">➡️</span>
+            <strong style="margin: 0 10px;">${displayTitle}</strong>
+            <span class="level-label"></span>
             <span style="background: #eee; padding: 2px 6px; border-radius: 10px; font-size: 11px; color:#666;">${typeName}</span>
         `;
         
@@ -224,6 +231,22 @@
         li.appendChild(content);
         li.appendChild(removeBtn);
         sortableList.appendChild(li);
+        updateLevelLabel(li, level);
+    }
+
+    // Hiện rõ chữ "Mục chính"/"Chỉ mục con cấp X" trên mỗi mục, giống bản gốc PHP,
+    // để biết ngay đang ở cấp nào mà không cần đoán qua màu viền/thụt lề.
+    function updateLevelLabel(li, level) {
+        var span = li.querySelector('.level-label');
+        if (!span) return;
+        level = parseInt(level || '0');
+        if (level === 0) {
+            span.innerText = 'Mục chính';
+            span.style.color = '#6c757d';
+        } else {
+            span.innerText = 'Chỉ mục con cấp ' + level;
+            span.style.color = level === 1 ? '#007bff' : '#28a745';
+        }
     }
 
     // Indentation logic
@@ -233,9 +256,10 @@
         var newLevel = currentLevel + delta;
         if (newLevel < 0) newLevel = 0;
         if (newLevel > 2) newLevel = 2; // max level 2
-        
+
         li.className = 'sortable-item level-' + newLevel;
         li.setAttribute('data-level', newLevel);
+        updateLevelLabel(li, newLevel);
         updateTextarea();
     }
 
@@ -294,21 +318,4 @@
             });
         }
     };
-    
-    // Khi thêm từ Checkbox vào menu
-    document.querySelector('.menu-panel').addEventListener('click', function(e) {
-        if(e.target && e.target.nodeName == "BUTTON" && e.target.innerText === "Thêm vào menu") {
-            var ul = e.target.previousElementSibling;
-            var checkboxes = ul.querySelectorAll('input[type="checkbox"]:checked');
-            checkboxes.forEach(function(cb) {
-                var title = cb.getAttribute('data-title');
-                var idAndType = cb.value; // ex: 158_***_pagehtml
-                var rawTitle = "[[[::vi]]]" + title + "[[[::end_vi]]]";
-                addMenuItem(idAndType, rawTitle, '0');
-                cb.checked = false; // uncheck after add
-            });
-            updateTextarea();
-            e.stopPropagation();
-        }
-    }, true);
 </script>
