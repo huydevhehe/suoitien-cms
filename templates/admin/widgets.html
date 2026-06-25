@@ -162,6 +162,14 @@
                     <div>
                         <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ sidebar.name }}</h3>
                         <p class="text-xs text-gray-400 dark:text-zinc-500 font-mono mt-0.5">{{ sidebar.id }}</p>
+                        {% if sidebar.note_text %}
+                        <p class="text-xs mt-1 font-medium
+                            {% if sidebar.note_type == 'dead' %}text-red-500 dark:text-red-400
+                            {% elif sidebar.note_type == 'conditional' %}text-amber-500 dark:text-amber-400
+                            {% else %}text-emerald-600 dark:text-emerald-400{% endif %}">
+                            {% if sidebar.note_type == 'dead' %}⚠️ {% endif %}{{ sidebar.note_text }}
+                        </p>
+                        {% endif %}
                     </div>
                     <span class="inline-flex items-center justify-center bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 rounded-full px-2 py-0.5 text-xs font-semibold widget-counter">0</span>
                 </div>
@@ -315,6 +323,17 @@
     const SELECT_MENUS = JSON.parse(document.getElementById("select-menus-data").textContent);
     const SELECT_POSTCATS = JSON.parse(document.getElementById("select-postcats-data").textContent);
     const SELECT_PRODUCTCATS = JSON.parse(document.getElementById("select-productcats-data").textContent);
+
+    // Tra tên hiển thị (Chuyên mục/Danh mục/Menu) theo ID đã chọn, dùng để hiện thêm vào tiêu đề widget
+    function getSelectedLabel(selectType, value) {
+        if (!value) return "";
+        let list = [];
+        if (selectType === 'select_menu') list = SELECT_MENUS;
+        else if (selectType === 'select_postcat') list = SELECT_POSTCATS;
+        else if (selectType === 'select_productcat') list = SELECT_PRODUCTCATS;
+        const found = list.find(item => String(item.id) === String(value));
+        return found ? ` : ${found.title}` : "";
+    }
 </script>
 
 <!-- Drag and drop workspace logic -->
@@ -416,7 +435,20 @@
             const titleSpan = document.createElement("span");
             titleSpan.className = "font-semibold text-sm text-gray-800 dark:text-zinc-200 flex items-center";
             titleSpan.innerHTML = `<span class="material-symbols-outlined text-primary-500 mr-2 text-base">settings_accessibility</span> ${widgetDef.name}`;
-            
+
+            // Nếu widget có field chọn Chuyên mục/Danh mục/Menu, hiện thêm tên đã chọn vào tiêu đề
+            // để phân biệt nhiều widget cùng loại mà không cần mở ra xem (giống bản gốc PHP).
+            const selectField = widgetDef.fields.find(f => f.type && f.type.startsWith('select_'));
+            let titleSuffixSpan = null;
+            if (selectField) {
+                titleSuffixSpan = document.createElement("span");
+                titleSuffixSpan.className = "text-gray-500 dark:text-zinc-400 font-normal";
+                const savedContentForTitle = INITIAL_WIDGET_CONTENTS[instanceId];
+                const savedVal = savedContentForTitle ? savedContentForTitle[selectField.name] : null;
+                titleSuffixSpan.innerText = getSelectedLabel(selectField.type, savedVal);
+                titleSpan.appendChild(titleSuffixSpan);
+            }
+
             const actionsDiv = document.createElement("div");
             actionsDiv.className = "flex items-center space-x-2";
 
@@ -598,6 +630,13 @@
                             optItem.innerText = item.title;
                             input.appendChild(optItem);
                         });
+
+                        // Đổi lựa chọn thì cập nhật ngay tên hiển thị trên tiêu đề widget, không cần Lưu
+                        if (titleSuffixSpan) {
+                            input.addEventListener('change', () => {
+                                titleSuffixSpan.innerText = getSelectedLabel(field.type, input.value);
+                            });
+                        }
                     } else {
                         input = document.createElement("input");
                         input.type = field.type;

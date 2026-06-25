@@ -106,6 +106,30 @@ class BannerListView(PublicAPIMixin, generics.ListAPIView):
     serializer_class = BannerSerializer
 
 
+class WidgetSidebarView(PublicAPIMixin, APIView):
+    """
+    Đọc đúng các widget đang gắn ở 1 vị trí (sidebar) trong "Quản lý Widgets",
+    theo đúng thứ tự admin đã sắp. Chỉ phục vụ các vị trí thật sự được theme đọc
+    tới — đã rà soát trực tiếp source PHP gốc (xem widgets.py: VALID_POSITIONS).
+    Hỗ trợ ?lang=vi|en.
+    """
+
+    @extend_schema(
+        parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                                      description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+    )
+    def get(self, request, position_id):
+        from .widgets import resolve_sidebar_widgets
+
+        lang = request.query_params.get('lang', 'vi')
+        lang = lang if lang in SUPPORTED_LANGS else 'vi'
+
+        result = resolve_sidebar_widgets(position_id, request, lang)
+        if result is None:
+            return Response({'detail': f'Vị trí "{position_id}" không tồn tại hoặc không được dùng.'}, status=404)
+        return Response(result)
+
+
 @extend_schema_view(
     list=extend_schema(parameters=[
         OpenApiParameter(

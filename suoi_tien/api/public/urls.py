@@ -11,7 +11,7 @@ from drf_spectacular.views import (
 from .views import (
     WebsiteSettingsView, MenuListView, BannerListView, PostViewSet,
     CommentListCreateView, TicketOrderCreateView, TicketOrderLookupView,
-    FoodOrderCreateView, SupportCreateView,
+    FoodOrderCreateView, SupportCreateView, WidgetSidebarView,
 )
 from .auth_views import (
     CustomerRegisterView, CustomerLoginView, CustomerProfileView,
@@ -55,6 +55,7 @@ urlpatterns = [
     path('settings/', WebsiteSettingsView.as_view(), name='public-settings'),
     path('menus/', MenuListView.as_view(), name='public-menus'),
     path('banners/', BannerListView.as_view(), name='public-banners'),
+    path('widgets/<str:position_id>/', WidgetSidebarView.as_view(), name='public-widget-sidebar'),
     path('comments/', CommentListCreateView.as_view(), name='public-comments'),
 
     path('ticket-orders/', TicketOrderCreateView.as_view(), name='public-ticket-order-create'),

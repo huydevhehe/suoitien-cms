@@ -286,6 +286,28 @@ def parse_sidebars_from_theme(theme_key):
             {'name': 'Tab hình ảnh - video', 'id': 'halink_tab4_wg'},
             {'name': 'Tab tin tức & thư viện - video', 'id': 'halink_tab5_wg'},
         ]
+
+    # Ghi chú thực tế từng vị trí có được code theme đọc tới hay không (đã rà soát trực tiếp
+    # source PHP gốc) - giúp admin biết vị trí nào cấu hình có tác dụng, vị trí nào vô dụng.
+    SIDEBAR_NOTES = {
+        'halink_header_wg': ('dead', 'Không dùng — cấu hình vào đây sẽ KHÔNG hiện ra web'),
+        'halink_header_product_wg': ('active', 'Luôn hiện ở đầu trang Sản phẩm/Món ăn'),
+        'halink_home_wg': ('active', 'Luôn hiện ở trang chủ'),
+        'halink_footer0_wg': ('active', 'Luôn hiện ở Footer mọi trang'),
+        'halink_footer1_wg': ('active', 'Luôn hiện ở Footer mọi trang'),
+        'halink_footer2_wg': ('active', 'Luôn hiện ở Footer mọi trang'),
+        'halink_footer3_wg': ('active', 'Luôn hiện ở Footer mọi trang'),
+        'halink_tab1_wg': ('conditional', 'Chỉ hiện khi Trang/Chuyên mục/Sản phẩm/Danh mục sản phẩm tick chọn ở Sidebar'),
+        'halink_tab2_wg': ('conditional', 'Chỉ hiện khi Trang/Chuyên mục/Sản phẩm/Danh mục sản phẩm tick chọn ở Sidebar'),
+        'halink_tab3_wg': ('conditional', 'Chỉ hiện khi Trang/Chuyên mục/Sản phẩm/Danh mục sản phẩm tick chọn ở Sidebar'),
+        'halink_tab4_wg': ('conditional', 'Chỉ hiện khi Trang/Chuyên mục/Sản phẩm/Danh mục sản phẩm tick chọn ở Sidebar'),
+        'halink_tab5_wg': ('conditional', 'Chỉ hiện khi Trang/Chuyên mục/Sản phẩm/Danh mục sản phẩm tick chọn ở Sidebar'),
+    }
+    for sb in sidebars:
+        note_type, note_text = SIDEBAR_NOTES.get(sb['id'], ('', ''))
+        sb['note_type'] = note_type
+        sb['note_text'] = note_text
+
     return sidebars
 
 @staff_member_required
