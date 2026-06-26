@@ -8,7 +8,7 @@ import json
 from django.db.models import Q
 
 from suoi_tien.models import HalinkMeta, HalinkMenu, HalinkPost
-from suoi_tien.utils import build_media_url
+from suoi_tien.utils import build_media_url, clean_lang
 from suoi_tien.views.widgets_config import AVAILABLE_WIDGETS
 from .menu_tree import build_menu_tree
 from .serializers import PostSummarySerializer
@@ -111,7 +111,10 @@ def _resolve_field_value(widget_type, field, fields_dict, request, lang):
         idcat_list = [c.strip() for c in raw_value.split(',') if c.strip()]
         return {'idcat_list': idcat_list, 'items': _resolve_posts_by_idcat(idcat_list, 'post', request, lang)}
 
-    return raw_value
+    # Dọn rác thẻ song ngữ cũ ([[[:vi]]]...[[[:end_vi]]]) còn sót lại trong dữ liệu đã lưu
+    # trước đây (lúc field này còn khai báo multilang:True) - clean_lang không đổi gì
+    # nếu chuỗi không có thẻ, nên an toàn áp dụng cho mọi field text/textarea còn lại.
+    return clean_lang(raw_value, lang)
 
 
 def _get_widget_type(instance_id):

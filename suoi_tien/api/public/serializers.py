@@ -235,6 +235,7 @@ class MenuItemSerializer(serializers.Serializer):
 class MenuSerializer(serializers.Serializer):
     """Dùng để khai báo schema Swagger cho MenuListView — không gắn Model cụ thể."""
     Id = serializers.IntegerField()
+    id_cat = serializers.IntegerField(allow_null=True)
     title = serializers.CharField()
     items = MenuItemSerializer(many=True)
 

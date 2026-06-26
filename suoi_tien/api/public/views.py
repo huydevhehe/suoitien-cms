@@ -77,11 +77,22 @@ class WebsiteSettingsView(PublicAPIMixin, generics.RetrieveAPIView):
 
 
 class MenuListView(PublicAPIMixin, APIView):
-    """Trả về danh sách menu đã dựng sẵn dạng cây, sẵn sàng để FE render. Hỗ trợ ?lang=vi|en."""
+    """
+    Trả về danh sách menu đã dựng sẵn dạng cây, sẵn sàng để FE render. Hỗ trợ ?lang=vi|en.
+    Hỗ trợ ?id_cat= để lấy đúng 1 menu theo `id_cat` — ĐÂY là mã thật mà theme PHP gốc
+    dùng để xác định menu hiển thị ở đâu (ví dụ Header trái = id_cat 3, Header phải =
+    id_cat 7, xem halink_nav_menu_type2() trong halink-includes/libraries/functions.php).
+    `Id` chỉ là mã tự tăng nội bộ của bảng, không mang ý nghĩa vị trí, đừng dùng để xác định vị trí.
+    """
 
     @extend_schema(
-        parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
-                                      description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+        parameters=[
+            OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                              description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi)."),
+            OpenApiParameter('id_cat', OpenApiTypes.INT, OpenApiParameter.QUERY,
+                              description="Lọc đúng 1 menu theo id_cat (mã vị trí thật, hỏi Admin để biết "
+                                           "id_cat nào dùng cho Header trái/phải, Footer...)."),
+        ],
         responses=MenuSerializer(many=True),
     )
     def get(self, request):
@@ -89,9 +100,14 @@ class MenuListView(PublicAPIMixin, APIView):
         lang = lang if lang in SUPPORTED_LANGS else 'vi'
 
         menus = HalinkMenu.objects.filter(ticlock=0)
+        id_cat = request.query_params.get('id_cat')
+        if id_cat is not None:
+            menus = menus.filter(id_cat=id_cat)
+
         data = [
             {
                 'Id': menu.Id,
+                'id_cat': menu.id_cat,
                 'title': clean_lang(menu.title_cat, lang),
                 'items': build_menu_tree(menu.content_menu, lang),
             }
