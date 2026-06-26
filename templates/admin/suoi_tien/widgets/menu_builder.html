@@ -135,6 +135,18 @@
     // id, type, link_url, link_text, level, title, blank.
     var KIND_LABELS = { 'pagehtml': 'Trang tĩnh', 'catnews': 'Chuyên mục bài', 'catelog': 'Danh mục SP', 'link': 'Liên kết' };
 
+    // Tra tên thật theo ID (Trang/Chuyên mục/Sản phẩm...) - dùng để phát hiện mục bị lỗi
+    // (xem isBrokenItem). Đọc 1 lần khi tải trang, có sẵn trước window.onload.
+    var mapData = JSON.parse(document.getElementById('title-map-data').textContent);
+
+    // 1 mục được coi là "nghi vấn lỗi" khi: không phải Liên kết tự tạo (link đặt tên tay)
+    // VÀ id của nó không khớp bất kỳ Trang/Chuyên mục/Sản phẩm nào còn tồn tại - nghĩa là
+    // khi tạo mục này, admin (hoặc PHP) đã không gán đúng tên/ID, hoặc bài viết đó đã bị xóa.
+    function isBrokenItem(target, kind) {
+        if (kind === 'link') return false;
+        return !mapData[target];
+    }
+
     function toggleGroup(id) {
         var el = document.getElementById('list-' + id);
         el.style.display = el.style.display === 'none' ? 'block' : 'none';
@@ -203,6 +215,11 @@
 
         var typeName = KIND_LABELS[kind] || kind;
         var displayTitle = cleanTitle(rawTitle);
+        var broken = isBrokenItem(target, kind);
+        if (broken) {
+            li.style.border = '2px solid #dc3545';
+            li.style.background = '#fff5f5';
+        }
 
         var content = document.createElement('div');
         content.style.display = 'flex';
@@ -212,6 +229,7 @@
             <span class="btn-indent" onclick="changeLevel(this, -1)" title="Thụt lề trái (đưa lên cấp cao hơn)">⬅️</span>
             <span class="btn-indent" onclick="changeLevel(this, 1)" title="Thụt lề phải (biến thành mục con)">➡️</span>
             <strong style="margin: 0 10px;">${displayTitle}</strong>
+            ${broken ? '<span style="background:#dc3545; color:#fff; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:6px;" title="ID không khớp Trang/Chuyên mục/Sản phẩm nào còn tồn tại - có thể do chưa đặt tên đúng lúc tạo, hoặc nội dung đã bị xóa. Vào đây sửa lại hoặc xóa mục này.">⚠ Thiếu tên/liên kết hỏng</span>' : ''}
             <span class="level-label"></span>
             <span class="parent-label" style="font-size: 11px; color: #999;"></span>
             <span style="background: #eee; padding: 2px 6px; border-radius: 10px; font-size: 11px; color:#666;">${typeName}</span>
@@ -310,8 +328,6 @@
         var raw = document.getElementById(widgetId).value;
         if (!raw || !raw.trim()) return;
 
-        var mapData = JSON.parse(document.getElementById('title-map-data').textContent);
-
         // Định dạng chuẩn (giống PHP gốc thật): mảng JSON các chuỗi 7 phần nối
         // bằng "_***_": id, type, link_url, link_text, level, title, blank.
         var items = null;
@@ -333,6 +349,7 @@
                 addMenuItem(it.id, it.kind, it.title, it.level, it.linkUrl);
             });
             refreshAllParentLabels();
+            showBrokenSummary();
             return;
         }
 
@@ -352,5 +369,26 @@
             addMenuItem(target, kind, rawTitle, level, kind === 'link' ? target : '0');
         });
         updateTextarea(); // tự sửa lại đúng định dạng chuẩn ngay, không chờ admin bấm Lưu mới hết lỗi
+        showBrokenSummary();
     };
+
+    // Đếm số mục đang bị viền đỏ "⚠ Thiếu tên/liên kết hỏng" và hiện 1 dòng cảnh báo to
+    // ngay đầu khung menu - để admin không cần kéo xem từng mục mới phát hiện ra.
+    function showBrokenSummary() {
+        var existing = document.getElementById('broken-summary-banner');
+        if (existing) existing.remove();
+
+        var brokenCount = sortableList.querySelectorAll('.sortable-item').length
+            ? Array.from(sortableList.querySelectorAll('.sortable-item')).filter(function(li) {
+                return isBrokenItem(li.getAttribute('data-target'), li.getAttribute('data-kind'));
+            }).length
+            : 0;
+        if (brokenCount === 0) return;
+
+        var banner = document.createElement('div');
+        banner.id = 'broken-summary-banner';
+        banner.style.cssText = 'background:#fff5f5; border:1px solid #dc3545; color:#dc3545; padding:8px 12px; border-radius:4px; margin-bottom:10px; font-size:13px;';
+        banner.innerText = '⚠ Phát hiện ' + brokenCount + ' mục bị thiếu tên hoặc trỏ tới nội dung đã xóa (viền đỏ ở dưới) - nên mở từng mục đó sửa lại tên hoặc xóa bỏ.';
+        sortableList.parentNode.insertBefore(banner, sortableList);
+    }
 </script>

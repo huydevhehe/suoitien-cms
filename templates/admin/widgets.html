@@ -261,6 +261,18 @@
     const INITIAL_SIDEBAR_MAPPING = JSON.parse(document.getElementById("sidebar-mapping-data").textContent);
     const INITIAL_WIDGET_CONTENTS = JSON.parse(document.getElementById("widget-contents-data").textContent);
 
+    // Dọn rác thẻ song ngữ cũ ([[[:vi]]]...[[[:end_vi]]]) còn sót trong dữ liệu đã lưu từ
+    // lúc field này còn khai báo multilang:True - để admin không thấy rác khi mở sửa lại
+    // (data thật trong DB không đổi, chỉ làm sạch lúc hiển thị; API public đã tự dọn ở
+    // suoi_tien/api/public/widgets.py rồi, đây chỉ là làm sạch luôn phía giao diện Admin).
+    function cleanLegacyTag(str) {
+        if (!str) return str;
+        const viMatch = str.match(/\[\[\[:vi\]\]\](.*?)\[\[\[:end_vi\]\]\]/);
+        if (viMatch) return viMatch[1];
+        if (str.includes('[[[:')) return str.replace(/\[\[\[:[a-z_]+\]\]\]|\[\[\[:end_[a-z_]+\]\]\]/g, '');
+        return str;
+    }
+
     // Mở popup chọn nhiều ảnh (dùng chung image-browser, chỉ thêm tham số multi=1)
     function openImageBrowserMulti(fieldId) {
         const url = `/admin/suoi_tien/image-browser/?field_id=${fieldId}&subfolder=hinhanh&multi=1`;
@@ -649,7 +661,7 @@
                     // Populate existing value
                     const oldContent = INITIAL_WIDGET_CONTENTS[instanceId];
                     if (oldContent && oldContent[field.name] !== undefined) {
-                        input.value = oldContent[field.name];
+                        input.value = cleanLegacyTag(oldContent[field.name]);
                     }
 
                     fieldWrapper.appendChild(input);
