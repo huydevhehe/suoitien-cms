@@ -323,8 +323,7 @@ class HalinkMeta(models.Model):
                         int(item.get('price', 0)) * int(item.get('qtv', 0))
                         for item in items if isinstance(item, dict)
                     )
-                    if total > 0:
-                        self.meta_like = str(total)
+                    self.meta_like = str(total)
             except (json.JSONDecodeError, ValueError, TypeError):
                 pass
 
