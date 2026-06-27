@@ -29,7 +29,8 @@ HOME_SECTIONS = {
         'name': 'Tầng 2 - Đặt vé / Tra vé nhanh',
         'group': 'C',
         'fields': [
-            {'name': 'link_dat_ve', 'label': 'Link nút "Đặt vé ngay"', 'type': 'text', 'multilang': False},
+            {'name': 'link_dat_ve', 'label': 'Link nút "ĐẶT VÉ" (Ví dụ: /chon-ve)', 'type': 'text', 'multilang': False},
+            {'name': 'link_tra_cuu', 'label': 'Link nút "TRA CỨU VÉ" (Ví dụ: /tra-cuu)', 'type': 'text', 'multilang': False},
         ],
     },
     'section_03_banner_gioithieu': {
