@@ -45,6 +45,22 @@
       background: #f3e8ff; color: #6b21a8; border: 1px solid #c084fc; margin-top: 10px;
   }
   .dark .pick-image-btn { background: #1e1b4b; color: #a78bfa; border-color: #7c3aed; }
+  .section-row-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+      color: #6b7280; margin: 24px 0 10px;
+  }
+  .dark .section-row-title { color: #a1a1aa; }
+  .section-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start;
+  }
+  .lang-tab-btn {
+      padding: 4px 14px; border-radius: 9999px; font-size: 11px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase; cursor: pointer;
+      border: 1px solid transparent; background: transparent; color: #71717a;
+  }
+  .lang-tab-btn.active { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+  .dark .lang-tab-btn.active { background: rgba(124, 58, 237, .2); color: #c4b5fd; border-color: #6d28d9; }
+  .section-grid .home-section-card { margin-bottom: 0; }
 </style>
 
 <div class="px-4 lg:px-12 py-6">
@@ -56,79 +72,28 @@
         </button>
     </div>
     <p class="text-sm text-gray-500 dark:text-zinc-400 mb-6">
-        15 khối cố định theo đúng thiết kế trang chủ — chỉ sửa nội dung/ảnh/link bên trong từng khối,
-        không kéo-thả, không thêm/xóa khối.
+        19 khối cố định theo đúng thiết kế trang chủ (15 khối trang chủ + 4 cột Footer) —
+        chỉ sửa nội dung/ảnh/link bên trong từng khối, không kéo-thả, không thêm/xóa khối.
     </p>
 
-    <div id="sections-list">
-        {% for key, section in home_sections.items %}
-        <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
-            <div class="flex items-center">
-                <strong class="text-gray-900 dark:text-white">{{ section.name }}</strong>
-                <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
-            </div>
+    <div class="section-row-title">Nhóm C - Nội dung tĩnh</div>
+    <div class="section-grid">
+        {% for key, section in section_rows.C %}{% include "admin/_home_section_card.html" %}{% endfor %}
+    </div>
 
-            {% if section.group == 'A' %}
-                <label class="field-label">Chọn Bài viết/Trang gắn vào khối này</label>
-                <select class="section-input" data-field-name="post_id">
-                    <option value="">-- Chưa chọn --</option>
-                    {% for p in posts_for_select %}
-                    <option value="{{ p.Id }}">{{ p.title }} ({{ p.alias }})</option>
-                    {% endfor %}
-                </select>
+    <div class="section-row-title">Nhóm B - Liệt kê theo chuyên mục</div>
+    <div class="section-grid">
+        {% for key, section in section_rows.B %}{% include "admin/_home_section_card.html" %}{% endfor %}
+    </div>
 
-            {% elif section.group == 'B' %}
-                <label class="field-label">Mã chuyên mục (idcat) - nhiều mã ngăn bởi dấu phẩy</label>
-                <input type="text" class="section-input" data-field-name="idcat_list" placeholder="vd: 121 hoặc 212,204,242">
-                <label class="field-label">Tiêu đề khối</label>
-                <input type="text" class="section-input" data-field-name="title">
-                <label class="field-label">Số bài tối đa hiện ra (để trống = không giới hạn)</label>
-                <input type="number" class="section-input" data-field-name="limit" min="1">
+    <div class="section-row-title">Nhóm A - Gắn 1 bài viết cố định</div>
+    <div class="section-grid">
+        {% for key, section in section_rows.A %}{% include "admin/_home_section_card.html" %}{% endfor %}
+    </div>
 
-            {% else %}
-                {% for field in section.fields %}
-                    {% if field.multilang %}
-                        <label class="field-label">{{ field.label }} (Tiếng Việt)</label>
-                        {% if field.type == 'textarea' %}
-                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}_lg_vi"></textarea>
-                        {% else %}
-                        <input type="text" class="section-input" data-field-name="{{ field.name }}_lg_vi">
-                        {% endif %}
-                        <label class="field-label">{{ field.label }} (English)</label>
-                        {% if field.type == 'textarea' %}
-                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}_lg_en"></textarea>
-                        {% else %}
-                        <input type="text" class="section-input" data-field-name="{{ field.name }}_lg_en">
-                        {% endif %}
-                    {% elif field.type == 'image' %}
-                        <label class="field-label">{{ field.label }}</label>
-                        <input type="hidden" id="field_{{ key }}_{{ field.name }}" data-field-name="{{ field.name }}">
-                        <div id="field_{{ key }}_{{ field.name }}_preview"></div>
-                        <button type="button" class="pick-image-btn" onclick="pickSingleImage('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
-                    {% elif field.type == 'image_list' %}
-                        <label class="field-label">{{ field.label }}</label>
-                        <div style="display:flex; gap:8px; align-items:flex-start;">
-                            <textarea id="field_{{ key }}_{{ field.name }}" class="section-input" rows="2"
-                                data-field-name="{{ field.name }}"
-                                oninput="renderHomeImageListPreview(this, document.getElementById('field_{{ key }}_{{ field.name }}_preview'))"></textarea>
-                            <button type="button" class="pick-image-btn" onclick="pickMultiImages('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
-                        </div>
-                        <div id="field_{{ key }}_{{ field.name }}_preview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
-                    {% elif field.type == 'link_list' %}
-                        <label class="field-label">{{ field.label }}</label>
-                        <div id="linklist_{{ key }}_{{ field.name }}" class="link-list-container" data-link-list-name="{{ field.name }}"></div>
-                        <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
-                    {% elif field.type == 'textarea' %}
-                        <label class="field-label">{{ field.label }}</label>
-                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}"></textarea>
-                    {% else %}
-                        <label class="field-label">{{ field.label }}</label>
-                        <input type="text" class="section-input" data-field-name="{{ field.name }}">
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
-        {% endfor %}
+    <div class="section-row-title">Footer - 4 cột cố định</div>
+    <div class="section-grid">
+        {% for key, section in section_rows.FOOTER %}{% include "admin/_home_section_card.html" %}{% endfor %}
     </div>
 </div>
 
@@ -136,6 +101,16 @@
 
 <script>
     const SECTION_VALUES = JSON.parse(document.getElementById("section-values-data").textContent);
+
+    // ---- Tab VI/EN cho field song ngữ - chỉ hiện 1 ô tại 1 thời điểm ----
+    function switchLangTab(btn, baseId) {
+        const lang = btn.getAttribute('data-lang');
+        btn.parentElement.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        const viInput = document.getElementById(baseId + '_vi');
+        const enInput = document.getElementById(baseId + '_en');
+        if (viInput) viInput.style.display = (lang === 'vi') ? '' : 'none';
+        if (enInput) enInput.style.display = (lang === 'en') ? '' : 'none';
+    }
 
     // ---- Ảnh đơn (Nhóm C, field type=image) ----
     function pickSingleImage(fieldId) {

@@ -87,6 +87,7 @@ HOME_SECTIONS = {
     'section_16a_ve_chung_toi': {
         'name': 'Tầng 16a - Footer: Về chúng tôi',
         'group': 'C',
+        'is_footer': True,
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
             {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
@@ -95,6 +96,7 @@ HOME_SECTIONS = {
     'section_16b_dieu_khoan': {
         'name': 'Tầng 16b - Footer: Điều khoản - Chính sách',
         'group': 'C',
+        'is_footer': True,
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
             {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
@@ -103,6 +105,7 @@ HOME_SECTIONS = {
     'section_16c_lien_he': {
         'name': 'Tầng 16c - Footer: Liên hệ ngay',
         'group': 'C',
+        'is_footer': True,
         'fields': [
             {'name': 'logo', 'label': 'Logo/Ảnh', 'type': 'image', 'multilang': False},
             {'name': 'address', 'label': 'Địa chỉ', 'type': 'text', 'multilang': True},
@@ -113,6 +116,7 @@ HOME_SECTIONS = {
     'section_16d_gioi_thieu': {
         'name': 'Tầng 16d - Footer: Giới thiệu',
         'group': 'C',
+        'is_footer': True,
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'content', 'label': 'Nội dung giới thiệu công ty', 'type': 'textarea', 'multilang': True},
@@ -134,6 +138,17 @@ def _load_section_values():
     return values
 
 
+def _group_sections_for_display():
+    """Gom 19 khối thành 4 dải hiển thị ngang: Nhóm C (nội dung tĩnh, trừ Footer) ->
+    Nhóm B (theo chuyên mục) -> Nhóm A (gắn bài viết) -> Footer (4 cột) - đỡ phải
+    cuộn dài 1 cột dọc duy nhất."""
+    rows = {'C': [], 'B': [], 'A': [], 'FOOTER': []}
+    for key, section in HOME_SECTIONS.items():
+        bucket = 'FOOTER' if section.get('is_footer') else section['group']
+        rows[bucket].append((key, section))
+    return rows
+
+
 @staff_member_required
 def home_sections_view(request):
     section_values = _load_section_values()
@@ -144,7 +159,7 @@ def home_sections_view(request):
     ]
 
     context = {
-        'home_sections': HOME_SECTIONS,
+        'section_rows': _group_sections_for_display(),
         'section_values': section_values,
         'posts_for_select': posts_for_select,
         'title': 'Cấu hình Trang chủ',

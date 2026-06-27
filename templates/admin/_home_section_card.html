@@ -1,0 +1,73 @@
+{% comment %}
+Partial render 1 thẻ-khối cho "Cấu hình Trang chủ". Dùng {% include %} với context
+có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - include trong
+{% for %} sẽ tự kế thừa biến vòng lặp, không cần truyền tay.
+{% endcomment %}
+<div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
+    <div class="flex items-center">
+        <strong class="text-gray-900 dark:text-white">{{ section.name }}</strong>
+        <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
+    </div>
+
+    {% if section.group == 'A' %}
+        <label class="field-label">Chọn Bài viết/Trang gắn vào khối này</label>
+        <select class="section-input" data-field-name="post_id">
+            <option value="">-- Chưa chọn --</option>
+            {% for p in posts_for_select %}
+            <option value="{{ p.Id }}">{{ p.title }} ({{ p.alias }})</option>
+            {% endfor %}
+        </select>
+
+    {% elif section.group == 'B' %}
+        <label class="field-label">Mã chuyên mục (idcat) - nhiều mã ngăn bởi dấu phẩy</label>
+        <input type="text" class="section-input" data-field-name="idcat_list" placeholder="vd: 121 hoặc 212,204,242">
+        <label class="field-label">Tiêu đề khối</label>
+        <input type="text" class="section-input" data-field-name="title">
+        <label class="field-label">Số bài tối đa hiện ra (để trống = không giới hạn)</label>
+        <input type="number" class="section-input" data-field-name="limit" min="1">
+
+    {% else %}
+        {% for field in section.fields %}
+            {% if field.multilang %}
+                <label class="field-label">{{ field.label }}</label>
+                <div class="flex items-center gap-2 mb-1">
+                    <button type="button" class="lang-tab-btn active" data-lang="vi"
+                        onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">VI</button>
+                    <button type="button" class="lang-tab-btn" data-lang="en"
+                        onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">EN</button>
+                </div>
+                {% if field.type == 'textarea' %}
+                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi"></textarea>
+                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;"></textarea>
+                {% else %}
+                <input type="text" class="section-input" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi">
+                <input type="text" class="section-input" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;">
+                {% endif %}
+            {% elif field.type == 'image' %}
+                <label class="field-label">{{ field.label }}</label>
+                <input type="hidden" id="field_{{ key }}_{{ field.name }}" data-field-name="{{ field.name }}">
+                <div id="field_{{ key }}_{{ field.name }}_preview"></div>
+                <button type="button" class="pick-image-btn" onclick="pickSingleImage('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
+            {% elif field.type == 'image_list' %}
+                <label class="field-label">{{ field.label }}</label>
+                <div style="display:flex; gap:8px; align-items:flex-start;">
+                    <textarea id="field_{{ key }}_{{ field.name }}" class="section-input" rows="2"
+                        data-field-name="{{ field.name }}"
+                        oninput="renderHomeImageListPreview(this, document.getElementById('field_{{ key }}_{{ field.name }}_preview'))"></textarea>
+                    <button type="button" class="pick-image-btn" onclick="pickMultiImages('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
+                </div>
+                <div id="field_{{ key }}_{{ field.name }}_preview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
+            {% elif field.type == 'link_list' %}
+                <label class="field-label">{{ field.label }}</label>
+                <div id="linklist_{{ key }}_{{ field.name }}" class="link-list-container" data-link-list-name="{{ field.name }}"></div>
+                <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
+            {% elif field.type == 'textarea' %}
+                <label class="field-label">{{ field.label }}</label>
+                <textarea class="section-input" rows="3" data-field-name="{{ field.name }}"></textarea>
+            {% else %}
+                <label class="field-label">{{ field.label }}</label>
+                <input type="text" class="section-input" data-field-name="{{ field.name }}">
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
