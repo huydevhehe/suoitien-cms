@@ -71,12 +71,15 @@ def _resolve_group_c(section_def, data_raw, request, lang):
 
 
 def resolve_home_section(section_key, request, lang='vi'):
-    """Trả {'section_key', 'group', 'data'} cho 1 khối, hoặc None nếu section_key không hợp lệ."""
+    """Trả {'section_key', 'group', 'name', 'data', '_is_hidden'} cho 1 khối, hoặc None nếu section_key không hợp lệ."""
     section_def = HOME_SECTIONS.get(section_key)
     if not section_def:
         return None
 
     data_raw = _load_section_raw(section_key)
+    if data_raw.get('_is_hidden'):
+        return {'section_key': section_key, 'group': section_def['group'], '_is_hidden': True}
+
     group = section_def['group']
 
     if group == 'A':
@@ -86,18 +89,21 @@ def resolve_home_section(section_key, request, lang='vi'):
     else:
         data = _resolve_group_c(section_def, data_raw, request, lang)
 
-    return {'section_key': section_key, 'group': group, 'name': section_def['name'], 'data': data}
+    name = data_raw.get('_custom_name') or section_def['name']
+    return {'section_key': section_key, 'group': group, 'name': name, 'data': data, '_is_hidden': False}
 
 
 def resolve_all_home_sections(request, lang='vi'):
-    """Trả list đủ 15 khối theo đúng thứ tự khai báo trong HOME_SECTIONS. Lỗi 1 khối
-    (vd bài viết bị xóa) không được làm hỏng cả response."""
+    """Trả list các khối theo thứ tự khai báo trong HOME_SECTIONS. Khối bị _is_hidden=True sẽ bị bỏ qua."""
     result = []
     for section_key in HOME_SECTIONS:
         try:
             section = resolve_home_section(section_key, request, lang)
+            if section and section.get('_is_hidden'):
+                continue
         except Exception:
             section = {'section_key': section_key, 'group': HOME_SECTIONS[section_key]['group'],
                        'name': HOME_SECTIONS[section_key]['name'], 'data': None}
-        result.append(section)
+        if section:
+            result.append(section)
     return result

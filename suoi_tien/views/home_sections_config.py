@@ -34,17 +34,15 @@ HOME_SECTIONS = {
         ],
     },
     'section_03_banner_gioithieu': {
-        'name': 'Tầng 3 - Banner Slider & Giới thiệu',
+        'name': 'Tầng 3 - Banner Slider',
         'group': 'C',
         'fields': [
             {'name': 'banner_images', 'label': 'Danh sách ảnh Banner Slider', 'type': 'image_list', 'multilang': False},
             {'name': 'banner_link', 'label': 'Link khi bấm vào Banner', 'type': 'text', 'multilang': False},
-            {'name': 'gioithieu_image', 'label': 'Ảnh khối Giới thiệu', 'type': 'image', 'multilang': False},
-            {'name': 'gioithieu_link', 'label': 'Link "Xem thêm giới thiệu"', 'type': 'text', 'multilang': False},
         ],
     },
     'section_05_dichvu': {
-        'name': 'Tầng 5 - Dịch vụ & Trải nghiệm',
+        'name': 'Tầng 5 - Du lịch văn hóa Suối Tiên',
         'group': 'C',
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
@@ -71,7 +69,7 @@ HOME_SECTIONS = {
     },
 
     # ---- Nhóm A: gắn 1 bài viết cố định ----
-    'section_06_van_hoa': {'name': 'Tầng 6 - Du lịch văn hóa & tâm linh', 'group': 'A'},
+    'section_06_van_hoa': {'name': 'Tầng 6 - Bài viết Văn hóa tâm linh', 'group': 'A'},
     'section_08_bien_tien_dong': {'name': 'Tầng 8 - Công viên nước Biển Tiên Đồng', 'group': 'A'},
     'section_09_farm': {'name': 'Tầng 9 - Suối Tiên Farm', 'group': 'A'},
     'section_10a_amthuc': {'name': 'Tầng 10a - Ẩm thực Suối Tiên', 'group': 'A'},
@@ -81,7 +79,7 @@ HOME_SECTIONS = {
     # ---- Nhóm B: liệt kê theo chuyên mục ----
     'section_04_uudai': {'name': 'Tầng 4 - Tin tức Ưu đãi & sự kiện', 'group': 'B'},
     'section_07_tohop150': {'name': 'Tầng 7 - Tổ hợp 150 công trình', 'group': 'B'},
-    'section_12_teambuilding': {'name': 'Tầng 12 - Dịch vụ thương mại / Teambuilding', 'group': 'B'},
+    'section_12_teambuilding': {'name': 'Tầng 12 - Các dịch vụ thương mại', 'group': 'B'},
     'section_13_camnang': {'name': 'Tầng 13 - Cẩm nang du lịch', 'group': 'B'},
 
     # ---- Tầng 16: 4 cột Footer (gộp chung vào đây cho gọn, thay cho halink_footer2_wg) ----

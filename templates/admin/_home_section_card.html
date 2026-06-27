@@ -4,9 +4,20 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
 {% for %} sẽ tự kế thừa biến vòng lặp, không cần truyền tay.
 {% endcomment %}
 <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
-    <div class="flex items-center">
-        <strong class="text-gray-900 dark:text-white">{{ section.name }}</strong>
-        <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
+    <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-2">
+            <strong class="text-gray-900 dark:text-white card-section-title">{{ section.name }}</strong>
+            <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
+        </div>
+        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-red-600 font-medium select-none">
+            <input type="checkbox" class="section-hidden-checkbox" data-field-name="_is_hidden">
+            <span>Ẩn khối này</span>
+        </label>
+    </div>
+
+    <div class="mb-3">
+        <label class="field-label" style="font-size: 11px; color: #6b7280;">Tên gợi nhớ nội bộ (Đổi tên hiển thị ở Admin này)</label>
+        <input type="text" class="section-input custom-name-input" data-field-name="_custom_name" placeholder="Mặc định: {{ section.name }}" oninput="updateCardTitle(this)">
     </div>
 
     {% if section.group == 'A' %}

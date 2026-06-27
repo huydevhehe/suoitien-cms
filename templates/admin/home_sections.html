@@ -191,11 +191,32 @@
         row.querySelector('.link-list-url').value = url || '';
     }
 
+    function updateCardTitle(input) {
+        const card = input.closest('.home-section-card');
+        if (!card) return;
+        const titleEl = card.querySelector('.card-section-title');
+        const defaultTitle = input.getAttribute('placeholder').replace('Mặc định: ', '');
+        if (titleEl) {
+            titleEl.textContent = input.value.trim() ? input.value.trim() : defaultTitle;
+        }
+    }
+
     // ---- Nạp giá trị đã lưu vào từng khối ----
     document.querySelectorAll('.home-section-card').forEach(card => {
         const key = card.getAttribute('data-section-key');
         const group = card.getAttribute('data-group');
         const data = SECTION_VALUES[key] || {};
+
+        // Nạp 2 trường chung: tên gợi nhớ + trạng thái ẩn
+        const customNameInput = card.querySelector('[data-field-name="_custom_name"]');
+        if (customNameInput && data._custom_name) {
+            customNameInput.value = data._custom_name;
+            updateCardTitle(customNameInput);
+        }
+        const hiddenCheckbox = card.querySelector('[data-field-name="_is_hidden"]');
+        if (hiddenCheckbox && data._is_hidden) {
+            hiddenCheckbox.checked = true;
+        }
 
         if (group === 'A') {
             const sel = card.querySelector('[data-field-name="post_id"]');
@@ -210,6 +231,7 @@
         } else {
             card.querySelectorAll('[data-field-name]').forEach(el => {
                 const fname = el.getAttribute('data-field-name');
+                if (fname === '_custom_name' || fname === '_is_hidden') return;
                 if (!(fname in data)) return;
                 el.value = data[fname] || '';
             });
@@ -240,6 +262,12 @@
             const group = card.getAttribute('data-group');
             const fields = {};
 
+            // Lấy 2 trường chung cho mọi nhóm
+            const customNameInput = card.querySelector('[data-field-name="_custom_name"]');
+            fields._custom_name = customNameInput ? customNameInput.value.trim() : '';
+            const hiddenCheckbox = card.querySelector('[data-field-name="_is_hidden"]');
+            fields._is_hidden = hiddenCheckbox ? hiddenCheckbox.checked : false;
+
             if (group === 'A') {
                 const sel = card.querySelector('[data-field-name="post_id"]');
                 fields.post_id = sel.value ? parseInt(sel.value, 10) : null;
@@ -252,7 +280,9 @@
                 fields.limit = limitInput.value ? parseInt(limitInput.value, 10) : null;
             } else {
                 card.querySelectorAll('[data-field-name]').forEach(el => {
-                    fields[el.getAttribute('data-field-name')] = el.value;
+                    const fname = el.getAttribute('data-field-name');
+                    if (fname === '_custom_name' || fname === '_is_hidden') return;
+                    fields[fname] = el.value;
                 });
                 card.querySelectorAll('.link-list-container').forEach(container => {
                     const fname = container.getAttribute('data-link-list-name');
