@@ -1,0 +1,147 @@
+"""
+Cấu hình "Nội dung Trang chủ" theo 15 khối cố định (tầng 2-15), thay cho hệ thống
+Widget kéo-thả generic ở vị trí `halink_home_wg`. Tầng 1 (Header/Menu) và Tầng 16
+(Footer) không thuộc phạm vi này, xem suoi_tien/api/public/home_sections.py cho
+phần resolver Public API tương ứng.
+"""
+import json
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+from django.utils import timezone
+from django.contrib import admin
+
+from suoi_tien.models import HalinkMeta, HalinkPost
+from suoi_tien.utils import clean_lang
+
+META_TYPE = 'home_section'
+
+# 3 nhóm theo cách lấy dữ liệu (xem suoi_tien/api/public/home_sections.py để biết
+# cách resolve từng nhóm):
+# - A: gắn cố định 1 Bài viết/Trang có sẵn (chỉ cần post_id).
+# - B: liệt kê bài viết theo 1 hoặc nhiều chuyên mục (idcat_list).
+# - C: nội dung tĩnh nhập trực tiếp (field khai báo riêng từng khối).
+HOME_SECTIONS = {
+    # ---- Nhóm C: nội dung tĩnh ----
+    'section_02_dat_ve': {
+        'name': 'Tầng 2 - Đặt vé / Tra vé nhanh',
+        'group': 'C',
+        'fields': [
+            {'name': 'link_dat_ve', 'label': 'Link nút "Đặt vé ngay"', 'type': 'text', 'multilang': False},
+        ],
+    },
+    'section_03_banner_gioithieu': {
+        'name': 'Tầng 3 - Banner Slider & Giới thiệu',
+        'group': 'C',
+        'fields': [
+            {'name': 'banner_images', 'label': 'Danh sách ảnh Banner Slider', 'type': 'image_list', 'multilang': False},
+            {'name': 'banner_link', 'label': 'Link khi bấm vào Banner', 'type': 'text', 'multilang': False},
+            {'name': 'gioithieu_image', 'label': 'Ảnh khối Giới thiệu', 'type': 'image', 'multilang': False},
+            {'name': 'gioithieu_link', 'label': 'Link "Xem thêm giới thiệu"', 'type': 'text', 'multilang': False},
+        ],
+    },
+    'section_05_dichvu': {
+        'name': 'Tầng 5 - Dịch vụ & Trải nghiệm',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ', 'type': 'text', 'multilang': True},
+            {'name': 'content', 'label': 'Nội dung ngắn (hỗ trợ xuống dòng bằng <br>)', 'type': 'textarea', 'multilang': True},
+            {'name': 'image', 'label': 'Ảnh minh họa', 'type': 'image', 'multilang': False},
+        ],
+    },
+    'section_14_bando': {
+        'name': 'Tầng 14 - Bản đồ khu vực',
+        'group': 'C',
+        'fields': [
+            {'name': 'map_image', 'label': 'Ảnh sơ đồ bản đồ', 'type': 'image', 'multilang': False},
+            {'name': 'map_link', 'label': 'Link "Xem bản đồ tương tác"', 'type': 'text', 'multilang': False},
+        ],
+    },
+    'section_15_doitac': {
+        'name': 'Tầng 15 - Đối tác đồng hành / Gallery',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'images', 'label': 'Danh sách logo đối tác (thêm bao nhiêu cũng được)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
+
+    # ---- Nhóm A: gắn 1 bài viết cố định ----
+    'section_06_van_hoa': {'name': 'Tầng 6 - Du lịch văn hóa & tâm linh', 'group': 'A'},
+    'section_08_bien_tien_dong': {'name': 'Tầng 8 - Công viên nước Biển Tiên Đồng', 'group': 'A'},
+    'section_09_farm': {'name': 'Tầng 9 - Suối Tiên Farm', 'group': 'A'},
+    'section_10a_amthuc': {'name': 'Tầng 10a - Ẩm thực Suối Tiên', 'group': 'A'},
+    'section_10b_showdien': {'name': 'Tầng 10b - Show diễn nghệ thuật đêm', 'group': 'A'},
+    'section_11_combo': {'name': 'Tầng 11 - Gợi ý Combo phù hợp', 'group': 'A'},
+
+    # ---- Nhóm B: liệt kê theo chuyên mục ----
+    'section_04_uudai': {'name': 'Tầng 4 - Tin tức Ưu đãi & sự kiện', 'group': 'B'},
+    'section_07_tohop150': {'name': 'Tầng 7 - Tổ hợp 150 công trình', 'group': 'B'},
+    'section_12_teambuilding': {'name': 'Tầng 12 - Dịch vụ thương mại / Teambuilding', 'group': 'B'},
+    'section_13_camnang': {'name': 'Tầng 13 - Cẩm nang du lịch', 'group': 'B'},
+}
+
+
+def _load_section_values():
+    """Đọc toàn bộ giá trị đã lưu của 15 khối, trả dict section_key -> dict đã parse JSON."""
+    values = {}
+    for meta in HalinkMeta.objects.filter(meta_type=META_TYPE):
+        if not meta.meta_title:
+            continue
+        try:
+            values[meta.meta_title] = json.loads(meta.meta_value) if meta.meta_value else {}
+        except (ValueError, TypeError):
+            values[meta.meta_title] = {}
+    return values
+
+
+@staff_member_required
+def home_sections_view(request):
+    section_values = _load_section_values()
+
+    posts_for_select = [
+        {'Id': p['Id'], 'title': clean_lang(p['title_vn']), 'alias': p['alias']}
+        for p in HalinkPost.objects.filter(ticlock='0').exclude(post_type='product').values('Id', 'title_vn', 'alias').order_by('title_vn')
+    ]
+
+    context = {
+        'home_sections': HOME_SECTIONS,
+        'section_values': section_values,
+        'posts_for_select': posts_for_select,
+        'title': 'Nội dung Trang chủ',
+    }
+    context.update(admin.site.each_context(request))
+    return render(request, 'admin/home_sections.html', context)
+
+
+@csrf_exempt
+@staff_member_required
+def home_sections_save_ajax(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Chỉ chấp nhận phương thức POST'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        sections_data = data.get('sections', {})  # Map: section_key -> {field: value, ...}
+
+        with transaction.atomic():
+            for section_key, fields in sections_data.items():
+                if section_key not in HOME_SECTIONS:
+                    continue
+
+                meta_item = HalinkMeta.objects.filter(meta_type=META_TYPE, meta_title=section_key).first()
+                if not meta_item:
+                    meta_item = HalinkMeta(meta_type=META_TYPE, meta_title=section_key, ticlock=0)
+
+                meta_item.meta_value = json.dumps(fields, ensure_ascii=False)
+                meta_item.date = timezone.now()
+                meta_item.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Đã lưu cấu hình Trang chủ thành công!'})
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'status': 'error', 'message': f'Lỗi hệ thống: {str(e)}'}, status=500)

@@ -15,10 +15,13 @@ from .serializers import PostSummarySerializer
 
 IMAGE_SUBFOLDER = 'hinhanh'
 
-# 11 vị trí thật sự được theme đọc tới (đã grep source PHP để xác nhận).
+# Vị trí thật sự được theme đọc tới (đã grep source PHP để xác nhận).
 # "Banner header" (halink_header_wg) bị loại vì không có chỗ nào gọi tới.
+# "Nội dung trang chủ" (halink_home_wg) đã CHUYỂN sang cơ chế "Nội dung Trang chủ"
+# 15 khối cố định (xem suoi_tien/api/public/home_sections.py + GET /api/public/
+# home-sections/) - không còn dùng Widget kéo-thả generic cho vị trí này nữa, nên
+# loại khỏi danh sách hợp lệ (API cũ /api/public/widgets/halink_home_wg/ trả 404).
 VALID_POSITIONS = {
-    'halink_home_wg': 'Nội dung trang chủ',
     'halink_header_product_wg': 'Banner trang sản phẩm',
     'halink_footer0_wg': 'Footer top',
     'halink_footer1_wg': 'Footer middle',

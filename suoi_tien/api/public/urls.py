@@ -12,6 +12,7 @@ from .views import (
     WebsiteSettingsView, MenuListView, BannerListView, PostViewSet,
     CommentListCreateView, TicketOrderCreateView, TicketOrderLookupView,
     FoodOrderCreateView, SupportCreateView, WidgetSidebarView,
+    HomeSectionListView, HomeSectionDetailView,
 )
 from .auth_views import (
     CustomerRegisterView, CustomerLoginView, CustomerProfileView,
@@ -56,6 +57,8 @@ urlpatterns = [
     path('menus/', MenuListView.as_view(), name='public-menus'),
     path('banners/', BannerListView.as_view(), name='public-banners'),
     path('widgets/<str:position_id>/', WidgetSidebarView.as_view(), name='public-widget-sidebar'),
+    path('home-sections/', HomeSectionListView.as_view(), name='public-home-sections'),
+    path('home-sections/<str:section_key>/', HomeSectionDetailView.as_view(), name='public-home-section-detail'),
     path('comments/', CommentListCreateView.as_view(), name='public-comments'),
 
     path('ticket-orders/', TicketOrderCreateView.as_view(), name='public-ticket-order-create'),

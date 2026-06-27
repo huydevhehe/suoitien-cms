@@ -1,0 +1,280 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+<div class="px-4 lg:px-12 py-3 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
+        <a href="{% url 'admin:index' %}" class="hover:text-primary-600">{% translate 'Home' %}</a>
+        <span>&rsaquo;</span>
+        <span>Nội dung Trang chủ</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .dark .bg-white { background-color: #18181b !important; }
+  .dark .text-gray-900 { color: #f4f4f5 !important; }
+  .dark .text-gray-500 { color: #a1a1aa !important; }
+  .dark input, .dark select, .dark textarea {
+      background-color: #18181b !important; color: #e4e4e7 !important; border-color: #3f3f46 !important;
+  }
+  .home-section-card {
+      border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; background: #fff;
+  }
+  .dark .home-section-card { background: #18181b; border-color: #27272a; }
+  .group-badge { font-size: 11px; padding: 2px 9px; border-radius: 10px; margin-left: 10px; font-weight: 600; }
+  .group-badge.group-A { background: #dbeafe; color: #1e40af; }
+  .group-badge.group-B { background: #dcfce7; color: #166534; }
+  .group-badge.group-C { background: #fef3c7; color: #92400e; }
+  .dark .group-badge.group-A { background: #1e3a8a; color: #bfdbfe; }
+  .dark .group-badge.group-B { background: #14532d; color: #bbf7d0; }
+  .dark .group-badge.group-C { background: #78350f; color: #fde68a; }
+  .field-label { display: block; font-size: 12px; font-weight: 700; color: #6b7280; margin-bottom: 4px; margin-top: 10px; }
+  .dark .field-label { color: #a1a1aa; }
+  .section-input {
+      width: 100%; font-size: 14px; border-radius: 8px; border: 1px solid #d1d5db;
+      padding: 7px 10px; background: #fff; color: #111827;
+  }
+  .img-thumb-remove {
+      position: absolute; top: -6px; right: -6px; background: #dc2626; color: #fff; border: none;
+      border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; line-height: 1;
+  }
+  .pick-image-btn {
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap;
+      background: #f3e8ff; color: #6b21a8; border: 1px solid #c084fc; margin-top: 10px;
+  }
+  .dark .pick-image-btn { background: #1e1b4b; color: #a78bfa; border-color: #7c3aed; }
+</style>
+
+<div class="px-4 lg:px-12 py-6">
+    <div class="flex justify-between items-center mb-2">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Nội dung Trang chủ</h1>
+        <button id="btn-save-sections" type="button"
+            class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            💾 Lưu tất cả
+        </button>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-zinc-400 mb-6">
+        15 khối cố định theo đúng thiết kế trang chủ — chỉ sửa nội dung/ảnh/link bên trong từng khối,
+        không kéo-thả, không thêm/xóa khối.
+    </p>
+
+    <div id="sections-list">
+        {% for key, section in home_sections.items %}
+        <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
+            <div class="flex items-center">
+                <strong class="text-gray-900 dark:text-white">{{ section.name }}</strong>
+                <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
+            </div>
+
+            {% if section.group == 'A' %}
+                <label class="field-label">Chọn Bài viết/Trang gắn vào khối này</label>
+                <select class="section-input" data-field-name="post_id">
+                    <option value="">-- Chưa chọn --</option>
+                    {% for p in posts_for_select %}
+                    <option value="{{ p.Id }}">{{ p.title }} ({{ p.alias }})</option>
+                    {% endfor %}
+                </select>
+
+            {% elif section.group == 'B' %}
+                <label class="field-label">Mã chuyên mục (idcat) - nhiều mã ngăn bởi dấu phẩy</label>
+                <input type="text" class="section-input" data-field-name="idcat_list" placeholder="vd: 121 hoặc 212,204,242">
+                <label class="field-label">Tiêu đề khối</label>
+                <input type="text" class="section-input" data-field-name="title">
+                <label class="field-label">Số bài tối đa hiện ra (để trống = không giới hạn)</label>
+                <input type="number" class="section-input" data-field-name="limit" min="1">
+
+            {% else %}
+                {% for field in section.fields %}
+                    {% if field.multilang %}
+                        <label class="field-label">{{ field.label }} (Tiếng Việt)</label>
+                        {% if field.type == 'textarea' %}
+                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}_lg_vi"></textarea>
+                        {% else %}
+                        <input type="text" class="section-input" data-field-name="{{ field.name }}_lg_vi">
+                        {% endif %}
+                        <label class="field-label">{{ field.label }} (English)</label>
+                        {% if field.type == 'textarea' %}
+                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}_lg_en"></textarea>
+                        {% else %}
+                        <input type="text" class="section-input" data-field-name="{{ field.name }}_lg_en">
+                        {% endif %}
+                    {% elif field.type == 'image' %}
+                        <label class="field-label">{{ field.label }}</label>
+                        <input type="hidden" id="field_{{ key }}_{{ field.name }}" data-field-name="{{ field.name }}">
+                        <div id="field_{{ key }}_{{ field.name }}_preview"></div>
+                        <button type="button" class="pick-image-btn" onclick="pickSingleImage('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
+                    {% elif field.type == 'image_list' %}
+                        <label class="field-label">{{ field.label }}</label>
+                        <div style="display:flex; gap:8px; align-items:flex-start;">
+                            <textarea id="field_{{ key }}_{{ field.name }}" class="section-input" rows="2"
+                                data-field-name="{{ field.name }}"
+                                oninput="renderHomeImageListPreview(this, document.getElementById('field_{{ key }}_{{ field.name }}_preview'))"></textarea>
+                            <button type="button" class="pick-image-btn" onclick="pickMultiImages('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
+                        </div>
+                        <div id="field_{{ key }}_{{ field.name }}_preview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
+                    {% elif field.type == 'textarea' %}
+                        <label class="field-label">{{ field.label }}</label>
+                        <textarea class="section-input" rows="3" data-field-name="{{ field.name }}"></textarea>
+                    {% else %}
+                        <label class="field-label">{{ field.label }}</label>
+                        <input type="text" class="section-input" data-field-name="{{ field.name }}">
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{{ section_values|json_script:"section-values-data" }}
+
+<script>
+    const SECTION_VALUES = JSON.parse(document.getElementById("section-values-data").textContent);
+
+    // ---- Ảnh đơn (Nhóm C, field type=image) ----
+    function pickSingleImage(fieldId) {
+        const url = `/admin/suoi_tien/image-browser/?field_id=${fieldId}&subfolder=hinhanh`;
+        const w = 900, h = 600;
+        window.open(url, 'image_browser_single',
+            `width=${w},height=${h},top=${(screen.height - h) / 2},left=${(screen.width - w) / 2},resizable=yes,scrollbars=yes`);
+    }
+    window.receiveImageFromBrowser = function (fieldId, path) {
+        const input = document.getElementById(fieldId);
+        if (input) input.value = path;
+        const prev = document.getElementById(fieldId + '_preview');
+        if (prev) {
+            prev.innerHTML = `<img src="/media/${path}" style="max-height:100px;max-width:200px;border-radius:8px;border:1px solid #e4e4e7;object-fit:cover;margin-top:8px;" onerror="this.remove()">`;
+        }
+    };
+
+    // ---- Danh sách ảnh (Nhóm C, field type=image_list) - giống cơ chế trong widgets.html ----
+    function pickMultiImages(fieldId) {
+        const url = `/admin/suoi_tien/image-browser/?field_id=${fieldId}&subfolder=hinhanh&multi=1`;
+        const w = 900, h = 600;
+        window.open(url, 'image_browser_multi',
+            `width=${w},height=${h},top=${(screen.height - h) / 2},left=${(screen.width - w) / 2},resizable=yes,scrollbars=yes`);
+    }
+    window.receiveImagesFromBrowser = function (fieldId, paths) {
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) return;
+        const existing = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+        paths.forEach(p => { if (!existing.includes(p)) existing.push(p); });
+        textarea.value = existing.join(',');
+        renderHomeImageListPreview(textarea, document.getElementById(fieldId + '_preview'));
+    };
+    function renderHomeImageListPreview(textarea, previewRow) {
+        if (!previewRow) return;
+        previewRow.innerHTML = "";
+        const names = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+        names.forEach(name => {
+            const thumb = document.createElement("div");
+            thumb.style.position = "relative";
+            thumb.style.width = "56px";
+            thumb.style.height = "56px";
+            const img = document.createElement("img");
+            img.src = `/media/hinhanh/${name}`;
+            img.title = name;
+            img.style.width = "100%"; img.style.height = "100%"; img.style.objectFit = "cover";
+            img.style.borderRadius = "6px"; img.style.border = "1px solid #e4e4e7";
+            img.onerror = () => { img.style.display = "none"; };
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button"; removeBtn.className = "img-thumb-remove";
+            removeBtn.innerText = "✕"; removeBtn.title = `Gỡ ${name}`;
+            removeBtn.addEventListener("click", () => {
+                const remaining = textarea.value.split(',').map(s => s.trim()).filter(n => n && n !== name);
+                textarea.value = remaining.join(',');
+                renderHomeImageListPreview(textarea, previewRow);
+            });
+            thumb.appendChild(img); thumb.appendChild(removeBtn);
+            previewRow.appendChild(thumb);
+        });
+    }
+
+    // ---- Nạp giá trị đã lưu vào từng khối ----
+    document.querySelectorAll('.home-section-card').forEach(card => {
+        const key = card.getAttribute('data-section-key');
+        const group = card.getAttribute('data-group');
+        const data = SECTION_VALUES[key] || {};
+
+        if (group === 'A') {
+            const sel = card.querySelector('[data-field-name="post_id"]');
+            if (sel && data.post_id) sel.value = data.post_id;
+        } else if (group === 'B') {
+            const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
+            if (idcatInput) idcatInput.value = (data.idcat_list || []).join(',');
+            const titleInput = card.querySelector('[data-field-name="title"]');
+            if (titleInput) titleInput.value = data.title || '';
+            const limitInput = card.querySelector('[data-field-name="limit"]');
+            if (limitInput && data.limit) limitInput.value = data.limit;
+        } else {
+            card.querySelectorAll('[data-field-name]').forEach(el => {
+                const fname = el.getAttribute('data-field-name');
+                if (!(fname in data)) return;
+                el.value = data[fname] || '';
+            });
+            // Render preview cho field ảnh đơn + danh sách ảnh sau khi nạp giá trị
+            card.querySelectorAll('input[type="hidden"][data-field-name]').forEach(input => {
+                if (input.value) {
+                    const prev = document.getElementById(input.id + '_preview');
+                    if (prev) prev.innerHTML = `<img src="/media/${input.value}" style="max-height:100px;max-width:200px;border-radius:8px;border:1px solid #e4e4e7;object-fit:cover;margin-top:8px;" onerror="this.remove()">`;
+                }
+            });
+            card.querySelectorAll('textarea[data-field-name]').forEach(textarea => {
+                const preview = document.getElementById(textarea.id + '_preview');
+                if (preview) renderHomeImageListPreview(textarea, preview);
+            });
+        }
+    });
+
+    // ---- Lưu tất cả ----
+    document.getElementById('btn-save-sections').addEventListener('click', () => {
+        const sections = {};
+        document.querySelectorAll('.home-section-card').forEach(card => {
+            const key = card.getAttribute('data-section-key');
+            const group = card.getAttribute('data-group');
+            const fields = {};
+
+            if (group === 'A') {
+                const sel = card.querySelector('[data-field-name="post_id"]');
+                fields.post_id = sel.value ? parseInt(sel.value, 10) : null;
+            } else if (group === 'B') {
+                const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
+                fields.idcat_list = idcatInput.value.split(',').map(s => s.trim()).filter(Boolean);
+                const titleInput = card.querySelector('[data-field-name="title"]');
+                fields.title = titleInput.value;
+                const limitInput = card.querySelector('[data-field-name="limit"]');
+                fields.limit = limitInput.value ? parseInt(limitInput.value, 10) : null;
+            } else {
+                card.querySelectorAll('[data-field-name]').forEach(el => {
+                    fields[el.getAttribute('data-field-name')] = el.value;
+                });
+            }
+            sections[key] = fields;
+        });
+
+        const btn = document.getElementById('btn-save-sections');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Đang lưu...';
+        btn.disabled = true;
+
+        fetch("{% url 'admin_home_sections_save' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sections: sections }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert(data.message || 'Đã lưu.');
+            })
+            .catch(err => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert('Lỗi khi lưu: ' + err);
+            });
+    });
+</script>
+{% endblock %}

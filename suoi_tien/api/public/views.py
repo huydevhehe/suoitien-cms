@@ -180,6 +180,49 @@ class WidgetSidebarView(PublicAPIMixin, APIView):
         return Response(result)
 
 
+class HomeSectionListView(PublicAPIMixin, APIView):
+    """
+    Trả về đủ 15 khối "Nội dung Trang chủ" (tầng 2-15, xem suoi_tien/views/
+    home_sections_config.py) trong 1 lần gọi — dùng để FE dựng (render) toàn bộ
+    trang chủ. Hỗ trợ ?lang=vi|en.
+    """
+
+    @extend_schema(
+        operation_id='home_sections_list',
+        parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                                      description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+        responses={200: OpenApiTypes.OBJECT},
+    )
+    def get(self, request):
+        from .home_sections import resolve_all_home_sections
+
+        lang = request.query_params.get('lang', 'vi')
+        lang = lang if lang in SUPPORTED_LANGS else 'vi'
+
+        return Response(resolve_all_home_sections(request, lang))
+
+
+class HomeSectionDetailView(PublicAPIMixin, APIView):
+    """Trả về đúng 1 khối "Nội dung Trang chủ" theo `section_key`. Hỗ trợ ?lang=vi|en."""
+
+    @extend_schema(
+        operation_id='home_sections_detail',
+        parameters=[OpenApiParameter('lang', OpenApiTypes.STR, OpenApiParameter.QUERY,
+                                      description="Ngôn ngữ hiển thị: vi hoặc en (mặc định vi).")],
+        responses={200: OpenApiTypes.OBJECT},
+    )
+    def get(self, request, section_key):
+        from .home_sections import resolve_home_section
+
+        lang = request.query_params.get('lang', 'vi')
+        lang = lang if lang in SUPPORTED_LANGS else 'vi'
+
+        result = resolve_home_section(section_key, request, lang)
+        if result is None:
+            return Response({'detail': f'Khối "{section_key}" không tồn tại.'}, status=404)
+        return Response(result)
+
+
 @extend_schema_view(
     list=extend_schema(parameters=[
         OpenApiParameter(
