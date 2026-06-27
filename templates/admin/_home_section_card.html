@@ -6,9 +6,10 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
 <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
     <div class="card-header-box flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-zinc-800 gap-2">
         <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div class="relative flex-1 min-w-0 flex items-center gap-1">
-                <input type="text" class="section-input custom-name-input font-semibold text-sm text-gray-900 dark:text-white bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-800/60 focus:bg-white dark:focus:bg-zinc-900 border border-transparent hover:border-gray-300 dark:hover:border-zinc-700 focus:border-indigo-500 rounded px-1.5 py-0.5 transition-all truncate" data-field-name="_custom_name" placeholder="{{ section.name }}" title="Bấm để đổi tên hiển thị (Admin)">
-                <span class="text-xs text-gray-400 shrink-0 select-none opacity-60 hover:opacity-100" title="Bấm vào tiêu đề để sửa tên">✏️</span>
+            <div class="relative flex-1 min-w-0 flex items-center gap-1 group" ondblclick="editCardTitle(this)">
+                <span class="card-section-title font-semibold text-sm text-gray-900 dark:text-white truncate cursor-pointer select-none" title="Nhấp đúp để đổi tên">{{ section.name }}</span>
+                <input type="text" class="section-input custom-name-input hidden text-sm font-semibold py-0.5 px-1 h-auto" data-field-name="_custom_name" placeholder="{{ section.name }}">
+                <span class="text-xs text-gray-400 shrink-0 select-none opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" onclick="editCardTitle(this.parentElement)" title="Sửa tên khối">✏️</span>
             </div>
             <span class="group-badge group-{{ section.group }} shrink-0" style="margin-left:0;">Nhóm {{ section.group }}</span>
         </div>

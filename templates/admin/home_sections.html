@@ -196,6 +196,31 @@
         row.querySelector('.link-list-url').value = url || '';
     }
 
+    function editCardTitle(container) {
+        const span = container.querySelector('.card-section-title');
+        const input = container.querySelector('.custom-name-input');
+        const pencil = container.querySelector('span[title="Sửa tên khối"]');
+        
+        span.classList.add('hidden');
+        if (pencil) pencil.classList.add('hidden');
+        input.classList.remove('hidden');
+        
+        if (!input.value) {
+            input.value = span.textContent !== input.getAttribute('placeholder') ? span.textContent : '';
+        }
+        input.focus();
+        
+        const saveTitle = () => {
+            input.classList.add('hidden');
+            span.classList.remove('hidden');
+            if (pencil) pencil.classList.remove('hidden');
+            updateCardTitle(input);
+        };
+        
+        input.onblur = saveTitle;
+        input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); saveTitle(); } };
+    }
+
     function updateCardTitle(input) {
         const card = input.closest('.home-section-card');
         if (!card) return;
@@ -273,6 +298,48 @@
         }
     });
 
+    // ---- Hàm hiển thị thông báo (Toast) ----
+    function showToast(message, isError = false) {
+        let toast = document.getElementById('custom-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.className = 'fixed top-5 right-5 z-50 transform transition-all duration-300 translate-x-full opacity-0 flex items-center p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-xl dark:text-gray-300 dark:bg-zinc-800 border-l-4';
+            toast.innerHTML = `
+                <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg" id="toast-icon-container">
+                    <svg class="w-5 h-5" id="toast-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"></svg>
+                </div>
+                <div class="ms-3 text-[15px] font-medium text-gray-800 dark:text-gray-100" id="toast-message" style="margin-left: 14px; margin-right: 8px;"></div>
+            `;
+            document.body.appendChild(toast);
+        }
+        
+        const iconContainer = toast.querySelector('#toast-icon-container');
+        const icon = toast.querySelector('#toast-icon');
+        const msg = toast.querySelector('#toast-message');
+        
+        msg.textContent = message;
+        if (isError) {
+            toast.style.borderColor = '#ef4444';
+            iconContainer.className = 'inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+            icon.innerHTML = '<path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>';
+        } else {
+            toast.style.borderColor = '#10b981';
+            iconContainer.className = 'inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg text-green-500 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+            icon.innerHTML = '<path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>';
+        }
+
+        // Hiện Toast
+        toast.classList.remove('hidden');
+        void toast.offsetWidth; // Force reflow
+        toast.classList.remove('translate-x-full', 'opacity-0');
+        
+        // Ẩn sau 3 giây
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+        }, 3000);
+    }
+
     // ---- Lưu tất cả ----
     document.getElementById('btn-save-sections').addEventListener('click', () => {
         const sections = {};
@@ -329,12 +396,12 @@
             .then(data => {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                alert(data.message || 'Đã lưu.');
+                showToast(data.message || 'Đã lưu cấu hình Trang chủ thành công!', false);
             })
             .catch(err => {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                alert('Lỗi khi lưu: ' + err);
+                showToast('Lỗi khi lưu: ' + err, true);
             });
     });
 </script>
