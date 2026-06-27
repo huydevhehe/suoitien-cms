@@ -28,13 +28,19 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
             {% endfor %}
         </select>
 
-    {% elif section.group == 'B' %}
-        <label class="field-label">Chọn Chuyên mục lấy bài viết</label>
+    {% elif section.group == 'B' or section.group == 'B_PRODUCT' %}
+        <label class="field-label">Chọn Chuyên mục lấy {% if section.group == 'B_PRODUCT' %}sản phẩm / combo{% else %}bài viết{% endif %}</label>
         <select class="section-input" data-field-name="idcat_list">
             <option value="">-- Chọn chuyên mục --</option>
-            {% for c in categories_for_select %}
-            <option value="{{ c.Id }}">{{ c.title }} (ID: {{ c.Id }})</option>
-            {% endfor %}
+            {% if section.group == 'B_PRODUCT' %}
+                {% for c in product_categories_for_select %}
+                <option value="{{ c.Id }}">{{ c.title }} (ID: {{ c.Id }})</option>
+                {% endfor %}
+            {% else %}
+                {% for c in categories_for_select %}
+                <option value="{{ c.Id }}">{{ c.title }} (ID: {{ c.Id }})</option>
+                {% endfor %}
+            {% endif %}
         </select>
         <label class="field-label">Tiêu đề khối</label>
         <input type="text" class="section-input" data-field-name="title">

@@ -357,7 +357,7 @@
             if (group === 'A') {
                 const sel = card.querySelector('[data-field-name="post_id"]');
                 fields.post_id = sel.value ? parseInt(sel.value, 10) : null;
-            } else if (group === 'B') {
+            } else if (group === 'B' || group === 'B_PRODUCT') {
                 const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
                 fields.idcat_list = idcatInput && idcatInput.value ? [idcatInput.value.toString()] : [];
                 const titleInput = card.querySelector('[data-field-name="title"]');

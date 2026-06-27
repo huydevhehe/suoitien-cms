@@ -135,7 +135,7 @@ HOME_SECTIONS = {
         ],
     },
     # ---- Nhóm A: gắn 1 bài viết cố định ----
-    'section_11_combo': {'name': 'Tầng 11 - Gợi ý Combo phù hợp', 'group': 'A'},
+    'section_11_combo': {'name': 'Tầng 11 - Gợi ý Combo phù hợp', 'group': 'B_PRODUCT'},
 
     # ---- Nhóm B: liệt kê theo chuyên mục ----
     'section_04_uudai': {'name': 'Tầng 4 - Tin tức Ưu đãi & sự kiện', 'group': 'B'},
@@ -222,11 +222,17 @@ def home_sections_view(request):
         for c in HalinkPost.objects.filter(post_type='postcat', ticlock='0').values('Id', 'title_vn').order_by('title_vn')
     ]
 
+    product_categories_for_select = [
+        {'Id': c['Id'], 'title': clean_lang(c['title_vn']) or f"Chuyên mục SP #{c['Id']}"}
+        for c in HalinkPost.objects.filter(post_type='productcat', ticlock='0').values('Id', 'title_vn').order_by('title_vn')
+    ]
+
     context = {
         'section_rows': _group_sections_for_display(),
         'section_values': section_values,
         'posts_for_select': posts_for_select,
         'categories_for_select': categories_for_select,
+        'product_categories_for_select': product_categories_for_select,
         'title': 'Cấu hình Trang chủ',
     }
     context.update(admin.site.each_context(request))

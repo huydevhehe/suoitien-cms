@@ -45,6 +45,14 @@ def _resolve_group_b(data_raw, request, lang):
     return {'idcat_list': idcat_list, 'title': title, 'items': items}
 
 
+def _resolve_group_b_product(data_raw, request, lang):
+    idcat_list = data_raw.get('idcat_list') or []
+    title = data_raw.get('title', '')
+    limit = data_raw.get('limit')
+    items = _resolve_posts_by_idcat(idcat_list, 'product', request, lang, limit=limit)
+    return {'idcat_list': idcat_list, 'title': title, 'items': items}
+
+
 def _resolve_group_c(section_def, data_raw, request, lang):
     result = {}
     for field in section_def.get('fields', []):
@@ -88,6 +96,8 @@ def resolve_home_section(section_key, request, lang='vi'):
         data = _resolve_group_a(data_raw, request, lang)
     elif group == 'B':
         data = _resolve_group_b(data_raw, request, lang)
+    elif group == 'B_PRODUCT':
+        data = _resolve_group_b_product(data_raw, request, lang)
     else:
         data = _resolve_group_c(section_def, data_raw, request, lang)
 
