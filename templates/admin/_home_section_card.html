@@ -51,12 +51,12 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                             onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">VI</button>
                         <button type="button" class="lang-tab-btn" data-lang="en"
                             onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">EN</button>
-                        <button type="button" onclick="const box = document.getElementById('box_{{ key }}_{{ field.name }}'); box.style.display = (box.style.display==='none'?'block':'none')" class="px-2 py-0.5 text-[11px] bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 font-medium">✏️ Mở/Ẩn Soạn thảo HTML</button>
+                        <button type="button" onclick="toggleRichEditor('field_{{ key }}_{{ field.name }}')" class="px-2 py-0.5 text-[11px] bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 font-medium">✏️ Soạn thảo Word (HTML)</button>
                     </div>
                 </div>
-                <div id="box_{{ key }}_{{ field.name }}" style="display:none;" class="mt-1.5 mb-2">
-                    <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi" placeholder="Nhập văn bản hoặc mã HTML tùy biến..."></textarea>
-                    <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;" placeholder="Enter text or custom HTML..."></textarea>
+                <div id="box_field_{{ key }}_{{ field.name }}" style="display:none;" class="mt-1.5 mb-2">
+                    <textarea class="section-input rich-editor-textarea" rows="4" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi" placeholder="Nhập văn bản hoặc mã HTML tùy biến..."></textarea>
+                    <textarea class="section-input rich-editor-textarea" rows="4" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;" placeholder="Enter text or custom HTML..."></textarea>
                 </div>
                 {% else %}
                 <label class="field-label">{{ field.label }}</label>
