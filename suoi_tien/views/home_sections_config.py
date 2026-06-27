@@ -204,6 +204,8 @@ def _group_sections_for_display():
     rows = {'C': [], 'B': [], 'A': [], 'FOOTER': []}
     for key, section in HOME_SECTIONS.items():
         bucket = 'FOOTER' if section.get('is_footer') else section['group']
+        if bucket == 'B_PRODUCT':
+            bucket = 'B'
         rows[bucket].append((key, section))
     return rows
 
