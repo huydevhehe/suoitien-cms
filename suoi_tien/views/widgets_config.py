@@ -308,11 +308,12 @@ def parse_sidebars_from_theme(theme_key):
         sb['note_type'] = note_type
         sb['note_text'] = note_text
 
-    # halink_home_wg đã chuyển sang màn "Nội dung Trang chủ" (15 khối cố định,
-    # xem suoi_tien/views/home_sections_config.py) - lọc khỏi danh sách hiển thị ở
+    # halink_home_wg + halink_footer2_wg đã chuyển sang màn "Cấu hình Trang chủ"
+    # (xem suoi_tien/views/home_sections_config.py) - lọc khỏi danh sách hiển thị ở
     # đây để admin không kéo-thả nhầm vào vị trí cũ không còn tác dụng (chỉ lọc lúc
     # trả về cho UI, không xóa khỏi dữ liệu fallback dict ở trên).
-    sidebars = [sb for sb in sidebars if sb['id'] != 'halink_home_wg']
+    HIDDEN_POSITIONS = {'halink_home_wg', 'halink_footer2_wg'}
+    sidebars = [sb for sb in sidebars if sb['id'] not in HIDDEN_POSITIONS]
 
     return sidebars
 

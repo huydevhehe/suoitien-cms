@@ -25,7 +25,8 @@ VALID_POSITIONS = {
     'halink_header_product_wg': 'Banner trang sản phẩm',
     'halink_footer0_wg': 'Footer top',
     'halink_footer1_wg': 'Footer middle',
-    'halink_footer2_wg': 'Footer bottom',
+    # halink_footer2_wg ("Footer bottom") đã chuyển sang 4 khối cố định section_16a-d
+    # trong "Cấu hình Trang chủ" (xem home_sections.py) - loại khỏi danh sách hợp lệ.
     'halink_footer3_wg': 'Footer thanh toán',
     'halink_tab1_wg': 'Tab giải thưởng',
     'halink_tab2_wg': 'Tab cảm nhận khách hàng',

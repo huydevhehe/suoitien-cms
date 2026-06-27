@@ -55,6 +55,10 @@ def _resolve_group_c(section_def, data_raw, request, lang):
             result[name] = data_raw.get(f'{name}_lg_{lang}') or data_raw.get(f'{name}_lg_vi') or ''
             continue
 
+        if field_type == 'link_list':
+            result[name] = data_raw.get(name) or []
+            continue
+
         raw_value = data_raw.get(name, '')
         if field_type == 'image':
             result[f'{name}_url'] = _image_url(request, raw_value)

@@ -1,8 +1,8 @@
 """
-Cấu hình "Nội dung Trang chủ" theo 15 khối cố định (tầng 2-15), thay cho hệ thống
-Widget kéo-thả generic ở vị trí `halink_home_wg`. Tầng 1 (Header/Menu) và Tầng 16
-(Footer) không thuộc phạm vi này, xem suoi_tien/api/public/home_sections.py cho
-phần resolver Public API tương ứng.
+Cấu hình "Cấu hình Trang chủ" theo các khối cố định (tầng 2-15 + 4 cột Footer ở
+tầng 16), thay cho hệ thống Widget kéo-thả generic ở vị trí `halink_home_wg` và
+`halink_footer2_wg`. Tầng 1 (Header/Menu) không thuộc phạm vi này. Xem
+suoi_tien/api/public/home_sections.py cho phần resolver Public API tương ứng.
 """
 import json
 from django.shortcuts import render
@@ -82,6 +82,42 @@ HOME_SECTIONS = {
     'section_07_tohop150': {'name': 'Tầng 7 - Tổ hợp 150 công trình', 'group': 'B'},
     'section_12_teambuilding': {'name': 'Tầng 12 - Dịch vụ thương mại / Teambuilding', 'group': 'B'},
     'section_13_camnang': {'name': 'Tầng 13 - Cẩm nang du lịch', 'group': 'B'},
+
+    # ---- Tầng 16: 4 cột Footer (gộp chung vào đây cho gọn, thay cho halink_footer2_wg) ----
+    'section_16a_ve_chung_toi': {
+        'name': 'Tầng 16a - Footer: Về chúng tôi',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
+            {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
+        ],
+    },
+    'section_16b_dieu_khoan': {
+        'name': 'Tầng 16b - Footer: Điều khoản - Chính sách',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
+            {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
+        ],
+    },
+    'section_16c_lien_he': {
+        'name': 'Tầng 16c - Footer: Liên hệ ngay',
+        'group': 'C',
+        'fields': [
+            {'name': 'logo', 'label': 'Logo/Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'address', 'label': 'Địa chỉ', 'type': 'text', 'multilang': True},
+            {'name': 'phone', 'label': 'Điện thoại', 'type': 'text', 'multilang': False},
+            {'name': 'email', 'label': 'Email', 'type': 'text', 'multilang': False},
+        ],
+    },
+    'section_16d_gioi_thieu': {
+        'name': 'Tầng 16d - Footer: Giới thiệu',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'content', 'label': 'Nội dung giới thiệu công ty', 'type': 'textarea', 'multilang': True},
+        ],
+    },
 }
 
 
@@ -111,7 +147,7 @@ def home_sections_view(request):
         'home_sections': HOME_SECTIONS,
         'section_values': section_values,
         'posts_for_select': posts_for_select,
-        'title': 'Nội dung Trang chủ',
+        'title': 'Cấu hình Trang chủ',
     }
     context.update(admin.site.each_context(request))
     return render(request, 'admin/home_sections.html', context)

@@ -273,7 +273,7 @@ UNFOLD = {
                         "link": "/admin/suoi_tien/themes/",
                     },
                     {
-                        "title": "Nội dung Trang chủ",
+                        "title": "Cấu hình Trang chủ",
                         "icon": "home_app_logo",
                         "link": "/admin/suoi_tien/home-sections/",
                     },

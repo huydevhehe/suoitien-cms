@@ -6,7 +6,7 @@
     <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
         <a href="{% url 'admin:index' %}" class="hover:text-primary-600">{% translate 'Home' %}</a>
         <span>&rsaquo;</span>
-        <span>Nội dung Trang chủ</span>
+        <span>Cấu hình Trang chủ</span>
     </div>
 </div>
 {% endblock %}
@@ -49,7 +49,7 @@
 
 <div class="px-4 lg:px-12 py-6">
     <div class="flex justify-between items-center mb-2">
-        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Nội dung Trang chủ</h1>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Cấu hình Trang chủ</h1>
         <button id="btn-save-sections" type="button"
             class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
             💾 Lưu tất cả
@@ -114,6 +114,10 @@
                             <button type="button" class="pick-image-btn" onclick="pickMultiImages('field_{{ key }}_{{ field.name }}')">📷 Chọn ảnh</button>
                         </div>
                         <div id="field_{{ key }}_{{ field.name }}_preview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
+                    {% elif field.type == 'link_list' %}
+                        <label class="field-label">{{ field.label }}</label>
+                        <div id="linklist_{{ key }}_{{ field.name }}" class="link-list-container" data-link-list-name="{{ field.name }}"></div>
+                        <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
                     {% elif field.type == 'textarea' %}
                         <label class="field-label">{{ field.label }}</label>
                         <textarea class="section-input" rows="3" data-field-name="{{ field.name }}"></textarea>
@@ -192,6 +196,26 @@
         });
     }
 
+    // ---- Danh sách link không giới hạn (Nhóm C, field type=link_list) - dùng cho
+    // 2 cột Footer "Về chúng tôi"/"Điều khoản" - mỗi dòng: tên hiển thị + đường dẫn ----
+    function addLinkListRow(containerId, label, url) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'link-list-row';
+        row.style.display = 'flex';
+        row.style.gap = '8px';
+        row.style.marginBottom = '6px';
+        row.innerHTML = `
+            <input type="text" class="section-input link-list-label" placeholder="Tên hiển thị" style="flex:1;">
+            <input type="text" class="section-input link-list-url" placeholder="Link (vd: /gioi-thieu)" style="flex:2;">
+            <button type="button" class="img-thumb-remove" style="position:static; width:auto; height:auto; padding:6px 10px; border-radius:6px;" onclick="this.closest('.link-list-row').remove()">Xóa</button>
+        `;
+        container.appendChild(row);
+        row.querySelector('.link-list-label').value = label || '';
+        row.querySelector('.link-list-url').value = url || '';
+    }
+
     // ---- Nạp giá trị đã lưu vào từng khối ----
     document.querySelectorAll('.home-section-card').forEach(card => {
         const key = card.getAttribute('data-section-key');
@@ -225,6 +249,11 @@
                 const preview = document.getElementById(textarea.id + '_preview');
                 if (preview) renderHomeImageListPreview(textarea, preview);
             });
+            card.querySelectorAll('.link-list-container').forEach(container => {
+                const fname = container.getAttribute('data-link-list-name');
+                const items = data[fname] || [];
+                items.forEach(item => addLinkListRow(container.id, item.label, item.url));
+            });
         }
     });
 
@@ -249,6 +278,14 @@
             } else {
                 card.querySelectorAll('[data-field-name]').forEach(el => {
                     fields[el.getAttribute('data-field-name')] = el.value;
+                });
+                card.querySelectorAll('.link-list-container').forEach(container => {
+                    const fname = container.getAttribute('data-link-list-name');
+                    const rows = Array.from(container.querySelectorAll('.link-list-row'));
+                    fields[fname] = rows.map(row => ({
+                        label: row.querySelector('.link-list-label').value,
+                        url: row.querySelector('.link-list-url').value,
+                    })).filter(item => item.label || item.url);
                 });
             }
             sections[key] = fields;
