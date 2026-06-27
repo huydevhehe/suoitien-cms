@@ -5,13 +5,13 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
 {% endcomment %}
 <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
     <div class="card-header-box flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-zinc-800 gap-2">
-        <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div class="relative flex-1 min-w-0 flex items-center gap-1 group" ondblclick="editCardTitle(this)">
-                <span class="card-section-title font-semibold text-sm text-gray-900 dark:text-white truncate cursor-pointer select-none" title="Nhấp đúp để đổi tên">{{ section.name }}</span>
-                <input type="text" class="section-input custom-name-input hidden text-sm font-semibold py-0.5 px-1 h-auto" data-field-name="_custom_name" placeholder="{{ section.name }}">
-                <span class="text-xs text-gray-400 shrink-0 select-none opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" onclick="editCardTitle(this.parentElement)" title="Sửa tên khối">✏️</span>
+        <div class="flex items-start gap-2 flex-1 min-w-0">
+            <div class="relative flex-1 flex items-start gap-1 group" ondblclick="editCardTitle(this)">
+                <span class="card-section-title font-semibold text-sm text-gray-900 dark:text-white cursor-pointer select-none whitespace-normal leading-snug" title="Nhấp đúp để đổi tên">{{ section.name }}</span>
+                <input type="text" class="section-input custom-name-input hidden text-sm font-semibold py-0.5 px-1 h-auto w-full" data-field-name="_custom_name" placeholder="{{ section.name }}">
+                <span class="text-xs text-gray-400 shrink-0 select-none opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity mt-0.5" onclick="editCardTitle(this.parentElement)" title="Sửa tên khối">✏️</span>
             </div>
-            <span class="group-badge group-{{ section.group }} shrink-0" style="margin-left:0;">Nhóm {{ section.group }}</span>
+            <span class="group-badge group-{{ section.group }} shrink-0 mt-0.5" style="margin-left:0;">Nhóm {{ section.group }}</span>
         </div>
         <label class="hide-toggle-label inline-flex items-center cursor-pointer text-xs font-medium text-red-500 hover:text-red-600 select-none bg-red-50 dark:bg-red-950/40 px-2.5 py-1 rounded-md border border-red-200 dark:border-red-900/50 shrink-0">
             <input type="checkbox" class="section-hidden-checkbox mr-1.5 accent-red-600" data-field-name="_is_hidden" onchange="toggleCardHiddenState(this)">

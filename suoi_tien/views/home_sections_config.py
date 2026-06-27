@@ -79,6 +79,17 @@ HOME_SECTIONS = {
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
+    'section_07_tohop150': {
+        'name': 'Tầng 7 - Tổ hợp 150 công trình',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
+            {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
     'section_08_bien_tien_dong': {
         'name': 'Tầng 8 - Công viên nước Biển Tiên Đồng Ngọc Nữ',
         'group': 'C',
@@ -128,7 +139,6 @@ HOME_SECTIONS = {
 
     # ---- Nhóm B: liệt kê theo chuyên mục ----
     'section_04_uudai': {'name': 'Tầng 4 - Tin tức Ưu đãi & sự kiện', 'group': 'B'},
-    'section_07_tohop150': {'name': 'Tầng 7 - Tổ hợp 150 công trình', 'group': 'B'},
     'section_12_teambuilding': {'name': 'Tầng 12 - Các dịch vụ thương mại', 'group': 'B'},
     'section_13_camnang': {'name': 'Tầng 13 - Cẩm nang du lịch', 'group': 'B'},
 
