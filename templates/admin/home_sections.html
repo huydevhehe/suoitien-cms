@@ -21,8 +21,13 @@
   }
   .home-section-card {
       border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; background: #fff;
+      transition: all 0.2s ease;
+  }
+  .home-section-card.is-hidden {
+      opacity: 0.55; background: #fdf2f2 !important; border-color: #fca5a5 !important;
   }
   .dark .home-section-card { background: #18181b; border-color: #27272a; }
+  .dark .home-section-card.is-hidden { background: #2c1517 !important; border-color: #7f1d1d !important; }
   .group-badge { font-size: 11px; padding: 2px 9px; border-radius: 10px; margin-left: 10px; font-weight: 600; }
   .group-badge.group-A { background: #dbeafe; color: #1e40af; }
   .group-badge.group-B { background: #dcfce7; color: #166534; }
@@ -201,6 +206,16 @@
         }
     }
 
+    function toggleCardHiddenState(checkbox) {
+        const card = checkbox.closest('.home-section-card');
+        if (!card) return;
+        if (checkbox.checked) {
+            card.classList.add('is-hidden');
+        } else {
+            card.classList.remove('is-hidden');
+        }
+    }
+
     // ---- Nạp giá trị đã lưu vào từng khối ----
     document.querySelectorAll('.home-section-card').forEach(card => {
         const key = card.getAttribute('data-section-key');
@@ -216,6 +231,7 @@
         const hiddenCheckbox = card.querySelector('[data-field-name="_is_hidden"]');
         if (hiddenCheckbox && data._is_hidden) {
             hiddenCheckbox.checked = true;
+            toggleCardHiddenState(hiddenCheckbox);
         }
 
         if (group === 'A') {
@@ -223,7 +239,10 @@
             if (sel && data.post_id) sel.value = data.post_id;
         } else if (group === 'B') {
             const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
-            if (idcatInput) idcatInput.value = (data.idcat_list || []).join(',');
+            if (idcatInput) {
+                const val = Array.isArray(data.idcat_list) ? data.idcat_list[0] : (data.idcat_list || '');
+                idcatInput.value = val || '';
+            }
             const titleInput = card.querySelector('[data-field-name="title"]');
             if (titleInput) titleInput.value = data.title || '';
             const limitInput = card.querySelector('[data-field-name="limit"]');
@@ -273,7 +292,7 @@
                 fields.post_id = sel.value ? parseInt(sel.value, 10) : null;
             } else if (group === 'B') {
                 const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
-                fields.idcat_list = idcatInput.value.split(',').map(s => s.trim()).filter(Boolean);
+                fields.idcat_list = idcatInput && idcatInput.value ? [idcatInput.value.toString()] : [];
                 const titleInput = card.querySelector('[data-field-name="title"]');
                 fields.title = titleInput.value;
                 const limitInput = card.querySelector('[data-field-name="limit"]');

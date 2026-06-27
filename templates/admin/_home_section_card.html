@@ -4,20 +4,18 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
 {% for %} sẽ tự kế thừa biến vòng lặp, không cần truyền tay.
 {% endcomment %}
 <div class="home-section-card" data-section-key="{{ key }}" data-group="{{ section.group }}">
-    <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
-        <div class="flex items-center gap-2">
-            <strong class="text-gray-900 dark:text-white card-section-title">{{ section.name }}</strong>
-            <span class="group-badge group-{{ section.group }}">Nhóm {{ section.group }}</span>
+    <div class="card-header-box flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-zinc-800 gap-2">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div class="relative flex-1 min-w-0 flex items-center gap-1">
+                <input type="text" class="section-input custom-name-input font-semibold text-sm text-gray-900 dark:text-white bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-800/60 focus:bg-white dark:focus:bg-zinc-900 border border-transparent hover:border-gray-300 dark:hover:border-zinc-700 focus:border-indigo-500 rounded px-1.5 py-0.5 transition-all truncate" data-field-name="_custom_name" placeholder="{{ section.name }}" title="Bấm để đổi tên hiển thị (Admin)">
+                <span class="text-xs text-gray-400 shrink-0 select-none opacity-60 hover:opacity-100" title="Bấm vào tiêu đề để sửa tên">✏️</span>
+            </div>
+            <span class="group-badge group-{{ section.group }} shrink-0" style="margin-left:0;">Nhóm {{ section.group }}</span>
         </div>
-        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-red-600 font-medium select-none">
-            <input type="checkbox" class="section-hidden-checkbox" data-field-name="_is_hidden">
-            <span>Ẩn khối này</span>
+        <label class="hide-toggle-label inline-flex items-center cursor-pointer text-xs font-medium text-red-500 hover:text-red-600 select-none bg-red-50 dark:bg-red-950/40 px-2.5 py-1 rounded-md border border-red-200 dark:border-red-900/50 shrink-0">
+            <input type="checkbox" class="section-hidden-checkbox mr-1.5 accent-red-600" data-field-name="_is_hidden" onchange="toggleCardHiddenState(this)">
+            <span>Ẩn khối</span>
         </label>
-    </div>
-
-    <div class="mb-3">
-        <label class="field-label" style="font-size: 11px; color: #6b7280;">Tên gợi nhớ nội bộ (Đổi tên hiển thị ở Admin này)</label>
-        <input type="text" class="section-input custom-name-input" data-field-name="_custom_name" placeholder="Mặc định: {{ section.name }}" oninput="updateCardTitle(this)">
     </div>
 
     {% if section.group == 'A' %}
@@ -30,8 +28,13 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
         </select>
 
     {% elif section.group == 'B' %}
-        <label class="field-label">Mã chuyên mục (idcat) - nhiều mã ngăn bởi dấu phẩy</label>
-        <input type="text" class="section-input" data-field-name="idcat_list" placeholder="vd: 121 hoặc 212,204,242">
+        <label class="field-label">Chọn Chuyên mục lấy bài viết</label>
+        <select class="section-input" data-field-name="idcat_list">
+            <option value="">-- Chọn chuyên mục --</option>
+            {% for c in categories_for_select %}
+            <option value="{{ c.Id }}">{{ c.title }} (ID: {{ c.Id }})</option>
+            {% endfor %}
+        </select>
         <label class="field-label">Tiêu đề khối</label>
         <input type="text" class="section-input" data-field-name="title">
         <label class="field-label">Số bài tối đa hiện ra (để trống = không giới hạn)</label>
@@ -40,6 +43,22 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
     {% else %}
         {% for field in section.fields %}
             {% if field.multilang %}
+                {% if field.type == 'textarea' %}
+                <div class="flex items-center justify-between mt-3 mb-1">
+                    <label class="field-label" style="margin:0;">{{ field.label }}</label>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="lang-tab-btn active" data-lang="vi"
+                            onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">VI</button>
+                        <button type="button" class="lang-tab-btn" data-lang="en"
+                            onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">EN</button>
+                        <button type="button" onclick="const box = document.getElementById('box_{{ key }}_{{ field.name }}'); box.style.display = (box.style.display==='none'?'block':'none')" class="px-2 py-0.5 text-[11px] bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 font-medium">✏️ Mở/Ẩn Soạn thảo HTML</button>
+                    </div>
+                </div>
+                <div id="box_{{ key }}_{{ field.name }}" style="display:none;" class="mt-1.5 mb-2">
+                    <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi" placeholder="Nhập văn bản hoặc mã HTML tùy biến..."></textarea>
+                    <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;" placeholder="Enter text or custom HTML..."></textarea>
+                </div>
+                {% else %}
                 <label class="field-label">{{ field.label }}</label>
                 <div class="flex items-center gap-2 mb-1">
                     <button type="button" class="lang-tab-btn active" data-lang="vi"
@@ -47,10 +66,6 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                     <button type="button" class="lang-tab-btn" data-lang="en"
                         onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">EN</button>
                 </div>
-                {% if field.type == 'textarea' %}
-                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi"></textarea>
-                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;"></textarea>
-                {% else %}
                 <input type="text" class="section-input" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi">
                 <input type="text" class="section-input" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;">
                 {% endif %}

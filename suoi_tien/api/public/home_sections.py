@@ -64,7 +64,9 @@ def _resolve_group_c(section_def, data_raw, request, lang):
             result[f'{name}_url'] = _image_url(request, raw_value)
         elif field_type == 'image_list':
             names = [n.strip() for n in raw_value.split(',') if n.strip()] if raw_value else []
-            result[name] = [_image_url(request, n) for n in names]
+            urls = [_image_url(request, n) for n in names]
+            result[name] = urls
+            result['image_url'] = urls[0] if urls else ''
         else:
             result[name] = raw_value
     return result

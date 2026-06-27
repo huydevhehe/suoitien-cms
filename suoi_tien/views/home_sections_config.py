@@ -48,7 +48,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề phụ', 'type': 'text', 'multilang': True},
             {'name': 'content', 'label': 'Nội dung ngắn (hỗ trợ xuống dòng bằng <br>)', 'type': 'textarea', 'multilang': True},
-            {'name': 'image', 'label': 'Ảnh minh họa', 'type': 'image', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn liên kết nút "TÌM HIỂU THÊM" (Ví dụ: /du-lich-van-hoa)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Slider đứng (thêm bao nhiêu ảnh cũng được)', 'type': 'image_list', 'multilang': False},
         ],
     },
     'section_14_bando': {
@@ -66,14 +67,57 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'images', 'label': 'Danh sách logo đối tác (thêm bao nhiêu cũng được)', 'type': 'image_list', 'multilang': False},
         ],
+    'section_06_van_hoa': {
+        'name': 'Tầng 6 - Trải nghiệm văn hóa lịch sử tâm linh',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
     },
-
+    'section_08_bien_tien_dong': {
+        'name': 'Tầng 8 - Công viên nước Biển Tiên Đồng Ngọc Nữ',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
+    'section_09_farm': {
+        'name': 'Tầng 9 - Suối Tiên Farm',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
+    'section_10a_amthuc': {
+        'name': 'Tầng 10a - Ẩm thực Suối Tiên',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
+    'section_10b_showdien': {
+        'name': 'Tầng 10b - Show diễn & Trải nghiệm về đêm',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ gõ mã HTML tùy biến)', 'type': 'textarea', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
     # ---- Nhóm A: gắn 1 bài viết cố định ----
-    'section_06_van_hoa': {'name': 'Tầng 6 - Bài viết Văn hóa tâm linh', 'group': 'A'},
-    'section_08_bien_tien_dong': {'name': 'Tầng 8 - Công viên nước Biển Tiên Đồng', 'group': 'A'},
-    'section_09_farm': {'name': 'Tầng 9 - Suối Tiên Farm', 'group': 'A'},
-    'section_10a_amthuc': {'name': 'Tầng 10a - Ẩm thực Suối Tiên', 'group': 'A'},
-    'section_10b_showdien': {'name': 'Tầng 10b - Show diễn nghệ thuật đêm', 'group': 'A'},
     'section_11_combo': {'name': 'Tầng 11 - Gợi ý Combo phù hợp', 'group': 'A'},
 
     # ---- Nhóm B: liệt kê theo chuyên mục ----
@@ -153,14 +197,20 @@ def home_sections_view(request):
     section_values = _load_section_values()
 
     posts_for_select = [
-        {'Id': p['Id'], 'title': clean_lang(p['title_vn']), 'alias': p['alias']}
-        for p in HalinkPost.objects.filter(ticlock='0').exclude(post_type='product').values('Id', 'title_vn', 'alias').order_by('title_vn')
+        {'Id': p['Id'], 'title': clean_lang(p['title_vn']) or f"Bài viết #{p['Id']}", 'alias': p['alias'] or ''}
+        for p in HalinkPost.objects.filter(ticlock='0').exclude(post_type='product').exclude(post_type='postcat').values('Id', 'title_vn', 'alias').order_by('title_vn')
+    ]
+
+    categories_for_select = [
+        {'Id': c['Id'], 'title': clean_lang(c['title_vn']) or f"Chuyên mục #{c['Id']}"}
+        for c in HalinkPost.objects.filter(post_type='postcat', ticlock='0').values('Id', 'title_vn').order_by('title_vn')
     ]
 
     context = {
         'section_rows': _group_sections_for_display(),
         'section_values': section_values,
         'posts_for_select': posts_for_select,
+        'categories_for_select': categories_for_select,
         'title': 'Cấu hình Trang chủ',
     }
     context.update(admin.site.each_context(request))
