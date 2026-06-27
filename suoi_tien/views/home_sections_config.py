@@ -67,6 +67,7 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
             {'name': 'images', 'label': 'Danh sách logo đối tác (thêm bao nhiêu cũng được)', 'type': 'image_list', 'multilang': False},
         ],
+    },
     'section_06_van_hoa': {
         'name': 'Tầng 6 - Trải nghiệm văn hóa lịch sử tâm linh',
         'group': 'C',
