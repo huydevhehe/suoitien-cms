@@ -104,58 +104,17 @@
 
 {{ section_values|json_script:"section-values-data" }}
 
-<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
 <script>
     const SECTION_VALUES = JSON.parse(document.getElementById("section-values-data").textContent);
 
-    // ---- Tab VI/EN cho field song ngữ ----
+    // ---- Tab VI/EN cho field song ngữ - chỉ hiện 1 ô tại 1 thời điểm ----
     function switchLangTab(btn, baseId) {
         const lang = btn.getAttribute('data-lang');
         btn.parentElement.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-        ['vi', 'en'].forEach(l => {
-            const targetId = baseId + '_' + l;
-            const input = document.getElementById(targetId);
-            const editor = (typeof tinymce !== 'undefined') ? tinymce.get(targetId) : null;
-            const show = (lang === l);
-            if (editor && editor.getContainer()) {
-                editor.getContainer().style.display = show ? 'block' : 'none';
-            }
-            if (input) input.style.display = show ? 'block' : 'none';
-        });
-    }
-
-    // ---- Hộp Soạn thảo Word / HTML kiểu TinyMCE ----
-    function toggleRichEditor(baseId) {
-        const box = document.getElementById('box_' + baseId);
-        if (!box) return;
-        const isHidden = box.style.display === 'none';
-        box.style.display = isHidden ? 'block' : 'none';
-
-        if (isHidden && typeof tinymce !== 'undefined') {
-            ['vi', 'en'].forEach(lang => {
-                const targetId = baseId + '_' + lang;
-                const el = document.getElementById(targetId);
-                if (el && !tinymce.get(targetId)) {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    tinymce.init({
-                        selector: '#' + targetId,
-                        height: 260,
-                        menubar: false,
-                        plugins: ['advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media', 'table', 'wordcount'],
-                        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | code fullscreen',
-                        skin: isDark ? 'oxide-dark' : 'oxide',
-                        content_css: isDark ? 'dark' : 'default',
-                        verify_html: false,
-                        cleanup: false,
-                        valid_elements: '*[*]',
-                        convert_urls: false,
-                        promotion: false,
-                        language: 'vi',
-                        language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23/langs5/vi.js'
-                    });
-                }
-            });
-        }
+        const viInput = document.getElementById(baseId + '_vi');
+        const enInput = document.getElementById(baseId + '_en');
+        if (viInput) viInput.style.display = (lang === 'vi') ? '' : 'none';
+        if (enInput) enInput.style.display = (lang === 'en') ? '' : 'none';
     }
 
     // ---- Ảnh đơn (Nhóm C, field type=image) ----
@@ -316,9 +275,6 @@
 
     // ---- Lưu tất cả ----
     document.getElementById('btn-save-sections').addEventListener('click', () => {
-        if (typeof tinymce !== 'undefined') {
-            tinymce.triggerSave();
-        }
         const sections = {};
         document.querySelectorAll('.home-section-card').forEach(card => {
             const key = card.getAttribute('data-section-key');
