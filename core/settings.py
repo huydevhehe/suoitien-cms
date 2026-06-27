@@ -278,11 +278,6 @@ UNFOLD = {
                         "link": "/admin/suoi_tien/home-sections/",
                     },
                     {
-                        "title": "Quản lý Widgets (Footer/Tab)",
-                        "icon": "widgets",
-                        "link": "/admin/suoi_tien/widgets/",
-                    },
-                    {
                         "title": "Quản lý Menu",
                         "icon": "menu",
                         "link": "/admin/suoi_tien/halinkmenu/",
