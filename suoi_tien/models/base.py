@@ -150,19 +150,26 @@ class HalinkCart(models.Model):
         verbose_name = 'Đơn hàng'
         verbose_name_plural = 'Quản lý đơn hàng tổng hợp'
 
+    def _parse_amount(self, raw_value):
+        """Tách số nguyên từ chuỗi tiền (vd '1.234' hoặc '1234đ') - dùng chung cho các field tiền dạng CharField."""
+        if not raw_value:
+            return 0
+        cleaned = ''.join(c for c in str(raw_value) if c.isdigit())
+        return int(cleaned) if cleaned else 0
+
     @property
     def computed_total_price_num(self):
+        # total_price_final: chỉ co gia tri tren don hang cu duoc tao tu he thong PHP truoc day -
+        # khong co duong ghi nao trong Django hien dang set field nay, nen uu tien doc no truoc
+        # de khong lam sai du lieu cu, neu rong thi tu tinh lai tu info_product (don tao qua Django).
         if self.total_price_final and self.total_price_final.strip() and self.total_price_final != '-':
-            try:
-                cleaned = ''.join(c for c in str(self.total_price_final) if c.isdigit())
-                if cleaned:
-                    return int(cleaned)
-            except Exception:
-                pass
-        
+            total = self._parse_amount(self.total_price_final)
+            if total:
+                return total
+
+        total = 0
         if self.info_product:
             try:
-                total = 0
                 items = [item.strip() for item in self.info_product.split(',') if item.strip()]
                 for item in items:
                     parts = item.split('***+++***')
@@ -170,10 +177,13 @@ class HalinkCart(models.Model):
                         sl = int(parts[1])
                         gia = int(parts[2])
                         total += sl * gia
-                return total
             except Exception:
-                pass
-        return 0
+                return 0
+
+        # discount_amount chua co UI/code nao ghi gia tri hien tai, nhung neu sau nay co thi van
+        # phai duoc tru vao tong - tranh truong hop ghi discount ma quen cap nhat tong tien.
+        discount = self._parse_amount(self.discount_amount)
+        return max(total - discount, 0)
 
     @property
     def computed_total_price_formatted(self):
