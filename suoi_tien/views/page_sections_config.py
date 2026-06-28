@@ -33,7 +33,7 @@ ABOUT_SECTIONS = {
         'name': 'Tầng 3 - Hành trình trải nghiệm (4 Thẻ)',
         'group': 'C',
         'fields': [
-            {'name': 'title', 'label': 'Tiêu đề khối (Không chỉ là khu vui chơi...)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'title', 'label': 'Tiêu đề khối (Không chỉ là khu vui chơi...)', 'type': 'textarea', 'multilang': True},
             # Thẻ 1
             {'name': 'card1_img', 'label': '[Thẻ 1] Hình ảnh', 'type': 'image', 'multilang': False},
             {'name': 'card1_title', 'label': '[Thẻ 1] Tên', 'type': 'text', 'multilang': True},

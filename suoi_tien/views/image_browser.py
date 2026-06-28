@@ -27,32 +27,33 @@ def image_browser_view(request):
     image_dir = os.path.join(settings.MEDIA_ROOT, subfolder)
 
     # Xử lý tải file lên nếu là POST request
-    if request.method == 'POST' and request.FILES.get('upload_file'):
-        uploaded_file = request.FILES['upload_file']
-        fname = get_valid_filename(uploaded_file.name)
-        ext = os.path.splitext(fname)[1].lower()
-
-        # Hỗ trợ cả ảnh và các file flash/video thông dụng
+    if request.method == 'POST' and request.FILES.getlist('upload_files'):
+        uploaded_files = request.FILES.getlist('upload_files')
         allowed_exts = IMAGE_EXTENSIONS | {'.swf', '.flv', '.mp4'}
-        if ext in allowed_exts:
-            os.makedirs(image_dir, exist_ok=True)
-            target_path = os.path.join(image_dir, fname)
+        os.makedirs(image_dir, exist_ok=True)
+        
+        for uploaded_file in uploaded_files:
+            fname = get_valid_filename(uploaded_file.name)
+            ext = os.path.splitext(fname)[1].lower()
 
-            # Tránh ghi đè file trùng tên
-            base, ext = os.path.splitext(fname)
-            counter = 1
-            while os.path.exists(target_path):
-                fname = f"{base}_{counter}{ext}"
+            if ext in allowed_exts:
                 target_path = os.path.join(image_dir, fname)
-                counter += 1
 
-            with open(target_path, 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    destination.write(chunk)
+                # Tránh ghi đè file trùng tên
+                base, ext = os.path.splitext(fname)
+                counter = 1
+                while os.path.exists(target_path):
+                    fname = f"{base}_{counter}{ext}"
+                    target_path = os.path.join(image_dir, fname)
+                    counter += 1
 
-            # Redirect lại về GET để tránh reload submit lại form
-            multi_param = "&multi=1" if multi else ""
-            return HttpResponseRedirect(f"{request.path}?field_id={field_id}&subfolder={subfolder}{multi_param}")
+                with open(target_path, 'wb+') as destination:
+                    for chunk in uploaded_file.chunks():
+                        destination.write(chunk)
+
+        # Redirect lại về GET để tránh reload submit lại form
+        multi_param = "&multi=1" if multi else ""
+        return HttpResponseRedirect(f"{request.path}?field_id={field_id}&subfolder={subfolder}{multi_param}")
 
     images = []
     if os.path.isdir(image_dir):
@@ -144,7 +145,7 @@ body{{font-family:Inter,sans-serif;background:#ffffff;color:#18181b}}
     {multi_hidden}
     <label class="upload-btn">
       Tải lên
-      <input type="file" name="upload_file" onchange="this.form.submit()" accept="image/*,application/x-shockwave-flash,video/*" style="display:none;">
+      <input type="file" name="upload_files" multiple onchange="this.form.submit()" accept="image/*,application/x-shockwave-flash,video/*" style="display:none;">
     </label>
   </form>
   {done_btn}

@@ -65,20 +65,19 @@ def get_page_sections(request, page_key):
         }
 
         # Bơm thêm dữ liệu động cho nhóm A và B
+        lang = request.GET.get('lang', 'vi')
         if config['group'] == 'A':
             post_id = data.get('post_id')
             if post_id:
-                section_output['resolved_data'] = _resolve_group_a(post_id)
+                section_output['resolved_data'] = _resolve_group_a(data, request, lang)
         elif config['group'] == 'B':
             cat_list = data.get('idcat_list')
-            limit = data.get('limit')
             if cat_list:
-                section_output['resolved_data'] = _resolve_group_b(cat_list, limit)
+                section_output['resolved_data'] = _resolve_group_b(data, request, lang)
         elif config['group'] == 'B_PRODUCT':
             cat_list = data.get('idcat_list')
-            limit = data.get('limit')
             if cat_list:
-                section_output['resolved_data'] = _resolve_group_b_product(cat_list, limit)
+                section_output['resolved_data'] = _resolve_group_b_product(data, request, lang)
 
         resolved_sections[section_key] = section_output
 
