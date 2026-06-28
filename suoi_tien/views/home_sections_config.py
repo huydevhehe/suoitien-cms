@@ -155,6 +155,36 @@ HOME_SECTIONS = {
     'section_16b_dieu_khoan': {
         'name': 'Tầng 16b - Footer: Điều khoản - Chính sách',
         'group': 'C',
+        'is_footer': True,
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
+            {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
+        ],
+    },
+    'section_16c_lien_he': {
+        'name': 'Tầng 16c - Footer: Liên hệ ngay',
+        'group': 'C',
+        'is_footer': True,
+        'fields': [
+            {'name': 'logo', 'label': 'Logo/Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'address', 'label': 'Địa chỉ', 'type': 'text', 'multilang': True},
+            {'name': 'phone', 'label': 'Điện thoại', 'type': 'text', 'multilang': False},
+            {'name': 'email', 'label': 'Email', 'type': 'text', 'multilang': False},
+        ],
+    },
+    'section_16d_gioi_thieu': {
+        'name': 'Tầng 16d - Footer: Giới thiệu',
+        'group': 'C',
+        'is_footer': True,
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'content', 'label': 'Nội dung giới thiệu công ty', 'type': 'textarea', 'multilang': True},
+        ],
+    },
+}
+
+from suoi_tien.views.page_sections_config import PAGES
+
 def _load_section_values(page_key):
     """Đọc toàn bộ giá trị đã lưu của các khối thuộc trang page_key."""
     values = {}
