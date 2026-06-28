@@ -1,13 +1,22 @@
 import json
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from suoi_tien.models import HalinkMeta
 from suoi_tien.views.page_sections_config import PAGES
 from suoi_tien.api.public.home_sections import _resolve_group_a, _resolve_group_b, _resolve_group_b_product
 
 META_TYPE = 'home_section'
 
-@require_GET
+@extend_schema(
+    summary="Lấy cấu hình các sections của một trang (Trang chủ, Giới thiệu...)",
+    description="API dùng chung cho tất cả các trang được tạo cấu hình động. Truyền page_key (VD: 'home', 'gioi-thieu') để nhận lại dữ liệu.",
+    parameters=[
+        OpenApiParameter(name='lang', description='Ngôn ngữ (vi / en)', required=False, type=OpenApiTypes.STR, default='vi', location=OpenApiParameter.QUERY)
+    ],
+    responses={200: OpenApiTypes.OBJECT}
+)
+@api_view(['GET'])
 def get_page_sections(request, page_key):
     """
     API dùng chung cho tất cả các trang. Trả về toàn bộ các khối (sections) của trang.
@@ -15,7 +24,7 @@ def get_page_sections(request, page_key):
     - Với trang khác, đọc các bản ghi có namespace 'page_key:section_key'.
     """
     if page_key not in PAGES:
-        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy cấu hình cho trang này'}, status=404)
+        return Response({'status': 'error', 'message': 'Không tìm thấy cấu hình cho trang này'}, status=404)
 
     page_config = PAGES[page_key]['sections']
     
@@ -81,7 +90,7 @@ def get_page_sections(request, page_key):
 
         resolved_sections[section_key] = section_output
 
-    return JsonResponse({
+    return Response({
         'status': 'success',
         'page_key': page_key,
         'page_name': PAGES[page_key]['name'],
