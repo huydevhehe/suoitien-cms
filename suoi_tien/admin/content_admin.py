@@ -221,11 +221,23 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             if obj.sort is None:
                 max_sort = self.model.objects.filter(post_type='product').exclude(sort__isnull=True).order_by('-sort').values_list('sort', flat=True).first()
                 obj.sort = (max_sort or 0) + 1
+
+        # post_amount la gia THAT duoc API public/dat ve-dat mon doc (xem serializers.py).
+        # Truoc day form chi ghi gia vao HalinkMeta de hien thi danh sach Admin, khong dong
+        # bo nguoc lai cot nay nen FE/khach hang luon thay gia = 0. Dong bo lai o day.
+        price_val = form.cleaned_data.get('price')
+        promo_val = form.cleaned_data.get('promo_price')
+        if promo_val:
+            obj.post_amount = promo_val
+        elif price_val:
+            obj.post_amount = price_val
+        else:
+            obj.post_amount = 0
+
         super().save_model(request, obj, form, change)
 
-        # Lưu metadata giá bán từ form
+        # Lưu metadata giá bán từ form (de man Admin list tu hien thi gia/gia KM rieng)
         from django.utils import timezone
-        price_val = form.cleaned_data.get('price')
         if price_val is not None:
             meta, created = HalinkMeta.objects.get_or_create(
                 Id_post=obj.pk,
@@ -235,7 +247,6 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             meta.meta_value = str(price_val)
             meta.save()
 
-        promo_val = form.cleaned_data.get('promo_price')
         if promo_val is not None:
             meta, created = HalinkMeta.objects.get_or_create(
                 Id_post=obj.pk,
