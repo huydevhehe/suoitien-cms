@@ -1,5 +1,5 @@
 import json
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
@@ -18,6 +18,7 @@ META_TYPE = 'home_section'
     responses={200: OpenApiTypes.OBJECT}
 )
 @api_view(['GET'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def get_page_sections(request, page_key):
     """
