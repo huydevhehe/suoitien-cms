@@ -53,6 +53,7 @@ class CategoryCheckboxWidget(forms.Widget):
     <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
   </div>
   <div class="category-dropdown-panel">
+    <input type="text" class="category-search-input" placeholder="Tìm chuyên mục..." oninput="filterCategoryDropdownItems(this)">
     <div class="category-checkbox-widget">
       %s
     </div>
@@ -111,8 +112,30 @@ class CategoryCheckboxWidget(forms.Widget):
 .category-dropdown-container.open .category-dropdown-panel {
     display: block;
 }
+.category-dropdown-container.drop-up .category-dropdown-panel {
+    top: auto;
+    bottom: 100%%;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
 .category-dropdown-container.open .dropdown-arrow {
     transform: rotate(180deg);
+}
+.category-search-input {
+    width: 100%%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+    color: #1f2937;
+    outline: none;
+    border-radius: 8px 8px 0 0;
+}
+.dark .category-search-input {
+    background: rgb(24 24 27);
+    border-bottom-color: rgb(63 63 70);
+    color: #f4f4f5;
 }
 .dropdown-arrow {
     transition: transform 0.2s;
@@ -123,7 +146,7 @@ class CategoryCheckboxWidget(forms.Widget):
     color: #a1a1aa;
 }
 .category-checkbox-widget {
-    max-height: 220px;
+    max-height: 280px;
     overflow-y: auto;
     padding: 8px 10px;
 }
@@ -166,12 +189,34 @@ if (!window._categoryDropdownReady) {
 
     // Close other dropdowns
     document.querySelectorAll('.category-dropdown-container').forEach(c => {
-      c.classList.remove('open');
+      c.classList.remove('open', 'drop-up');
     });
 
     if (!isOpen) {
+      // Nếu khoảng trống phía dưới không đủ (panel cần khoảng ~320px) thì mở lên trên thay vì xuống dưới.
+      const rect = container.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 320 && rect.top > 320) {
+        container.classList.add('drop-up');
+      }
       container.classList.add('open');
+      const searchInput = container.querySelector('.category-search-input');
+      if (searchInput) {
+        searchInput.value = '';
+        filterCategoryDropdownItems(searchInput);
+        setTimeout(() => searchInput.focus(), 0);
+      }
     }
+  };
+
+  window.filterCategoryDropdownItems = function(input) {
+    const panel = input.closest('.category-dropdown-panel');
+    if (!panel) return;
+    const keyword = input.value.trim().toLowerCase();
+    panel.querySelectorAll('.cat-item').forEach(item => {
+      const text = item.textContent.trim().toLowerCase();
+      item.style.display = (!keyword || text.includes(keyword)) ? '' : 'none';
+    });
   };
 
   // Click outside to close
