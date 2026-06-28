@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Chỉ kích hoạt TinyMCE cho các trường soạn thảo nội dung/mô tả HTML
     var selectors = [
+        'textarea.tinymce-editor', // Bổ sung class cho hệ thống Page Sections
         'textarea#id_content_vn',
         'textarea#id_content_vn_0',
         'textarea#id_content_vn_1',

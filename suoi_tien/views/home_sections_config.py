@@ -155,64 +155,54 @@ HOME_SECTIONS = {
     'section_16b_dieu_khoan': {
         'name': 'Tầng 16b - Footer: Điều khoản - Chính sách',
         'group': 'C',
-        'is_footer': True,
-        'fields': [
-            {'name': 'title', 'label': 'Tiêu đề cột', 'type': 'text', 'multilang': True},
-            {'name': 'items', 'label': 'Danh sách link (thêm bao nhiêu cũng được)', 'type': 'link_list', 'multilang': False},
-        ],
-    },
-    'section_16c_lien_he': {
-        'name': 'Tầng 16c - Footer: Liên hệ ngay',
-        'group': 'C',
-        'is_footer': True,
-        'fields': [
-            {'name': 'logo', 'label': 'Logo/Ảnh', 'type': 'image', 'multilang': False},
-            {'name': 'address', 'label': 'Địa chỉ', 'type': 'text', 'multilang': True},
-            {'name': 'phone', 'label': 'Điện thoại', 'type': 'text', 'multilang': False},
-            {'name': 'email', 'label': 'Email', 'type': 'text', 'multilang': False},
-        ],
-    },
-    'section_16d_gioi_thieu': {
-        'name': 'Tầng 16d - Footer: Giới thiệu',
-        'group': 'C',
-        'is_footer': True,
-        'fields': [
-            {'name': 'title', 'label': 'Tiêu đề', 'type': 'text', 'multilang': True},
-            {'name': 'content', 'label': 'Nội dung giới thiệu công ty', 'type': 'textarea', 'multilang': True},
-        ],
-    },
-}
-
-
-def _load_section_values():
-    """Đọc toàn bộ giá trị đã lưu của 15 khối, trả dict section_key -> dict đã parse JSON."""
+def _load_section_values(page_key):
+    """Đọc toàn bộ giá trị đã lưu của các khối thuộc trang page_key."""
     values = {}
     for meta in HalinkMeta.objects.filter(meta_type=META_TYPE):
         if not meta.meta_title:
             continue
-        try:
-            values[meta.meta_title] = json.loads(meta.meta_value) if meta.meta_value else {}
-        except (ValueError, TypeError):
-            values[meta.meta_title] = {}
+        
+        # Nếu là trang chủ thì key không có namespace
+        if page_key == 'home':
+            if ':' not in meta.meta_title:
+                try:
+                    values[meta.meta_title] = json.loads(meta.meta_value) if meta.meta_value else {}
+                except (ValueError, TypeError):
+                    values[meta.meta_title] = {}
+        else:
+            # Trang khác thì key có dạng 'page_key:section_key'
+            prefix = f"{page_key}:"
+            if meta.meta_title.startswith(prefix):
+                section_key = meta.meta_title[len(prefix):]
+                try:
+                    values[section_key] = json.loads(meta.meta_value) if meta.meta_value else {}
+                except (ValueError, TypeError):
+                    values[section_key] = {}
     return values
 
 
-def _group_sections_for_display():
-    """Gom 19 khối thành 4 dải hiển thị ngang: Nhóm C (nội dung tĩnh, trừ Footer) ->
-    Nhóm B (theo chuyên mục) -> Nhóm A (gắn bài viết) -> Footer (4 cột) - đỡ phải
-    cuộn dài 1 cột dọc duy nhất."""
+def _group_sections_for_display(page_sections):
+    """Gom khối thành dải hiển thị ngang: Nhóm C -> Nhóm B -> Nhóm A -> Footer."""
+    # Nếu đang dùng file template bị reset A B C FOOTER thì trả đúng cấu trúc này
     rows = {'C': [], 'B': [], 'A': [], 'FOOTER': []}
-    for key, section in HOME_SECTIONS.items():
+    for key, section in page_sections.items():
         bucket = 'FOOTER' if section.get('is_footer') else section['group']
         if bucket == 'B_PRODUCT':
             bucket = 'B'
+        if bucket not in rows:
+            rows[bucket] = []
         rows[bucket].append((key, section))
     return rows
 
 
 @staff_member_required
 def home_sections_view(request):
-    section_values = _load_section_values()
+    page_key = request.GET.get('page', 'home')
+    if page_key not in PAGES:
+        page_key = 'home'
+        
+    page_config = PAGES[page_key]
+    section_values = _load_section_values(page_key)
 
     posts_for_select = [
         {'Id': p['Id'], 'title': clean_lang(p['title_vn']) or f"Bài viết #{p['Id']}", 'alias': p['alias'] or ''}
@@ -230,12 +220,14 @@ def home_sections_view(request):
     ]
 
     context = {
-        'section_rows': _group_sections_for_display(),
+        'page_key': page_key,
+        'pages_list': PAGES,
+        'section_rows': _group_sections_for_display(page_config['sections']),
         'section_values': section_values,
         'posts_for_select': posts_for_select,
         'categories_for_select': categories_for_select,
         'product_categories_for_select': product_categories_for_select,
-        'title': 'Cấu hình Trang chủ',
+        'title': f"Cấu hình {page_config['name']}",
     }
     context.update(admin.site.each_context(request))
     return render(request, 'admin/home_sections.html', context)
@@ -249,22 +241,29 @@ def home_sections_save_ajax(request):
 
     try:
         data = json.loads(request.body)
-        sections_data = data.get('sections', {})  # Map: section_key -> {field: value, ...}
+        sections_data = data.get('sections', {})
+        page_key = data.get('page_key', 'home')
+        
+        if page_key not in PAGES:
+            return JsonResponse({'status': 'error', 'message': 'Trang không hợp lệ'}, status=400)
+            
+        page_sections = PAGES[page_key]['sections']
 
         with transaction.atomic():
             for section_key, fields in sections_data.items():
-                if section_key not in HOME_SECTIONS:
+                if section_key not in page_sections:
                     continue
 
-                meta_item = HalinkMeta.objects.filter(meta_type=META_TYPE, meta_title=section_key).first()
+                meta_title = section_key if page_key == 'home' else f"{page_key}:{section_key}"
+                meta_item = HalinkMeta.objects.filter(meta_type=META_TYPE, meta_title=meta_title).first()
                 if not meta_item:
-                    meta_item = HalinkMeta(meta_type=META_TYPE, meta_title=section_key, ticlock=0)
+                    meta_item = HalinkMeta(meta_type=META_TYPE, meta_title=meta_title, ticlock=0)
 
                 meta_item.meta_value = json.dumps(fields, ensure_ascii=False)
                 meta_item.date = timezone.now()
                 meta_item.save()
 
-        return JsonResponse({'status': 'success', 'message': 'Đã lưu cấu hình Trang chủ thành công!'})
+        return JsonResponse({'status': 'success', 'message': f"Đã lưu cấu hình trang {PAGES[page_key]['name']} thành công!"})
     except Exception as e:
         import traceback
         print(traceback.format_exc())

@@ -1,0 +1,70 @@
+from suoi_tien.views.home_sections_config import HOME_SECTIONS
+
+ABOUT_SECTIONS = {
+    'section_1_banner': {
+        'name': 'Tầng 1 - Banner Suối Tiên Story',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chính (Ví dụ: SUỐI TIÊN, THEME PARK STORY)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (Hành trình 30 năm kiến tạo...)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'description', 'label': 'Đoạn mô tả (Nơi hội tụ văn hóa...)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'images', 'label': 'Danh sách ảnh nền (thêm nhiều ảnh làm slider)', 'type': 'image_list', 'multilang': False},
+        ],
+    },
+    'section_2_hello_stats': {
+        'name': 'Tầng 2 - Xin Chào & Thống Kê',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề (Xin Chào)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (Khám phá Suối Tiên trong một cái nhìn)', 'type': 'wysiwyg', 'multilang': True},
+            {'name': 'stat_1_num', 'label': 'Thống kê 1 - Chữ số (VD: 30+)', 'type': 'text', 'multilang': False},
+            {'name': 'stat_1_label', 'label': 'Thống kê 1 - Nhãn (VD: Năm Phát Triển)', 'type': 'text', 'multilang': True},
+            {'name': 'stat_2_num', 'label': 'Thống kê 2 - Chữ số (VD: 55Ha)', 'type': 'text', 'multilang': False},
+            {'name': 'stat_2_label', 'label': 'Thống kê 2 - Nhãn (VD: Quy mô)', 'type': 'text', 'multilang': True},
+            {'name': 'stat_3_num', 'label': 'Thống kê 3 - Chữ số (VD: 150+)', 'type': 'text', 'multilang': False},
+            {'name': 'stat_3_label', 'label': 'Thống kê 3 - Nhãn (VD: Công Trình)', 'type': 'text', 'multilang': True},
+            {'name': 'images', 'label': 'Danh sách ảnh slider quạt', 'type': 'image_list', 'multilang': False},
+            {'name': 'bottom_text_1', 'label': 'Chữ chú thích dưới cùng 1', 'type': 'text', 'multilang': True},
+            {'name': 'bottom_text_2', 'label': 'Chữ chú thích dưới cùng 2', 'type': 'text', 'multilang': True},
+            {'name': 'bottom_text_3', 'label': 'Chữ chú thích dưới cùng 3', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_3_cards': {
+        'name': 'Tầng 3 - Hành trình trải nghiệm (4 Thẻ)',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề khối (Không chỉ là khu vui chơi...)', 'type': 'wysiwyg', 'multilang': True},
+            # Thẻ 1
+            {'name': 'card1_img', 'label': '[Thẻ 1] Hình ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card1_title', 'label': '[Thẻ 1] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card1_desc', 'label': '[Thẻ 1] Mô tả ngắn', 'type': 'textarea', 'multilang': True},
+            {'name': 'card1_link', 'label': '[Thẻ 1] Link chuyển trang (nếu có)', 'type': 'text', 'multilang': False},
+            # Thẻ 2
+            {'name': 'card2_img', 'label': '[Thẻ 2] Hình ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card2_title', 'label': '[Thẻ 2] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card2_desc', 'label': '[Thẻ 2] Mô tả ngắn', 'type': 'textarea', 'multilang': True},
+            {'name': 'card2_link', 'label': '[Thẻ 2] Link chuyển trang (nếu có)', 'type': 'text', 'multilang': False},
+            # Thẻ 3
+            {'name': 'card3_img', 'label': '[Thẻ 3] Hình ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card3_title', 'label': '[Thẻ 3] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card3_desc', 'label': '[Thẻ 3] Mô tả ngắn', 'type': 'textarea', 'multilang': True},
+            {'name': 'card3_link', 'label': '[Thẻ 3] Link chuyển trang (nếu có)', 'type': 'text', 'multilang': False},
+            # Thẻ 4
+            {'name': 'card4_img', 'label': '[Thẻ 4] Hình ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card4_title', 'label': '[Thẻ 4] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card4_desc', 'label': '[Thẻ 4] Mô tả ngắn', 'type': 'textarea', 'multilang': True},
+            {'name': 'card4_link', 'label': '[Thẻ 4] Link chuyển trang (nếu có)', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
+PAGES = {
+    'home': {
+        'name': 'Trang Chủ',
+        'sections': HOME_SECTIONS
+    },
+    'gioi-thieu': {
+        'name': 'Giới Thiệu (About)',
+        'sections': ABOUT_SECTIONS
+    }
+}

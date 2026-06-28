@@ -14,6 +14,7 @@ from .views import (
     FoodOrderCreateView, SupportCreateView, WidgetSidebarView,
     HomeSectionListView, HomeSectionDetailView,
 )
+from .page_sections import get_page_sections
 from .auth_views import (
     CustomerRegisterView, CustomerLoginView, CustomerProfileView,
     ChangePasswordView, CustomerOrderHistoryView,
@@ -59,6 +60,7 @@ urlpatterns = [
     path('widgets/<str:position_id>/', WidgetSidebarView.as_view(), name='public-widget-sidebar'),
     path('home-sections/', HomeSectionListView.as_view(), name='public-home-sections'),
     path('home-sections/<str:section_key>/', HomeSectionDetailView.as_view(), name='public-home-section-detail'),
+    path('page-sections/<str:page_key>/', get_page_sections, name='public-page-sections'),
     path('comments/', CommentListCreateView.as_view(), name='public-comments'),
 
     path('ticket-orders/', TicketOrderCreateView.as_view(), name='public-ticket-order-create'),

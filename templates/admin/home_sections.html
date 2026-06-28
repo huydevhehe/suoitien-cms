@@ -13,73 +13,227 @@
 
 {% block content %}
 <style>
-  .dark .bg-white { background-color: #18181b !important; }
-  .dark .text-gray-900 { color: #f4f4f5 !important; }
-  .dark .text-gray-500 { color: #a1a1aa !important; }
-  .dark input, .dark select, .dark textarea {
-      background-color: #18181b !important; color: #e4e4e7 !important; border-color: #3f3f46 !important;
-  }
-  .home-section-card {
-      border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; background: #fff;
-      transition: all 0.2s ease;
-  }
-  .home-section-card.is-hidden {
-      opacity: 0.55; background: #fdf2f2 !important; border-color: #fca5a5 !important;
-  }
-  .dark .home-section-card { background: #18181b; border-color: #27272a; }
-  .dark .home-section-card.is-hidden { background: #2c1517 !important; border-color: #7f1d1d !important; }
-  .group-badge { font-size: 11px; padding: 2px 9px; border-radius: 10px; margin-left: 10px; font-weight: 600; }
-  .group-badge.group-A { background: #dbeafe; color: #1e40af; }
-  .group-badge.group-B { background: #dcfce7; color: #166534; }
-  .group-badge.group-C { background: #fef3c7; color: #92400e; }
-  .dark .group-badge.group-A { background: #1e3a8a; color: #bfdbfe; }
-  .dark .group-badge.group-B { background: #14532d; color: #bbf7d0; }
-  .dark .group-badge.group-C { background: #78350f; color: #fde68a; }
-  .field-label { display: block; font-size: 12px; font-weight: 700; color: #6b7280; margin-bottom: 4px; margin-top: 10px; }
-  .dark .field-label { color: #a1a1aa; }
-  .section-input {
-      width: 100%; font-size: 14px; border-radius: 8px; border: 1px solid #d1d5db;
-      padding: 7px 10px; background: #fff; color: #111827;
-  }
-  .img-thumb-remove {
-      position: absolute; top: -6px; right: -6px; background: #dc2626; color: #fff; border: none;
-      border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; line-height: 1;
-  }
-  .pick-image-btn {
-      padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap;
-      background: #f3e8ff; color: #6b21a8; border: 1px solid #c084fc; margin-top: 10px;
-  }
-  .dark .pick-image-btn { background: #1e1b4b; color: #a78bfa; border-color: #7c3aed; }
-  .section-row-title {
-      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-      color: #6b7280; margin: 24px 0 10px;
-  }
-  .dark .section-row-title { color: #a1a1aa; }
-  .section-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start;
-  }
-  .lang-tab-btn {
-      padding: 4px 14px; border-radius: 9999px; font-size: 11px; font-weight: 700;
-      letter-spacing: .05em; text-transform: uppercase; cursor: pointer;
-      border: 1px solid transparent; background: transparent; color: #71717a;
-  }
-  .lang-tab-btn.active { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
-  .dark .lang-tab-btn.active { background: rgba(124, 58, 237, .2); color: #c4b5fd; border-color: #6d28d9; }
-  .section-grid .home-section-card { margin-bottom: 0; }
+    .dark .bg-white {
+        background-color: #18181b !important;
+    }
+
+    .dark .text-gray-900 {
+        color: #f4f4f5 !important;
+    }
+
+    .dark .text-gray-500 {
+        color: #a1a1aa !important;
+    }
+
+    .dark input,
+    .dark select,
+    .dark textarea {
+        background-color: #18181b !important;
+        color: #e4e4e7 !important;
+        border-color: #3f3f46 !important;
+    }
+
+    .home-section-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .home-section-card.is-hidden {
+        opacity: 0.55;
+        background: #fdf2f2 !important;
+        border-color: #fca5a5 !important;
+    }
+
+    .dark .home-section-card {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    .dark .home-section-card.is-hidden {
+        background: #2c1517 !important;
+        border-color: #7f1d1d !important;
+    }
+
+    .group-badge {
+        font-size: 11px;
+        padding: 2px 9px;
+        border-radius: 10px;
+        margin-left: 10px;
+        font-weight: 600;
+    }
+
+    .group-badge.group-A {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .group-badge.group-B {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .group-badge.group-C {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .dark .group-badge.group-A {
+        background: #1e3a8a;
+        color: #bfdbfe;
+    }
+
+    .dark .group-badge.group-B {
+        background: #14532d;
+        color: #bbf7d0;
+    }
+
+    .dark .group-badge.group-C {
+        background: #78350f;
+        color: #fde68a;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 4px;
+        margin-top: 10px;
+    }
+
+    .dark .field-label {
+        color: #a1a1aa;
+    }
+
+    .section-input {
+        width: 100%;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 7px 10px;
+        background: #fff;
+        color: #111827;
+    }
+
+    .img-thumb-remove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #dc2626;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .pick-image-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        background: #f3e8ff;
+        color: #6b21a8;
+        border: 1px solid #c084fc;
+        margin-top: 10px;
+    }
+
+    .dark .pick-image-btn {
+        background: #1e1b4b;
+        color: #a78bfa;
+        border-color: #7c3aed;
+    }
+
+    .section-row-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #6b7280;
+        margin: 24px 0 10px;
+    }
+
+    .dark .section-row-title {
+        color: #a1a1aa;
+    }
+
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+
+    .lang-tab-btn {
+        padding: 4px 14px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #71717a;
+    }
+
+    .lang-tab-btn.active {
+        background: #ede9fe;
+        color: #6d28d9;
+        border-color: #c4b5fd;
+    }
+
+    .dark .lang-tab-btn.active {
+        background: rgba(124, 58, 237, .2);
+        color: #c4b5fd;
+        border-color: #6d28d9;
+    }
+
+    .section-grid .home-section-card {
+        margin-bottom: 0;
+    }
 </style>
 
 <div class="px-4 lg:px-12 py-6">
-    <div class="flex justify-between items-center mb-2">
-        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Cấu hình Trang chủ</h1>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ title }}</h1>
+            <p class="text-sm text-gray-500 dark:text-zinc-400 mt-1">
+                Cấu hình chi tiết các khối nội dung cho trang này. Không thay đổi thứ tự hay tên khối.
+            </p>
+        </div>
         <button id="btn-save-sections" type="button"
-            class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            💾 Lưu tất cả
+            class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold shadow-sm hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-800 transition-colors whitespace-nowrap">
+            💾 Lưu cấu hình trang này
         </button>
     </div>
-    <p class="text-sm text-gray-500 dark:text-zinc-400 mb-6">
-        19 khối cố định theo đúng thiết kế trang chủ (15 khối trang chủ + 4 cột Footer) —
-        chỉ sửa nội dung/ảnh/link bên trong từng khối, không kéo-thả, không thêm/xóa khối.
-    </p>
+
+    <!-- Tabs cho Đa Trang -->
+    <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+            {% for pk, p_info in pages_list.items %}
+            <li class="mr-2">
+                <a href="?page={{ pk }}" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group 
+                    {% if page_key == pk %}
+                        text-primary-600 border-primary-600 active dark:text-primary-500 dark:border-primary-500
+                    {% else %}
+                        border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300
+                    {% endif %}
+                ">
+                    {{ p_info.name }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
     <div class="section-row-title">Nhóm C - Nội dung tĩnh</div>
     <div class="section-grid">
@@ -200,23 +354,23 @@
         const span = container.querySelector('.card-section-title');
         const input = container.querySelector('.custom-name-input');
         const pencil = container.querySelector('span[title="Sửa tên khối"]');
-        
+
         span.classList.add('hidden');
         if (pencil) pencil.classList.add('hidden');
         input.classList.remove('hidden');
-        
+
         if (!input.value) {
             input.value = span.textContent !== input.getAttribute('placeholder') ? span.textContent : '';
         }
         input.focus();
-        
+
         const saveTitle = () => {
             input.classList.add('hidden');
             span.classList.remove('hidden');
             if (pencil) pencil.classList.remove('hidden');
             updateCardTitle(input);
         };
-        
+
         input.onblur = saveTitle;
         input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); saveTitle(); } };
     }
@@ -313,11 +467,11 @@
             `;
             document.body.appendChild(toast);
         }
-        
+
         const iconContainer = toast.querySelector('#toast-icon-container');
         const icon = toast.querySelector('#toast-icon');
         const msg = toast.querySelector('#toast-message');
-        
+
         msg.textContent = message;
         if (isError) {
             toast.style.borderColor = '#ef4444';
@@ -333,7 +487,7 @@
         toast.classList.remove('hidden');
         void toast.offsetWidth; // Force reflow
         toast.classList.remove('translate-x-full', 'opacity-0');
-        
+
         // Ẩn sau 3 giây
         setTimeout(() => {
             toast.classList.add('translate-x-full', 'opacity-0');
@@ -342,6 +496,11 @@
 
     // ---- Lưu tất cả ----
     document.getElementById('btn-save-sections').addEventListener('click', () => {
+        // Đồng bộ nội dung TinyMCE vào textarea thực tế trước khi lấy value
+        if (typeof tinymce !== 'undefined') {
+            tinymce.triggerSave();
+        }
+
         const sections = {};
         document.querySelectorAll('.home-section-card').forEach(card => {
             const key = card.getAttribute('data-section-key');
@@ -390,7 +549,7 @@
         fetch("{% url 'admin_home_sections_save' %}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sections: sections }),
+            body: JSON.stringify({ sections: sections, page_key: "{{ page_key }}" }),
         })
             .then(res => res.json())
             .then(data => {

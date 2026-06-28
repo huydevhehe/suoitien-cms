@@ -50,7 +50,7 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
     {% else %}
         {% for field in section.fields %}
             {% if field.multilang %}
-                {% if field.type == 'textarea' %}
+                {% if field.type == 'textarea' or field.type == 'wysiwyg' %}
                 <label class="field-label">{{ field.label }}</label>
                 <div class="flex items-center gap-2 mb-1">
                     <button type="button" class="lang-tab-btn active" data-lang="vi"
@@ -58,8 +58,8 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                     <button type="button" class="lang-tab-btn" data-lang="en"
                         onclick="switchLangTab(this, 'field_{{ key }}_{{ field.name }}')">EN</button>
                 </div>
-                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi" placeholder="Nhập chữ bình thường hoặc mã HTML..."></textarea>
-                <textarea class="section-input" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;" placeholder="Enter text or HTML..."></textarea>
+                <textarea class="section-input {% if field.type == 'wysiwyg' %}tinymce-editor{% endif %}" rows="3" id="field_{{ key }}_{{ field.name }}_vi" data-field-name="{{ field.name }}_lg_vi" placeholder="Nhập chữ bình thường hoặc mã HTML..."></textarea>
+                <textarea class="section-input {% if field.type == 'wysiwyg' %}tinymce-editor{% endif %}" rows="3" id="field_{{ key }}_{{ field.name }}_en" data-field-name="{{ field.name }}_lg_en" style="display:none;" placeholder="Enter text or HTML..."></textarea>
                 {% else %}
                 <label class="field-label">{{ field.label }}</label>
                 <div class="flex items-center gap-2 mb-1">
@@ -89,9 +89,9 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                 <label class="field-label">{{ field.label }}</label>
                 <div id="linklist_{{ key }}_{{ field.name }}" class="link-list-container" data-link-list-name="{{ field.name }}"></div>
                 <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
-            {% elif field.type == 'textarea' %}
+            {% elif field.type == 'textarea' or field.type == 'wysiwyg' %}
                 <label class="field-label">{{ field.label }}</label>
-                <textarea class="section-input" rows="3" data-field-name="{{ field.name }}"></textarea>
+                <textarea class="section-input {% if field.type == 'wysiwyg' %}tinymce-editor{% endif %}" rows="3" data-field-name="{{ field.name }}"></textarea>
             {% else %}
                 <label class="field-label">{{ field.label }}</label>
                 <input type="text" class="section-input" data-field-name="{{ field.name }}">
