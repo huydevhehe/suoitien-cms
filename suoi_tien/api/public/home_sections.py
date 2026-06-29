@@ -67,6 +67,34 @@ def _resolve_group_c(section_def, data_raw, request, lang):
             result[name] = data_raw.get(name) or []
             continue
 
+        if field_type == 'cat_list':
+            items = data_raw.get(name) or []
+            limit_cats_raw = data_raw.get('limit_cats', '')
+            limit_per_cat_raw = data_raw.get('limit_per_cat', '')
+            try:
+                limit_cats = int(limit_cats_raw) if str(limit_cats_raw).strip() else None
+            except (ValueError, TypeError):
+                limit_cats = None
+            try:
+                limit_per_cat = int(limit_per_cat_raw) if str(limit_per_cat_raw).strip() else None
+            except (ValueError, TypeError):
+                limit_per_cat = None
+            if limit_cats:
+                items = items[:limit_cats]
+            cats_with_posts = []
+            for item in items:
+                cat_id = item.get('cat_id')
+                if not cat_id:
+                    continue
+                posts = _resolve_posts_by_idcat([str(cat_id)], 'post', request, lang, limit=limit_per_cat)
+                cats_with_posts.append({
+                    'cat_id': cat_id,
+                    'title': item.get('title', ''),
+                    'posts': posts,
+                })
+            result[name] = cats_with_posts
+            continue
+
         raw_value = data_raw.get(name, '')
         if field_type == 'image':
             result[f'{name}_url'] = _image_url(request, raw_value)

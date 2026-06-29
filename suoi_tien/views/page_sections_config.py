@@ -115,6 +115,28 @@ TRAI_NGHIEM_SECTIONS = {
     },
 }
 
+TROCOI_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_images', 'label': 'Ảnh nền banner (nhiều ảnh làm slider)', 'type': 'image_list', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: TRẢI NGHIỆM TRÒ CHƠI TẠI SUỐI TIÊN)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ / chú thích dưới', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_game_grid': {
+        'name': 'Tầng 2 - Lưới Trò Chơi Theo Chuyên Mục',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề tầng (VD: Khám Phá Các Trò Chơi)', 'type': 'text', 'multilang': True},
+            {'name': 'categories', 'label': 'Danh sách chuyên mục hiển thị (chọn từng chuyên mục)', 'type': 'cat_list', 'multilang': False},
+            {'name': 'limit_cats', 'label': 'Hiển thị tối đa bao nhiêu chuyên mục (để trống = không giới hạn)', 'type': 'text', 'multilang': False},
+            {'name': 'limit_per_cat', 'label': 'Mỗi chuyên mục hiển thị tối đa bao nhiêu bài (để trống = không giới hạn)', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -127,5 +149,9 @@ PAGES = {
     'trai-nghiem': {
         'name': 'Trải Nghiệm',
         'sections': TRAI_NGHIEM_SECTIONS
+    },
+    'tro-choi': {
+        'name': 'Trò Chơi',
+        'sections': TROCOI_SECTIONS
     },
 }
