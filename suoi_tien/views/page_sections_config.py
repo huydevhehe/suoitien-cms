@@ -181,7 +181,7 @@ DICH_VU_HOI_NGHI_SECTIONS = {
         'group': 'C',
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề tầng (VD: TỔ CHỨC HỘI NGHỊ TẠI SUỐI TIÊN)', 'type': 'text', 'multilang': True},
-            {'name': 'posts', 'label': 'Danh sách bài viết (chọn tối đa 6 bài, lấy ảnh + tiêu đề từ bài)', 'type': 'post_list', 'multilang': False},
+            {'name': 'posts', 'label': 'Danh sách bài viết (tối đa 6 bài, lấy ảnh + tiêu đề từ bài)', 'type': 'post_list', 'multilang': False, 'max': 6},
         ],
     },
 }

@@ -353,6 +353,11 @@
     function addPostListRow(containerId, postId) {
         const container = document.getElementById(containerId);
         if (!container) return;
+        const max = parseInt(container.dataset.max || '0', 10);
+        if (max > 0 && container.querySelectorAll('.post-list-row').length >= max) {
+            alert('Tối đa ' + max + ' bài viết!');
+            return;
+        }
         const row = document.createElement('div');
         row.className = 'post-list-row';
         row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px;';

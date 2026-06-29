@@ -91,7 +91,7 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                 <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
             {% elif field.type == 'post_list' %}
                 <label class="field-label">{{ field.label }}</label>
-                <div id="postlist_{{ key }}_{{ field.name }}" class="post-list-container" data-post-list-name="{{ field.name }}"></div>
+                <div id="postlist_{{ key }}_{{ field.name }}" class="post-list-container" data-post-list-name="{{ field.name }}"{% if field.max %} data-max="{{ field.max }}"{% endif %}></div>
                 <button type="button" class="pick-image-btn" onclick="addPostListRow('postlist_{{ key }}_{{ field.name }}')">+ Thêm bài viết</button>
             {% elif field.type == 'cat_list' %}
                 <label class="field-label">{{ field.label }}</label>
