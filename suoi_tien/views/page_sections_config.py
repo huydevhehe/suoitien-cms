@@ -159,10 +159,29 @@ DICH_VU_SECTIONS = {
         'name': 'Tầng 3 - Loại Hình Hợp Tác',
         'group': 'C',
         'fields': [
-            {'name': 'title', 'label': 'Tiêu đề tầng (VD: LOẠI HÌNH HỢP TÁC)', 'type': 'text', 'multilang': True},
-            {'name': 'options', 'label': 'Các mục trong dropdown (nhãn + đường dẫn)', 'type': 'link_list', 'multilang': False},
+            {'name': 'title', 'label': 'Nhãn nút hợp tác (VD: LOẠI HÌNH HỢP TÁC)', 'type': 'text', 'multilang': True},
             {'name': 'zalo_phone', 'label': 'Số Zalo (VD: 0901234567) — FE tự build link zalo.me/...', 'type': 'text', 'multilang': False},
             {'name': 'call_phone', 'label': 'Số Gọi Ngay (VD: 0901234567) — FE tự build tel:...', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
+DICH_VU_HOI_NGHI_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_images', 'label': 'Ảnh nền banner (nhiều ảnh, làm slider)', 'type': 'image_list', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề nhỏ phía trên (VD: DỊCH VỤ)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề lớn (VD: TỔ CHỨC HỘI NGHỊ TẠI SUỐI TIÊN)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_articles': {
+        'name': 'Tầng 2 - Bài Viết Hội Nghị (6 thẻ)',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề tầng (VD: TỔ CHỨC HỘI NGHỊ TẠI SUỐI TIÊN)', 'type': 'text', 'multilang': True},
+            {'name': 'posts', 'label': 'Danh sách bài viết (chọn tối đa 6 bài, lấy ảnh + tiêu đề từ bài)', 'type': 'post_list', 'multilang': False},
         ],
     },
 }
@@ -187,5 +206,9 @@ PAGES = {
     'dich-vu': {
         'name': 'Dịch Vụ',
         'sections': DICH_VU_SECTIONS
+    },
+    'dich-vu-hoi-nghi': {
+        'name': 'Dịch Vụ - Hội Nghị',
+        'sections': DICH_VU_HOI_NGHI_SECTIONS
     },
 }
