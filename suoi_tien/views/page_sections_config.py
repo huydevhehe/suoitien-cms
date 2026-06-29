@@ -186,6 +186,18 @@ DICH_VU_HOI_NGHI_SECTIONS = {
     },
 }
 
+CHINH_SACH_TOUR_DOAN_SECTIONS = {
+    'section_1_articles': {
+        'name': 'Tầng 1 - Tiêu Đề & Bài Viết Tour Đoàn',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: CHÍNH SÁCH TOUR ĐOÀN)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: SUOI TIEN THEME PARK COMBO PACKAGES)', 'type': 'text', 'multilang': True},
+            {'name': 'posts', 'label': 'Danh sách bài viết (tối đa 6 bài, lấy ảnh + tiêu đề từ bài)', 'type': 'post_list', 'multilang': False, 'max': 6},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -210,5 +222,9 @@ PAGES = {
     'dich-vu-hoi-nghi': {
         'name': 'Dịch Vụ - Hội Nghị',
         'sections': DICH_VU_HOI_NGHI_SECTIONS
+    },
+    'chinh-sach-tour-doan': {
+        'name': 'Chính Sách Tour Đoàn',
+        'sections': CHINH_SACH_TOUR_DOAN_SECTIONS
     },
 }
