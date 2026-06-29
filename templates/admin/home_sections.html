@@ -358,7 +358,8 @@
             ...POSTS_FOR_SELECT.map(p => `<option value="${p.Id}" data-alias="${p.alias || ''}">${p.title}${p.alias ? ' (' + p.alias + ')' : ''}</option>`)
         ].join('');
         row.innerHTML = `
-            <select class="section-input post-list-select" style="flex:1;">${options}</select>
+            <select class="section-input post-list-select" style="flex:2;">${options}</select>
+            <input type="text" class="section-input post-list-label" placeholder="Tên hiển thị (để trống = dùng tiêu đề bài viết)" style="flex:1;">
             <button type="button" class="img-thumb-remove" style="position:static;width:auto;height:auto;padding:6px 10px;border-radius:6px;" onclick="this.closest('.post-list-row').remove()">Xóa</button>
         `;
         container.appendChild(row);
@@ -467,7 +468,11 @@
             card.querySelectorAll('.post-list-container').forEach(container => {
                 const fname = container.getAttribute('data-post-list-name');
                 const items = data[fname] || [];
-                items.forEach(item => addPostListRow(container.id, item.post_id));
+                items.forEach(item => {
+                    addPostListRow(container.id, item.post_id);
+                    const lastRow = container.lastElementChild;
+                    if (lastRow && item.label) lastRow.querySelector('.post-list-label').value = item.label;
+                });
             });
         }
     });
@@ -564,7 +569,8 @@
                         const sel = row.querySelector('.post-list-select');
                         if (!sel || !sel.value) return null;
                         const opt = sel.options[sel.selectedIndex];
-                        return { post_id: parseInt(sel.value, 10), title: opt ? opt.text.replace(/ \(.*\)$/, '') : '', alias: opt ? opt.getAttribute('data-alias') || '' : '' };
+                        const labelInput = row.querySelector('.post-list-label');
+                        return { post_id: parseInt(sel.value, 10), title: opt ? opt.text.replace(/ \(.*\)$/, '') : '', alias: opt ? opt.getAttribute('data-alias') || '' : '', label: labelInput ? labelInput.value.trim() : '' };
                     }).filter(Boolean);
                 });
             }
