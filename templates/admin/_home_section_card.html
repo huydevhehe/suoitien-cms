@@ -92,6 +92,14 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
             {% elif field.type == 'textarea' or field.type == 'wysiwyg' %}
                 <label class="field-label">{{ field.label }}</label>
                 <textarea class="section-input {% if field.type == 'wysiwyg' %}tinymce-editor{% endif %}" rows="3" data-field-name="{{ field.name }}"></textarea>
+            {% elif field.type == 'select_post' %}
+                <label class="field-label">{{ field.label }}</label>
+                <select class="section-input" data-field-name="{{ field.name }}">
+                    <option value="">-- Chưa chọn (Để trống nếu dùng link thủ công) --</option>
+                    {% for p in posts_for_select %}
+                    <option value="{{ p.Id }}">{{ p.title }} ({{ p.alias }})</option>
+                    {% endfor %}
+                </select>
             {% else %}
                 <label class="field-label">{{ field.label }}</label>
                 <input type="text" class="section-input" data-field-name="{{ field.name }}">

@@ -75,7 +75,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -86,7 +87,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -97,7 +99,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -108,7 +111,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -119,7 +123,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -130,7 +135,8 @@ HOME_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề dòng 1 (Chữ màu trắng, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề dòng 2 (Chữ màu xanh lá, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
             {'name': 'description', 'label': 'Tiêu đề phụ / Chú thích (Bỏ trống sẽ tự ẩn, hỗ trợ mã HTML)', 'type': 'textarea', 'multilang': True},
-            {'name': 'link', 'label': 'Đường dẫn (Link nút "TÌM HIỂU THÊM" / Click Banner)', 'type': 'text', 'multilang': False},
+            {'name': 'link', 'label': 'Đường dẫn thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'post_id', 'label': 'Chọn bài viết liên kết (Tự động lấy link ưu tiên)', 'type': 'select_post', 'multilang': False},
             {'name': 'images', 'label': 'Danh sách ảnh Banner background (thêm nhiều ảnh bự làm slider)', 'type': 'image_list', 'multilang': False},
         ],
     },
@@ -139,7 +145,23 @@ HOME_SECTIONS = {
 
     # ---- Nhóm B: liệt kê theo chuyên mục ----
     'section_04_uudai': {'name': 'Tầng 4 - Tin tức Ưu đãi & sự kiện', 'group': 'B'},
-    'section_12_teambuilding': {'name': 'Tầng 12 - Các dịch vụ thương mại', 'group': 'B'},
+    'section_12_teambuilding': {
+        'name': 'Tầng 12 - Các dịch vụ thương mại',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chung', 'type': 'text', 'multilang': True},
+            # Thẻ 1
+            {'name': 'card1_img', 'label': '[Tour đoàn] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card1_title', 'label': '[Tour đoàn] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card1_link', 'label': '[Tour đoàn] Link thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'card1_post_id', 'label': '[Tour đoàn] Chọn bài viết liên kết', 'type': 'select_post', 'multilang': False},
+            # Thẻ 2
+            {'name': 'card2_img', 'label': '[Merchandise] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card2_title', 'label': '[Merchandise] Tên', 'type': 'text', 'multilang': True},
+            {'name': 'card2_link', 'label': '[Merchandise] Link thủ công (Nếu không chọn bài viết)', 'type': 'text', 'multilang': False},
+            {'name': 'card2_post_id', 'label': '[Merchandise] Chọn bài viết liên kết', 'type': 'select_post', 'multilang': False},
+        ],
+    },
     'section_13_camnang': {'name': 'Tầng 13 - Cẩm nang du lịch', 'group': 'B'},
 
     # ---- Tầng 16: 4 cột Footer (gộp chung vào đây cho gọn, thay cho halink_footer2_wg) ----
@@ -212,16 +234,10 @@ def _load_section_values(page_key):
 
 
 def _group_sections_for_display(page_sections):
-    """Gom khối thành dải hiển thị ngang: Nhóm C -> Nhóm B -> Nhóm A -> Footer."""
-    # Nếu đang dùng file template bị reset A B C FOOTER thì trả đúng cấu trúc này
-    rows = {'C': [], 'B': [], 'A': [], 'FOOTER': []}
+    """Xếp phẳng tất cả các khối theo đúng thứ tự (dict giữ thứ tự từ Python 3.7+)."""
+    rows = {'ALL': []}
     for key, section in page_sections.items():
-        bucket = 'FOOTER' if section.get('is_footer') else section['group']
-        if bucket == 'B_PRODUCT':
-            bucket = 'B'
-        if bucket not in rows:
-            rows[bucket] = []
-        rows[bucket].append((key, section))
+        rows['ALL'].append((key, section))
     return rows
 
 

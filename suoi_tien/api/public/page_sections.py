@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from suoi_tien.models import HalinkMeta
 from suoi_tien.views.page_sections_config import PAGES
-from suoi_tien.api.public.home_sections import _resolve_group_a, _resolve_group_b, _resolve_group_b_product
+from suoi_tien.api.public.home_sections import _resolve_group_a, _resolve_group_b, _resolve_group_b_product, _resolve_group_c
 
 META_TYPE = 'home_section'
 
@@ -90,6 +90,9 @@ def get_page_sections(request, page_key):
             cat_list = data.get('idcat_list')
             if cat_list:
                 section_output['resolved_data'] = _resolve_group_b_product(data, request, lang)
+        else:
+            # Nhóm C
+            section_output['resolved_data'] = _resolve_group_c(config, data, request, lang)
 
         resolved_sections[section_key] = section_output
 

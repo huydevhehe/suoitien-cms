@@ -235,24 +235,10 @@
         </ul>
     </div>
 
-    <div class="section-row-title">Nhóm C - Nội dung tĩnh</div>
     <div class="section-grid">
-        {% for key, section in section_rows.C %}{% include "admin/_home_section_card.html" %}{% endfor %}
-    </div>
-
-    <div class="section-row-title">Nhóm B - Liệt kê theo chuyên mục</div>
-    <div class="section-grid">
-        {% for key, section in section_rows.B %}{% include "admin/_home_section_card.html" %}{% endfor %}
-    </div>
-
-    <div class="section-row-title">Nhóm A - Gắn 1 bài viết cố định</div>
-    <div class="section-grid">
-        {% for key, section in section_rows.A %}{% include "admin/_home_section_card.html" %}{% endfor %}
-    </div>
-
-    <div class="section-row-title">Footer - 4 cột cố định</div>
-    <div class="section-grid">
-        {% for key, section in section_rows.FOOTER %}{% include "admin/_home_section_card.html" %}{% endfor %}
+        {% for key, section in section_rows.ALL %}
+            {% include "admin/_home_section_card.html" %}
+        {% endfor %}
     </div>
 </div>
 

@@ -75,6 +75,15 @@ def _resolve_group_c(section_def, data_raw, request, lang):
             urls = [_image_url(request, n) for n in names]
             result[name] = urls
             result['image_url'] = urls[0] if urls else ''
+        elif field_type == 'select_post':
+            result[name] = raw_value
+            if raw_value:
+                post = HalinkPost.objects.filter(Id=raw_value, ticlock='0').first()
+                if post and post.alias:
+                    # Tạo thêm 1 trường {name}_url (hoặc post_link) để FE dễ lấy
+                    result[f'{name}_url'] = f'/bai-viet/{post.alias}'
+                    # Ghi đè hoặc cung cấp thêm 1 link chung nếu cần
+                    result['post_link'] = f'/bai-viet/{post.alias}'
         else:
             result[name] = raw_value
     return result
