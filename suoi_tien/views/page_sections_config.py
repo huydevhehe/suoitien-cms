@@ -186,6 +186,27 @@ DICH_VU_HOI_NGHI_SECTIONS = {
     },
 }
 
+TIN_TUC_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_image', 'label': 'Ảnh nền banner', 'type': 'image', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề (VD: TIN TỨC)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_news_grid': {
+        'name': 'Tầng 2 - Lưới Tin Tức Theo Chuyên Mục',
+        'group': 'C',
+        'fields': [
+            {'name': 'categories', 'label': 'Danh sách chuyên mục hiển thị trong dropdown (chọn từng chuyên mục)', 'type': 'cat_list', 'multilang': False},
+            {'name': 'limit_cats', 'label': 'Số chuyên mục tối đa trong dropdown (để trống = không giới hạn)', 'type': 'text', 'multilang': False},
+            {'name': 'limit_per_cat', 'label': 'Tổng bài lấy về mỗi chuyên mục (VD: 8)', 'type': 'text', 'multilang': False},
+            {'name': 'limit_per_page', 'label': 'Số bài hiển thị mỗi trang — FE dùng để chia trang (VD: 4)', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
 CHINH_SACH_TOUR_DOAN_SECTIONS = {
     'section_1_articles': {
         'name': 'Tầng 1 - Tiêu Đề & Bài Viết Tour Đoàn',
@@ -226,5 +247,9 @@ PAGES = {
     'chinh-sach-tour-doan': {
         'name': 'Chính Sách Tour Đoàn',
         'sections': CHINH_SACH_TOUR_DOAN_SECTIONS
+    },
+    'tin-tuc': {
+        'name': 'Tin Tức',
+        'sections': TIN_TUC_SECTIONS
     },
 }
