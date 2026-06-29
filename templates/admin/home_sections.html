@@ -360,17 +360,42 @@
         }
         const row = document.createElement('div');
         row.className = 'post-list-row';
-        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px;';
-        const options = ['<option value="">-- Chọn bài viết --</option>',
+        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px; align-items:flex-start;';
+        const opts = ['<option value="">-- Chọn bài viết --</option>',
             ...POSTS_FOR_SELECT.map(p => `<option value="${p.Id}" data-alias="${p.alias || ''}">${p.title}${p.alias ? ' (' + p.alias + ')' : ''}</option>`)
         ].join('');
         row.innerHTML = `
-            <select class="section-input post-list-select" style="flex:2;">${options}</select>
+            <div style="flex:2; display:flex; flex-direction:column; gap:4px;">
+                <input type="text" class="section-input post-list-search" placeholder="🔍 Tìm bài viết..." style="font-size:12px;">
+                <select class="section-input post-list-select" size="1">${opts}</select>
+            </div>
             <input type="text" class="section-input post-list-label" placeholder="Tên hiển thị (để trống = dùng tiêu đề bài viết)" style="flex:1;">
             <button type="button" class="img-thumb-remove" style="position:static;width:auto;height:auto;padding:6px 10px;border-radius:6px;" onclick="this.closest('.post-list-row').remove()">Xóa</button>
         `;
         container.appendChild(row);
-        if (postId) row.querySelector('select').value = String(postId);
+        const search = row.querySelector('.post-list-search');
+        const sel = row.querySelector('.post-list-select');
+        search.addEventListener('input', () => {
+            const q = search.value.trim().toLowerCase();
+            Array.from(sel.options).forEach(opt => {
+                opt.hidden = opt.value !== '' && !opt.text.toLowerCase().includes(q);
+            });
+        });
+        sel.addEventListener('change', () => {
+            const opt = sel.options[sel.selectedIndex];
+            if (opt && opt.value) search.value = opt.text.replace(/ \(.*\)$/, '');
+        });
+        if (postId) {
+            sel.value = String(postId);
+            const selected = sel.options[sel.selectedIndex];
+            if (selected && selected.value) {
+                search.value = selected.text.replace(/ \(.*\)$/, '');
+                const q = selected.text.trim().toLowerCase();
+                Array.from(sel.options).forEach(opt => {
+                    opt.hidden = opt.value !== '' && !opt.text.toLowerCase().includes(q);
+                });
+            }
+        }
     }
 
     // ---- Danh sách chuyên mục chọn từ dropdown (field type=cat_list) ----
