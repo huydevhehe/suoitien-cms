@@ -137,6 +137,36 @@ TROCOI_SECTIONS = {
     },
 }
 
+DICH_VU_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_images', 'label': 'Ảnh nền banner (nhiều ảnh, làm slider quạt)', 'type': 'image_list', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: ĐA DẠNG DỊCH VỤ)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: DÀNH CHO TỔ CHỨC VÀ CÁ NHÂN)', 'type': 'text', 'multilang': True},
+            {'name': 'description', 'label': 'Mô tả nhỏ phía dưới (VD: DIVERSE SERVICE PACKAGES...)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_service_tags': {
+        'name': 'Tầng 2 - Tag Dịch Vụ',
+        'group': 'C',
+        'fields': [
+            {'name': 'tabs', 'label': 'Danh sách tag dịch vụ (tên hiển thị + bài viết liên kết)', 'type': 'post_list', 'multilang': False},
+        ],
+    },
+    'section_3_cooperation': {
+        'name': 'Tầng 3 - Loại Hình Hợp Tác',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề tầng (VD: LOẠI HÌNH HỢP TÁC)', 'type': 'text', 'multilang': True},
+            {'name': 'options', 'label': 'Các mục trong dropdown (nhãn + đường dẫn)', 'type': 'link_list', 'multilang': False},
+            {'name': 'zalo_phone', 'label': 'Số Zalo (VD: 0901234567) — FE tự build link zalo.me/...', 'type': 'text', 'multilang': False},
+            {'name': 'call_phone', 'label': 'Số Gọi Ngay (VD: 0901234567) — FE tự build tel:...', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -153,5 +183,9 @@ PAGES = {
     'tro-choi': {
         'name': 'Trò Chơi',
         'sections': TROCOI_SECTIONS
+    },
+    'dich-vu': {
+        'name': 'Dịch Vụ',
+        'sections': DICH_VU_SECTIONS
     },
 }
