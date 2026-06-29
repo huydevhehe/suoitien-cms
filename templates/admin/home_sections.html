@@ -349,7 +349,7 @@
         row.querySelector('.link-list-url').value = url || '';
     }
 
-    // ---- Danh sách bài viết chọn từ dropdown (field type=post_list) ----
+    // ---- Danh sách bài viết — custom dropdown có search ----
     function addPostListRow(containerId, postId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -360,40 +360,81 @@
         }
         const row = document.createElement('div');
         row.className = 'post-list-row';
-        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px; align-items:flex-start;';
-        const opts = ['<option value="">-- Chọn bài viết --</option>',
-            ...POSTS_FOR_SELECT.map(p => `<option value="${p.Id}" data-alias="${p.alias || ''}">${p.title}${p.alias ? ' (' + p.alias + ')' : ''}</option>`)
-        ].join('');
+        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px; align-items:center;';
         row.innerHTML = `
-            <div style="flex:2; display:flex; flex-direction:column; gap:4px;">
-                <input type="text" class="section-input post-list-search" placeholder="🔍 Tìm bài viết..." style="font-size:12px;">
-                <select class="section-input post-list-select" size="1">${opts}</select>
+            <div class="post-picker-wrap" style="flex:2; position:relative;">
+                <input type="text" class="section-input post-list-display" placeholder="-- Chọn bài viết --" readonly style="cursor:pointer; background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px;">
+                <input type="hidden" class="post-list-value">
+                <input type="hidden" class="post-list-alias-hidden">
+                <input type="hidden" class="post-list-title-hidden">
+                <div class="post-picker-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:9999; border:1px solid #3f3f46; border-radius:6px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.4);">
+                    <input type="text" class="post-list-search" placeholder="🔍 Tìm bài viết..." style="width:100%; box-sizing:border-box; padding:7px 10px; border:none; border-bottom:1px solid #3f3f46; outline:none; font-size:12px; background:#27272a; color:#e4e4e7;">
+                    <div class="post-picker-list" style="max-height:200px; overflow-y:auto; background:#18181b;"></div>
+                </div>
             </div>
             <input type="text" class="section-input post-list-label" placeholder="Tên hiển thị (để trống = dùng tiêu đề bài viết)" style="flex:1;">
             <button type="button" class="img-thumb-remove" style="position:static;width:auto;height:auto;padding:6px 10px;border-radius:6px;" onclick="this.closest('.post-list-row').remove()">Xóa</button>
         `;
         container.appendChild(row);
-        const search = row.querySelector('.post-list-search');
-        const sel = row.querySelector('.post-list-select');
-        search.addEventListener('input', () => {
-            const q = search.value.trim().toLowerCase();
-            Array.from(sel.options).forEach(opt => {
-                opt.hidden = opt.value !== '' && !opt.text.toLowerCase().includes(q);
-            });
-        });
-        sel.addEventListener('change', () => {
-            const opt = sel.options[sel.selectedIndex];
-            if (opt && opt.value) search.value = opt.text.replace(/ \(.*\)$/, '');
-        });
-        if (postId) {
-            sel.value = String(postId);
-            const selected = sel.options[sel.selectedIndex];
-            if (selected && selected.value) {
-                search.value = selected.text.replace(/ \(.*\)$/, '');
-                const q = selected.text.trim().toLowerCase();
-                Array.from(sel.options).forEach(opt => {
-                    opt.hidden = opt.value !== '' && !opt.text.toLowerCase().includes(q);
+
+        const display  = row.querySelector('.post-list-display');
+        const valInput = row.querySelector('.post-list-value');
+        const aliasInp = row.querySelector('.post-list-alias-hidden');
+        const titleInp = row.querySelector('.post-list-title-hidden');
+        const dropdown = row.querySelector('.post-picker-dropdown');
+        const search   = row.querySelector('.post-list-search');
+        const list     = row.querySelector('.post-picker-list');
+
+        function renderList(q) {
+            const filtered = q
+                ? POSTS_FOR_SELECT.filter(p => (p.title + ' ' + (p.alias||'')).toLowerCase().includes(q))
+                : POSTS_FOR_SELECT;
+            list.innerHTML = '';
+            filtered.slice(0, 80).forEach(p => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding:6px 10px; cursor:pointer; font-size:12px; color:#e4e4e7; border-bottom:1px solid #27272a;';
+                item.textContent = p.title + (p.alias ? ' (' + p.alias + ')' : '');
+                item.addEventListener('mouseenter', () => item.style.background = '#3f3f46');
+                item.addEventListener('mouseleave', () => item.style.background = '');
+                item.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    display.value  = p.title;
+                    valInput.value = p.Id;
+                    aliasInp.value = p.alias || '';
+                    titleInp.value = p.title;
+                    dropdown.style.display = 'none';
+                    search.value = '';
+                    renderList('');
                 });
+                list.appendChild(item);
+            });
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="padding:8px 10px; font-size:12px; color:#6b7280;">Không tìm thấy</div>';
+            }
+        }
+
+        renderList('');
+
+        display.addEventListener('click', () => {
+            const isOpen = dropdown.style.display !== 'none';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) { search.focus(); search.select(); }
+        });
+        search.addEventListener('input', () => renderList(search.value.trim().toLowerCase()));
+        document.addEventListener('click', function handler(e) {
+            if (!row.contains(e.target)) {
+                dropdown.style.display = 'none';
+                if (!row.isConnected) document.removeEventListener('click', handler);
+            }
+        });
+
+        if (postId) {
+            const p = POSTS_FOR_SELECT.find(x => String(x.Id) === String(postId));
+            if (p) {
+                display.value  = p.title;
+                valInput.value = p.Id;
+                aliasInp.value = p.alias || '';
+                titleInp.value = p.title;
             }
         }
     }
@@ -646,11 +687,12 @@
                     const fname = container.getAttribute('data-post-list-name');
                     const rows = Array.from(container.querySelectorAll('.post-list-row'));
                     fields[fname] = rows.map(row => {
-                        const sel = row.querySelector('.post-list-select');
-                        if (!sel || !sel.value) return null;
-                        const opt = sel.options[sel.selectedIndex];
+                        const valInput   = row.querySelector('.post-list-value');
+                        const aliasInput = row.querySelector('.post-list-alias-hidden');
+                        const titleInput = row.querySelector('.post-list-title-hidden');
                         const labelInput = row.querySelector('.post-list-label');
-                        return { post_id: parseInt(sel.value, 10), title: opt ? opt.text.replace(/ \(.*\)$/, '') : '', alias: opt ? opt.getAttribute('data-alias') || '' : '', label: labelInput ? labelInput.value.trim() : '' };
+                        if (!valInput || !valInput.value) return null;
+                        return { post_id: parseInt(valInput.value, 10), title: titleInput ? titleInput.value : '', alias: aliasInput ? aliasInput.value : '', label: labelInput ? labelInput.value.trim() : '' };
                     }).filter(Boolean);
                 });
                 card.querySelectorAll('.cat-list-container').forEach(container => {
