@@ -236,10 +236,19 @@
     </div>
 
     <div class="section-grid">
-        {% for key, section in section_rows.ALL %}
+        {% for key, section in section_rows.MAIN %}
             {% include "admin/_home_section_card.html" %}
         {% endfor %}
     </div>
+
+    {% if section_rows.FOOTER %}
+    <div class="section-row-title" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">Footer - 4 cột cố định</div>
+    <div class="section-grid" style="grid-template-columns: repeat(4, minmax(200px, 1fr));">
+        {% for key, section in section_rows.FOOTER %}
+            {% include "admin/_home_section_card.html" %}
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 
 {{ section_values|json_script:"section-values-data" }}
@@ -553,4 +562,51 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
 <script src="{% static 'admin/js/tinymce_init.js' %}"></script>
+
+<!-- Select2 cho ô chọn bài viết -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Chỉnh sửa style select2 cho hợp với giao diện admin (cả dark mode) */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 6px !important;
+        display: flex;
+        align-items: center;
+    }
+    .dark .select2-container .select2-selection--single {
+        background-color: #18181b !important;
+        border-color: #3f3f46 !important;
+    }
+    .dark .select2-container .select2-selection--single .select2-selection__rendered {
+        color: #e4e4e7 !important;
+    }
+    .dark .select2-dropdown {
+        background-color: #18181b !important;
+        border-color: #3f3f46 !important;
+    }
+    .dark .select2-results__option {
+        color: #e4e4e7 !important;
+    }
+    .dark .select2-results__option--highlighted[aria-selected] {
+        background-color: #3f3f46 !important;
+    }
+    .dark .select2-search__field {
+        background-color: #27272a !important;
+        color: white !important;
+        border-color: #52525b !important;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Init Select2 cho tất cả dropdown chọn bài viết
+        $('select[data-field-name$="post_id"], select[data-field-name="post_id"]').select2({
+            width: '100%',
+            placeholder: "-- Chưa chọn --",
+            allowClear: true
+        });
+    });
+</script>
 {% endblock %}

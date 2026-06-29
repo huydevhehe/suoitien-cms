@@ -234,10 +234,13 @@ def _load_section_values(page_key):
 
 
 def _group_sections_for_display(page_sections):
-    """Xếp phẳng tất cả các khối theo đúng thứ tự (dict giữ thứ tự từ Python 3.7+)."""
-    rows = {'ALL': []}
+    """Xếp phẳng tất cả các khối theo đúng thứ tự, tách riêng Footer để dễ phân biệt."""
+    rows = {'MAIN': [], 'FOOTER': []}
     for key, section in page_sections.items():
-        rows['ALL'].append((key, section))
+        if section.get('is_footer'):
+            rows['FOOTER'].append((key, section))
+        else:
+            rows['MAIN'].append((key, section))
     return rows
 
 
