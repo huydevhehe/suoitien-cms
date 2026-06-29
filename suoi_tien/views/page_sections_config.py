@@ -79,12 +79,39 @@ TRAI_NGHIEM_SECTIONS = {
             {'name': 'title', 'label': 'Tiêu đề (VD: Xin Chào)', 'type': 'text', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: Khám phá Suối Tiên trong một cái nhìn)', 'type': 'text', 'multilang': True},
             {'name': 'image_strip', 'label': 'Dải ảnh ngang (chọn nhiều ảnh)', 'type': 'image_list', 'multilang': False},
-            {'name': 'tabs', 'label': 'Các nút tab/lọc (Tên tab → Link neo hoặc URL)', 'type': 'link_list', 'multilang': False},
+            {'name': 'tabs', 'label': 'Các nút tab/lọc (chọn bài viết, FE tự lấy link)', 'type': 'post_list', 'multilang': False},
         ],
     },
     'section_3_features': {
-        'name': 'Tầng 3 - Danh Sách Trải Nghiệm',
-        'group': 'B',
+        'name': 'Tầng 3 - Danh Sách Trải Nghiệm (5 thẻ)',
+        'group': 'C',
+        'fields': [
+            # Thẻ 1
+            {'name': 'card1_img', 'label': '[Thẻ 1] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card1_title', 'label': '[Thẻ 1] Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'card1_desc', 'label': '[Thẻ 1] Mô tả', 'type': 'textarea', 'multilang': True},
+            {'name': 'card1_post_id', 'label': '[Thẻ 1] Bài viết liên kết (nút "Tìm hiểu thêm")', 'type': 'select_post', 'multilang': False},
+            # Thẻ 2
+            {'name': 'card2_img', 'label': '[Thẻ 2] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card2_title', 'label': '[Thẻ 2] Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'card2_desc', 'label': '[Thẻ 2] Mô tả', 'type': 'textarea', 'multilang': True},
+            {'name': 'card2_post_id', 'label': '[Thẻ 2] Bài viết liên kết (nút "Tìm hiểu thêm")', 'type': 'select_post', 'multilang': False},
+            # Thẻ 3
+            {'name': 'card3_img', 'label': '[Thẻ 3] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card3_title', 'label': '[Thẻ 3] Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'card3_desc', 'label': '[Thẻ 3] Mô tả', 'type': 'textarea', 'multilang': True},
+            {'name': 'card3_post_id', 'label': '[Thẻ 3] Bài viết liên kết (nút "Tìm hiểu thêm")', 'type': 'select_post', 'multilang': False},
+            # Thẻ 4
+            {'name': 'card4_img', 'label': '[Thẻ 4] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card4_title', 'label': '[Thẻ 4] Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'card4_desc', 'label': '[Thẻ 4] Mô tả', 'type': 'textarea', 'multilang': True},
+            {'name': 'card4_post_id', 'label': '[Thẻ 4] Bài viết liên kết (nút "Tìm hiểu thêm")', 'type': 'select_post', 'multilang': False},
+            # Thẻ 5
+            {'name': 'card5_img', 'label': '[Thẻ 5] Ảnh', 'type': 'image', 'multilang': False},
+            {'name': 'card5_title', 'label': '[Thẻ 5] Tiêu đề', 'type': 'text', 'multilang': True},
+            {'name': 'card5_desc', 'label': '[Thẻ 5] Mô tả', 'type': 'textarea', 'multilang': True},
+            {'name': 'card5_post_id', 'label': '[Thẻ 5] Bài viết liên kết (nút "Tìm hiểu thêm")', 'type': 'select_post', 'multilang': False},
+        ],
     },
 }
 

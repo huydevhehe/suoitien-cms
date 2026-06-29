@@ -252,9 +252,11 @@
 </div>
 
 {{ section_values|json_script:"section-values-data" }}
+{{ posts_for_select|json_script:"posts-for-select-data" }}
 
 <script>
     const SECTION_VALUES = JSON.parse(document.getElementById("section-values-data").textContent);
+    const POSTS_FOR_SELECT = JSON.parse(document.getElementById("posts-for-select-data").textContent);
 
     // ---- Tab VI/EN cho field song ngữ - chỉ hiện 1 ô tại 1 thời điểm ----
     function switchLangTab(btn, baseId) {
@@ -343,6 +345,24 @@
         container.appendChild(row);
         row.querySelector('.link-list-label').value = label || '';
         row.querySelector('.link-list-url').value = url || '';
+    }
+
+    // ---- Danh sách bài viết chọn từ dropdown (field type=post_list) ----
+    function addPostListRow(containerId, postId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'post-list-row';
+        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px;';
+        const options = ['<option value="">-- Chọn bài viết --</option>',
+            ...POSTS_FOR_SELECT.map(p => `<option value="${p.Id}" data-alias="${p.alias || ''}">${p.title}${p.alias ? ' (' + p.alias + ')' : ''}</option>`)
+        ].join('');
+        row.innerHTML = `
+            <select class="section-input post-list-select" style="flex:1;">${options}</select>
+            <button type="button" class="img-thumb-remove" style="position:static;width:auto;height:auto;padding:6px 10px;border-radius:6px;" onclick="this.closest('.post-list-row').remove()">Xóa</button>
+        `;
+        container.appendChild(row);
+        if (postId) row.querySelector('select').value = String(postId);
     }
 
     function editCardTitle(container) {
@@ -444,6 +464,11 @@
                 const items = data[fname] || [];
                 items.forEach(item => addLinkListRow(container.id, item.label, item.url));
             });
+            card.querySelectorAll('.post-list-container').forEach(container => {
+                const fname = container.getAttribute('data-post-list-name');
+                const items = data[fname] || [];
+                items.forEach(item => addPostListRow(container.id, item.post_id));
+            });
         }
     });
 
@@ -531,6 +556,16 @@
                         label: row.querySelector('.link-list-label').value,
                         url: row.querySelector('.link-list-url').value,
                     })).filter(item => item.label || item.url);
+                });
+                card.querySelectorAll('.post-list-container').forEach(container => {
+                    const fname = container.getAttribute('data-post-list-name');
+                    const rows = Array.from(container.querySelectorAll('.post-list-row'));
+                    fields[fname] = rows.map(row => {
+                        const sel = row.querySelector('.post-list-select');
+                        if (!sel || !sel.value) return null;
+                        const opt = sel.options[sel.selectedIndex];
+                        return { post_id: parseInt(sel.value, 10), title: opt ? opt.text.replace(/ \(.*\)$/, '') : '', alias: opt ? opt.getAttribute('data-alias') || '' : '' };
+                    }).filter(Boolean);
                 });
             }
             sections[key] = fields;

@@ -89,6 +89,10 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
                 <label class="field-label">{{ field.label }}</label>
                 <div id="linklist_{{ key }}_{{ field.name }}" class="link-list-container" data-link-list-name="{{ field.name }}"></div>
                 <button type="button" class="pick-image-btn" onclick="addLinkListRow('linklist_{{ key }}_{{ field.name }}')">+ Thêm link</button>
+            {% elif field.type == 'post_list' %}
+                <label class="field-label">{{ field.label }}</label>
+                <div id="postlist_{{ key }}_{{ field.name }}" class="post-list-container" data-post-list-name="{{ field.name }}"></div>
+                <button type="button" class="pick-image-btn" onclick="addPostListRow('postlist_{{ key }}_{{ field.name }}')">+ Thêm bài viết</button>
             {% elif field.type == 'textarea' or field.type == 'wysiwyg' %}
                 <label class="field-label">{{ field.label }}</label>
                 <textarea class="section-input {% if field.type == 'wysiwyg' %}tinymce-editor{% endif %}" rows="3" data-field-name="{{ field.name }}"></textarea>
