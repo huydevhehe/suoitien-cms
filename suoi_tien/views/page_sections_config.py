@@ -62,6 +62,32 @@ ABOUT_SECTIONS = {
     },
 }
 
+TRAI_NGHIEM_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_image', 'label': 'Ảnh nền banner', 'type': 'image', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: TRẢI NGHIỆM ĐẶC BIỆT)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: SPECIAL EXPERIENCES)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_intro': {
+        'name': 'Tầng 2 - Xin Chào & Dải Ảnh',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề (VD: Xin Chào)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: Khám phá Suối Tiên trong một cái nhìn)', 'type': 'text', 'multilang': True},
+            {'name': 'image_strip', 'label': 'Dải ảnh ngang (chọn nhiều ảnh)', 'type': 'image_list', 'multilang': False},
+            {'name': 'tabs', 'label': 'Các nút tab/lọc (Tên tab → Link neo hoặc URL)', 'type': 'link_list', 'multilang': False},
+        ],
+    },
+    'section_3_features': {
+        'name': 'Tầng 3 - Danh Sách Trải Nghiệm',
+        'group': 'B',
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -70,5 +96,9 @@ PAGES = {
     'gioi-thieu': {
         'name': 'Giới Thiệu (About)',
         'sections': ABOUT_SECTIONS
-    }
+    },
+    'trai-nghiem': {
+        'name': 'Trải Nghiệm',
+        'sections': TRAI_NGHIEM_SECTIONS
+    },
 }
