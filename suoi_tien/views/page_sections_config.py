@@ -200,7 +200,6 @@ TIN_TUC_SECTIONS = {
         'group': 'C',
         'fields': [
             {'name': 'categories', 'label': 'Danh sách chuyên mục hiển thị trong dropdown (chọn từng chuyên mục)', 'type': 'cat_list', 'multilang': False},
-            {'name': 'limit_cats', 'label': 'Số chuyên mục tối đa trong dropdown (để trống = không giới hạn)', 'type': 'text', 'multilang': False},
             {'name': 'limit_per_cat', 'label': 'Tổng bài lấy về mỗi chuyên mục (VD: 8)', 'type': 'text', 'multilang': False},
             {'name': 'limit_per_page', 'label': 'Số bài hiển thị mỗi trang — FE dùng để chia trang (VD: 4)', 'type': 'text', 'multilang': False},
         ],
