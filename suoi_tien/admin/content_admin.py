@@ -193,7 +193,7 @@ class PageProxyAdmin(StatusSwitchAdminMixin, UnixTimestampDateTimeAdminMixin, Po
 
 
 @admin.register(ProductProxy)
-class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
+class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'  # Danh mục sản phẩm
     form = ProductAdminForm
     list_display = ('get_image', 'get_clean_title', 'get_price', 'get_category_display', 'display_sort_actions', 'get_status_display', 'get_date_display')
@@ -201,7 +201,7 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
     search_fields = ('title_vn', 'description_vn', 'content_vn')
     list_filter = ('ticlock', 'date')
     fieldsets = (
-        (None, {'fields': ('product_subtype', 'title_vn', 'alias', 'description_vn', 'content_vn')}),
+        (None, {'fields': ('product_subtype', 'title_vn', 'alias', 'content_vn', 'description_vn')}),
         ('Giá', {'fields': ('price', 'promo_price', 'has_child_ticket', 'price_child')}),
         ('Hình ảnh', {'fields': ('post_image', 'post_gallery')}),
         ('Cài đặt', {'fields': ('idcat', 'sort', 'ticlock', 'home')}),

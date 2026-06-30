@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tinymce.init({
             selector: selectors,
-            height: 400,
+            height: 600,
             menubar: true,
             plugins: [
                 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
