@@ -147,6 +147,10 @@ class ImagePickerAdminMixin:
             from ..widgets import ImagePickerWidget
             kwargs['widget'] = ImagePickerWidget(subfolder='flash')
             return db_field.formfield(**kwargs)
+        elif db_field.name == 'post_gallery':
+            from ..widgets import GalleryPickerWidget
+            kwargs['widget'] = GalleryPickerWidget(subfolder='hinhanh')
+            return db_field.formfield(**kwargs)
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 

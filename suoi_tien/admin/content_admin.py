@@ -18,6 +18,7 @@ from ..models import (
     ProductProxy,
     ProductCategoryProxy,
 )
+from ..widgets import PriceInputWidget
 from .mixins import (
     PostDisplayMixin,
     TinyMCEAdminMixin,
@@ -38,17 +39,13 @@ class ProductAdminForm(forms.ModelForm):
         label="Giá bán",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs={
-            'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
-        })
+        widget=PriceInputWidget(),
     )
     promo_price = forms.IntegerField(
         label="Giá khuyến mãi",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs={
-            'class': 'border bg-white font-medium rounded-md shadow-sm text-gray-900 w-full focus:ring focus:ring-primary-300 focus:border-primary-600 px-3 py-2 sm:text-sm dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700'
-        })
+        widget=PriceInputWidget(),
     )
 
     class Meta:
