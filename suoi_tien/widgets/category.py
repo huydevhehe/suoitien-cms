@@ -8,6 +8,7 @@ class CategoryCheckboxWidget(forms.Widget):
     Widget chọn chuyên mục dạng hộp sổ xuống (dropdown collapsible) chứa checkbox.
     Tự động cập nhật nhãn đã chọn và hỗ trợ giao diện tối/sáng của Unfold.
     """
+    template_name = 'django/forms/widgets/input.html'  # Unfold yêu cầu attribute này
 
     def __init__(self, category_type='postcat', exclude_id=None, *args, **kwargs):
         self.category_type = category_type
