@@ -200,6 +200,16 @@
     .section-grid .home-section-card {
         margin-bottom: 0;
     }
+
+    .group-badge.group-B_PRODUCT_CATS {
+        background: #cffafe;
+        color: #155e75;
+    }
+
+    .dark .group-badge.group-B_PRODUCT_CATS {
+        background: #164e63;
+        color: #67e8f9;
+    }
 </style>
 
 <div class="px-4 lg:px-12 py-6">
@@ -520,6 +530,77 @@
         }
     }
 
+    // ---- B_PRODUCT_CATS: mỗi row = 1 danh mục sản phẩm có thể tìm kiếm ----
+    function addCatBlockRow(listEl, catId) {
+        const row = document.createElement('div');
+        row.className = 'cat-block-row';
+        row.style.cssText = 'display:flex; gap:8px; margin-bottom:6px; align-items:center;';
+        const arrowSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E";
+        row.innerHTML = `
+            <div class="cat-block-picker-wrap" style="flex:1; position:relative;">
+                <input type="text" class="section-input cat-block-display" placeholder="-- Chọn danh mục sản phẩm --" readonly style="cursor:pointer; background-image:url('${arrowSvg}'); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px;">
+                <input type="hidden" class="cat-block-value">
+                <div class="cat-block-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:9999; border:1px solid #3f3f46; border-radius:6px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.4);">
+                    <input type="text" class="cat-block-search" placeholder="🔍 Tìm danh mục..." style="width:100%; box-sizing:border-box; padding:7px 10px; border:none; border-bottom:1px solid #3f3f46; outline:none; font-size:12px; background:#27272a; color:#e4e4e7;">
+                    <div class="cat-block-list" style="max-height:200px; overflow-y:auto; background:#18181b;"></div>
+                </div>
+            </div>
+            <button type="button" class="img-thumb-remove" style="position:static;width:auto;height:auto;padding:6px 10px;border-radius:6px;" onclick="this.closest('.cat-block-row').remove()">Xóa</button>
+        `;
+        listEl.appendChild(row);
+
+        const display  = row.querySelector('.cat-block-display');
+        const valInput = row.querySelector('.cat-block-value');
+        const dropdown = row.querySelector('.cat-block-dropdown');
+        const search   = row.querySelector('.cat-block-search');
+        const list     = row.querySelector('.cat-block-list');
+
+        function renderList(q) {
+            const filtered = q
+                ? PRODUCT_CATS_FOR_SELECT.filter(c => c.title.toLowerCase().includes(q))
+                : PRODUCT_CATS_FOR_SELECT;
+            list.innerHTML = '';
+            filtered.forEach(c => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding:6px 10px; cursor:pointer; font-size:12px; color:#e4e4e7; border-bottom:1px solid #27272a;';
+                item.textContent = c.title + ' (ID: ' + c.Id + ')';
+                item.addEventListener('mouseenter', () => item.style.background = '#3f3f46');
+                item.addEventListener('mouseleave', () => item.style.background = '');
+                item.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    display.value  = c.title;
+                    valInput.value = c.Id;
+                    dropdown.style.display = 'none';
+                    search.value = '';
+                    renderList('');
+                });
+                list.appendChild(item);
+            });
+            if (filtered.length === 0)
+                list.innerHTML = '<div style="padding:8px 10px; font-size:12px; color:#6b7280;">Không tìm thấy</div>';
+        }
+
+        renderList('');
+
+        display.addEventListener('click', () => {
+            const isOpen = dropdown.style.display !== 'none';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) { search.focus(); search.select(); }
+        });
+        search.addEventListener('input', () => renderList(search.value.trim().toLowerCase()));
+        document.addEventListener('click', function handler(e) {
+            if (!row.contains(e.target)) {
+                dropdown.style.display = 'none';
+                if (!row.isConnected) document.removeEventListener('click', handler);
+            }
+        });
+
+        if (catId) {
+            const c = PRODUCT_CATS_FOR_SELECT.find(x => String(x.Id) === String(catId));
+            if (c) { display.value = c.title; valInput.value = c.Id; }
+        }
+    }
+
     // ---- Khối nhóm B / B_PRODUCT: ô chọn 1 chuyên mục — custom dropdown có search ----
     function initIdcatPicker(card, group) {
         const wrap = card.querySelector('.idcat-picker-wrap');
@@ -653,6 +734,11 @@
             if (subtitleInput) subtitleInput.value = data.subtitle || '';
             const limitInput = card.querySelector('[data-field-name="limit"]');
             if (limitInput && data.limit) limitInput.value = data.limit;
+        } else if (group === 'B_PRODUCT_CATS') {
+            const listEl = card.querySelector('.cat-blocks-list');
+            const addBtn = card.querySelector('.add-cat-block-btn');
+            (data.cat_ids || []).forEach(catId => addCatBlockRow(listEl, catId));
+            if (addBtn) addBtn.addEventListener('click', () => addCatBlockRow(listEl, null));
         } else {
             card.querySelectorAll('[data-field-name]').forEach(el => {
                 const fname = el.getAttribute('data-field-name');
@@ -766,6 +852,12 @@
                 fields.subtitle = subtitleInput ? subtitleInput.value : '';
                 const limitInput = card.querySelector('[data-field-name="limit"]');
                 fields.limit = limitInput.value ? parseInt(limitInput.value, 10) : null;
+            } else if (group === 'B_PRODUCT_CATS') {
+                const rows = Array.from(card.querySelectorAll('.cat-block-row'));
+                fields.cat_ids = rows.map(row => {
+                    const val = row.querySelector('.cat-block-value');
+                    return val && val.value ? val.value.toString() : null;
+                }).filter(Boolean);
             } else {
                 card.querySelectorAll('[data-field-name]').forEach(el => {
                     const fname = el.getAttribute('data-field-name');

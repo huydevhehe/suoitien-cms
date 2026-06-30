@@ -45,6 +45,11 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
         <label class="field-label">Số bài tối đa hiện ra (để trống = không giới hạn)</label>
         <input type="number" class="section-input" data-field-name="limit" min="1">
 
+    {% elif section.group == 'B_PRODUCT_CATS' %}
+        <label class="field-label">Danh sách danh mục sản phẩm — mỗi danh mục hiển thị tối đa 6 sản phẩm</label>
+        <div class="cat-blocks-list" style="margin-bottom:4px;"></div>
+        <button type="button" class="pick-image-btn add-cat-block-btn" style="margin-top:6px; width:100%; text-align:center;">+ Thêm danh mục</button>
+
     {% else %}
         {% for field in section.fields %}
             {% if field.multilang %}

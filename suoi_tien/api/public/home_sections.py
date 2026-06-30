@@ -55,6 +55,24 @@ def _resolve_group_b_product(data_raw, request, lang):
     return {'idcat_list': idcat_list, 'title': title, 'subtitle': subtitle, 'items': items}
 
 
+def _resolve_group_b_product_cats(data_raw, request, lang):
+    cat_ids = data_raw.get('cat_ids') or []
+    categories = []
+    for idcat_str in cat_ids:
+        try:
+            cat_obj = HalinkPost.objects.filter(Id=int(idcat_str)).first()
+            cat_title = cat_obj.title if cat_obj else ''
+        except (ValueError, TypeError):
+            cat_title = ''
+        items = _resolve_posts_by_idcat([str(idcat_str)], 'product', request, lang, limit=6)
+        categories.append({
+            'idcat': int(idcat_str),
+            'cat_title': cat_title,
+            'items': items,
+        })
+    return {'categories': categories}
+
+
 def _resolve_group_c(section_def, data_raw, request, lang):
     result = {}
     for field in section_def.get('fields', []):

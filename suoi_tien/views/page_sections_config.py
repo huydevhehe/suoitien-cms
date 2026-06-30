@@ -270,6 +270,31 @@ BANG_GIA_COMBO_SECTIONS = {
     },
 }
 
+BANG_GIA_VE_LE_SECTIONS = {
+    'section_1_header': {
+        'name': 'Tầng 1 - Tiêu đề trang',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: Trải Nghiệm Các Trò Chơi Tại Suối Tiên)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: Experience Exciting Rides And Attractions)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_cat_products': {
+        'name': 'Tầng 2 - Danh sách Danh mục + Sản phẩm',
+        'group': 'B_PRODUCT_CATS',
+    },
+    'section_3_cta': {
+        'name': 'Tầng 3 - Nút CTA (Tiếng Việt + Tiếng Anh)',
+        'group': 'C',
+        'fields': [
+            {'name': 'title_vi', 'label': 'Nút 1 - Nhãn Tiếng Việt (VD: Đặt Vé Suối Tiên Online)', 'type': 'text', 'multilang': False},
+            {'name': 'link_vi', 'label': 'Nút 1 - Đường dẫn (VD: /dat-ve)', 'type': 'text', 'multilang': False},
+            {'name': 'title_en', 'label': 'Nút 2 - Nhãn Tiếng Anh (VD: Book Tickets Online)', 'type': 'text', 'multilang': False},
+            {'name': 'link_en', 'label': 'Nút 2 - Đường dẫn (VD: /book-tickets)', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -310,5 +335,9 @@ PAGES = {
     'bang-gia-combo': {
         'name': 'Bảng Giá - Combo',
         'sections': BANG_GIA_COMBO_SECTIONS
+    },
+    'bang-gia-ve-le': {
+        'name': 'Bảng Giá - Vé Lẻ',
+        'sections': BANG_GIA_VE_LE_SECTIONS
     },
 }
