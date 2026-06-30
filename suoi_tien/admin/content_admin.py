@@ -84,6 +84,14 @@ class ProductAdminForm(forms.ModelForm):
     class Media:
         js = ('admin/js/product_form.js',)
 
+    def clean_title_vn(self):
+        value = self.cleaned_data.get('title_vn')
+        # MultiLangWidget trả về list [vi, en] hoặc string
+        vi_val = value[0] if isinstance(value, (list, tuple)) else value
+        if not vi_val or not str(vi_val).strip():
+            raise forms.ValidationError('Tiêu đề tiếng Việt không được để trống.')
+        return value
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
