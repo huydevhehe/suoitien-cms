@@ -234,8 +234,7 @@ TUYEN_DUNG_SECTIONS = {
         'fields': [
             {'name': 'title', 'label': 'Tiêu đề tầng (VD: CƠ HỘI VIỆC LÀM)', 'type': 'text', 'multilang': True},
             {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: Tham gia đội ngũ Suối Tiên)', 'type': 'text', 'multilang': True},
-            {'name': 'limit_display', 'label': 'Số bài hiển thị mặc định (VD: 3) — FE dùng để slice danh sách', 'type': 'text', 'multilang': False},
-            {'name': 'posts', 'label': 'Danh sách bài viết tuyển dụng (tối đa 6 bài)', 'type': 'post_list', 'multilang': False, 'max': 6},
+{'name': 'posts', 'label': 'Danh sách bài viết tuyển dụng (tối đa 6 bài)', 'type': 'post_list', 'multilang': False, 'max': 6},
         ],
     },
 }
