@@ -56,7 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.receiveImageFromBrowser = function(fieldId, path) {
                     if (fieldId === '__tinymce__') {
                         if (window.__tinymceCb) {
-                            window.__tinymceCb(path, { title: '' });
+                            var fullPath = (path.startsWith('/') || path.startsWith('http')) ? path : '/media/' + path;
+                            window.__tinymceCb(fullPath, { title: '' });
                             window.__tinymceCb = null;
                         }
                     } else {
