@@ -218,6 +218,28 @@ CHINH_SACH_TOUR_DOAN_SECTIONS = {
     },
 }
 
+TUYEN_DUNG_SECTIONS = {
+    'section_1_hero': {
+        'name': 'Tầng 1 - Banner Hero',
+        'group': 'C',
+        'fields': [
+            {'name': 'bg_image', 'label': 'Ảnh nền banner', 'type': 'image', 'multilang': False},
+            {'name': 'title', 'label': 'Tiêu đề lớn (VD: TUYỂN DỤNG SUỐI TIÊN)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: SUOI TIEN CAREER)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_jobs': {
+        'name': 'Tầng 2 - Danh Sách Tuyển Dụng',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề tầng (VD: CƠ HỘI VIỆC LÀM)', 'type': 'text', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: Tham gia đội ngũ Suối Tiên)', 'type': 'text', 'multilang': True},
+            {'name': 'limit_display', 'label': 'Số bài hiển thị mặc định (VD: 3) — FE dùng để slice danh sách', 'type': 'text', 'multilang': False},
+            {'name': 'posts', 'label': 'Danh sách bài viết tuyển dụng (tối đa 6 bài)', 'type': 'post_list', 'multilang': False, 'max': 6},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -250,5 +272,9 @@ PAGES = {
     'tin-tuc': {
         'name': 'Tin Tức',
         'sections': TIN_TUC_SECTIONS
+    },
+    'tuyen-dung': {
+        'name': 'Tuyển Dụng',
+        'sections': TUYEN_DUNG_SECTIONS
     },
 }
