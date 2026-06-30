@@ -5,7 +5,7 @@ import time
 from rest_framework import serializers
 
 from suoi_tien.models import (
-    HalinkWebsite, HalinkFlash, HalinkPost, HalinkCart,
+    HalinkWebsite, HalinkFlash, HalinkPost, HalinkMeta, HalinkCart,
     TicketOrderProxy, FoodOrderProxy, CommentProxy, SupportProxy,
 )
 from suoi_tien.utils import build_media_url, clean_lang

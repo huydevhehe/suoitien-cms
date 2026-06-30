@@ -254,11 +254,13 @@
 {{ section_values|json_script:"section-values-data" }}
 {{ posts_for_select|json_script:"posts-for-select-data" }}
 {{ categories_for_select|json_script:"categories-for-select-data" }}
+{{ product_categories_for_select|json_script:"product-categories-for-select-data" }}
 
 <script>
     const SECTION_VALUES = JSON.parse(document.getElementById("section-values-data").textContent);
     const POSTS_FOR_SELECT = JSON.parse(document.getElementById("posts-for-select-data").textContent);
     const CATS_FOR_SELECT = JSON.parse(document.getElementById("categories-for-select-data").textContent);
+    const PRODUCT_CATS_FOR_SELECT = JSON.parse(document.getElementById("product-categories-for-select-data").textContent);
 
     // ---- Tab VI/EN cho field song ngữ - chỉ hiện 1 ô tại 1 thời điểm ----
     function switchLangTab(btn, baseId) {
@@ -518,6 +520,60 @@
         }
     }
 
+    // ---- Khối nhóm B / B_PRODUCT: ô chọn 1 chuyên mục — custom dropdown có search ----
+    function initIdcatPicker(card, group) {
+        const wrap = card.querySelector('.idcat-picker-wrap');
+        if (!wrap) return;
+        const display  = wrap.querySelector('.idcat-picker-display');
+        const valInput = wrap.querySelector('[data-field-name="idcat_list"]');
+        const dropdown = wrap.querySelector('.idcat-picker-dropdown');
+        const search   = wrap.querySelector('.idcat-picker-search');
+        const list     = wrap.querySelector('.idcat-picker-list');
+        const source   = group === 'B_PRODUCT' ? PRODUCT_CATS_FOR_SELECT : CATS_FOR_SELECT;
+
+        function renderList(q) {
+            const filtered = q
+                ? source.filter(c => c.title.toLowerCase().includes(q))
+                : source;
+            list.innerHTML = '';
+            filtered.forEach(c => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding:6px 10px; cursor:pointer; font-size:12px; color:#e4e4e7; border-bottom:1px solid #27272a;';
+                item.textContent = c.title + ' (ID: ' + c.Id + ')';
+                item.addEventListener('mouseenter', () => item.style.background = '#3f3f46');
+                item.addEventListener('mouseleave', () => item.style.background = '');
+                item.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    display.value = c.title;
+                    valInput.value = c.Id;
+                    dropdown.style.display = 'none';
+                    search.value = '';
+                    renderList('');
+                });
+                list.appendChild(item);
+            });
+            if (filtered.length === 0)
+                list.innerHTML = '<div style="padding:8px 10px; font-size:12px; color:#6b7280;">Không tìm thấy</div>';
+        }
+
+        renderList('');
+
+        display.addEventListener('click', () => {
+            const isOpen = dropdown.style.display !== 'none';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) { search.focus(); search.select(); }
+        });
+        search.addEventListener('input', () => renderList(search.value.trim().toLowerCase()));
+        document.addEventListener('click', function handler(e) {
+            if (!wrap.contains(e.target)) dropdown.style.display = 'none';
+        });
+
+        if (valInput.value) {
+            const c = source.find(x => String(x.Id) === String(valInput.value));
+            if (c) display.value = c.title;
+        }
+    }
+
     function editCardTitle(container) {
         const span = container.querySelector('.card-section-title');
         const input = container.querySelector('.custom-name-input');
@@ -590,6 +646,7 @@
                 const val = Array.isArray(data.idcat_list) ? data.idcat_list[0] : (data.idcat_list || '');
                 idcatInput.value = val || '';
             }
+            initIdcatPicker(card, group);
             const titleInput = card.querySelector('[data-field-name="title"]');
             if (titleInput) titleInput.value = data.title || '';
             const subtitleInput = card.querySelector('[data-field-name="subtitle"]');
