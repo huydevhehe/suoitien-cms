@@ -12,6 +12,7 @@ import json
 
 from suoi_tien.models import HalinkMeta, HalinkPost
 from suoi_tien.views.home_sections_config import HOME_SECTIONS, META_TYPE
+from suoi_tien.utils import clean_lang
 from .widgets import _image_url, _resolve_posts_by_idcat
 from .serializers import PostDetailSerializer
 
@@ -60,13 +61,15 @@ def _resolve_group_b_product_cats(data_raw, request, lang):
     categories = []
     for idcat_str in cat_ids:
         try:
-            cat_obj = HalinkPost.objects.filter(Id=int(idcat_str)).first()
-            cat_title = cat_obj.title if cat_obj else ''
+            idcat_int = int(idcat_str)
+            cat_obj = HalinkPost.objects.filter(Id=idcat_int).first()
+            cat_title = clean_lang(cat_obj.title_vn, lang) if cat_obj else ''
         except (ValueError, TypeError):
+            idcat_int = 0
             cat_title = ''
         items = _resolve_posts_by_idcat([str(idcat_str)], 'product', request, lang, limit=6)
         categories.append({
-            'idcat': int(idcat_str),
+            'idcat': idcat_int,
             'cat_title': cat_title,
             'items': items,
         })
