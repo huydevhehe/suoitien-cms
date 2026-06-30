@@ -7,6 +7,8 @@ class SidebarCheckboxWidget(forms.Widget):
     Widget hiển thị danh sách các Sidebar dưới dạng check-box.
     Tự động đọc cấu hình sidebar từ theme hiện tại.
     """
+    template_name = 'django/forms/widgets/input.html'  # Unfold yêu cầu attribute này
+
     def render(self, name, value, attrs=None, renderer=None):
         from ..views import parse_sidebars_from_theme, get_active_theme
         import json
