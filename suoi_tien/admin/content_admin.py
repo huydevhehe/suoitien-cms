@@ -34,9 +34,19 @@ from .mixins import (
 
 # ==================== FORMS ====================
 
+PRODUCT_SUBTYPE_CHOICES = [
+    ('ticket', 'Vé / Combo'),
+    ('food', 'Món ăn'),
+]
+
 class ProductAdminForm(forms.ModelForm):
+    product_subtype = forms.ChoiceField(
+        label="Loại sản phẩm",
+        choices=PRODUCT_SUBTYPE_CHOICES,
+        initial='ticket',
+    )
     price = forms.IntegerField(
-        label="Giá bán",
+        label="Giá (người lớn)",
         required=False,
         min_value=0,
         widget=PriceInputWidget(),
@@ -47,33 +57,62 @@ class ProductAdminForm(forms.ModelForm):
         min_value=0,
         widget=PriceInputWidget(),
     )
+    has_child_ticket = forms.BooleanField(
+        label="Có giá vé trẻ em?",
+        required=False,
+    )
+    price_child = forms.IntegerField(
+        label="Giá vé trẻ em",
+        required=False,
+        min_value=0,
+        widget=PriceInputWidget(),
+    )
 
     class Meta:
         model = ProductProxy
         fields = [
             'title_vn', 'alias', 'description_vn', 'content_vn',
-            'price', 'promo_price', 'post_image', 'post_gallery',
-            'idcat', 'sort', 'ticlock', 'home'
+            'post_image', 'post_gallery', 'idcat', 'sort', 'ticlock', 'home'
         ]
+
+    field_order = [
+        'product_subtype', 'title_vn', 'alias', 'description_vn', 'content_vn',
+        'price', 'promo_price', 'has_child_ticket', 'price_child',
+        'post_image', 'post_gallery', 'idcat', 'sort', 'ticlock', 'home',
+    ]
+
+    class Media:
+        js = ('admin/js/product_form.js',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
-            # Truy vấn giá bán hiện tại
-            price_meta = HalinkMeta.objects.filter(Id_post=self.instance.pk, meta_title='halink_metabox_gia').first()
-            if price_meta and price_meta.meta_value:
+            meta_map = {
+                m.meta_title: m.meta_value
+                for m in HalinkMeta.objects.filter(
+                    Id_post=self.instance.pk,
+                    meta_title__in=[
+                        'halink_metabox_gia', 'halink_metabox_gia_khuyen_mai',
+                        'product_subtype', 'price_child',
+                    ]
+                )
+            }
+            try:
+                self.fields['price'].initial = int(meta_map['halink_metabox_gia'])
+            except (KeyError, ValueError, TypeError):
+                pass
+            try:
+                self.fields['promo_price'].initial = int(meta_map['halink_metabox_gia_khuyen_mai'])
+            except (KeyError, ValueError, TypeError):
+                pass
+            if 'product_subtype' in meta_map:
+                self.fields['product_subtype'].initial = meta_map['product_subtype']
+            if 'price_child' in meta_map:
                 try:
-                    self.fields['price'].initial = int(price_meta.meta_value)
+                    self.fields['price_child'].initial = int(meta_map['price_child'])
+                    self.fields['has_child_ticket'].initial = True
                 except (ValueError, TypeError):
-                    self.fields['price'].initial = price_meta.meta_value
-
-            # Truy vấn giá khuyến mãi hiện tại
-            promo_meta = HalinkMeta.objects.filter(Id_post=self.instance.pk, meta_title='halink_metabox_gia_khuyen_mai').first()
-            if promo_meta and promo_meta.meta_value:
-                try:
-                    self.fields['promo_price'].initial = int(promo_meta.meta_value)
-                except (ValueError, TypeError):
-                    self.fields['promo_price'].initial = promo_meta.meta_value
+                    pass
 
 
 # ==============================================================================
@@ -233,25 +272,27 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
 
         super().save_model(request, obj, form, change)
 
-        # Lưu metadata giá bán từ form (de man Admin list tu hien thi gia/gia KM rieng)
         from django.utils import timezone
-        if price_val is not None:
-            meta, created = HalinkMeta.objects.get_or_create(
-                Id_post=obj.pk,
-                meta_title='halink_metabox_gia',
-                defaults={'meta_type': 'product', 'ticlock': 0, 'date': timezone.now()}
-            )
-            meta.meta_value = str(price_val)
-            meta.save()
 
-        if promo_val is not None:
-            meta, created = HalinkMeta.objects.get_or_create(
-                Id_post=obj.pk,
-                meta_title='halink_metabox_gia_khuyen_mai',
-                defaults={'meta_type': 'product', 'ticlock': 0, 'date': timezone.now()}
-            )
-            meta.meta_value = str(promo_val)
-            meta.save()
+        def _save_meta(key, value):
+            if value is not None:
+                meta, _ = HalinkMeta.objects.get_or_create(
+                    Id_post=obj.pk, meta_title=key,
+                    defaults={'meta_type': 'product', 'ticlock': 0, 'date': timezone.now()}
+                )
+                meta.meta_value = str(value)
+                meta.save()
+
+        _save_meta('halink_metabox_gia', price_val)
+        _save_meta('halink_metabox_gia_khuyen_mai', promo_val)
+        _save_meta('product_subtype', form.cleaned_data.get('product_subtype', 'ticket'))
+
+        has_child = form.cleaned_data.get('has_child_ticket', False)
+        price_child_val = form.cleaned_data.get('price_child') if has_child else None
+        if price_child_val is not None:
+            _save_meta('price_child', price_child_val)
+        else:
+            HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='price_child').delete()
 
 
 @admin.register(ProductCategoryProxy)

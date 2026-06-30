@@ -245,12 +245,15 @@ class PostSummarySerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    product_subtype = serializers.SerializerMethodField()
+    price_child = serializers.SerializerMethodField()
 
     class Meta:
         model = HalinkPost
         fields = [
             'Id', 'title', 'alias', 'description', 'image_url', 'post_type',
             'post_amount', 'home', 'sort', 'date', 'post_views', 'idcat',
+            'product_subtype', 'price_child',
         ]
 
     def get_title(self, obj) -> str:
@@ -261,6 +264,23 @@ class PostSummarySerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj) -> str | None:
         return build_media_url(self.context.get('request'), obj.post_image)
+
+    def get_product_subtype(self, obj) -> str | None:
+        if obj.post_type != 'product':
+            return None
+        meta = HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='product_subtype').first()
+        return meta.meta_value if meta else 'ticket'
+
+    def get_price_child(self, obj) -> int | None:
+        if obj.post_type != 'product':
+            return None
+        meta = HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='price_child').first()
+        if meta and meta.meta_value:
+            try:
+                return int(meta.meta_value)
+            except (ValueError, TypeError):
+                pass
+        return None
 
 
 class PostDetailSerializer(PostSummarySerializer):
