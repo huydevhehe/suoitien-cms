@@ -92,6 +92,12 @@ class ProductAdminForm(forms.ModelForm):
             raise forms.ValidationError('Tiêu đề tiếng Việt không được để trống.')
         return value
 
+    def clean_alias(self):
+        value = self.cleaned_data.get('alias', '')
+        if not value or not str(value).strip():
+            raise forms.ValidationError('URL (alias) không được để trống.')
+        return value.strip()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
@@ -322,6 +328,12 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
 @admin.register(ProductCategoryProxy)
 class ProductCategoryProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAdminMixin, CategoryAdminMixin, ImagePickerAdminMixin, SidebarAdminMixin, UnixTimestampDateTimeAdminMixin, PostDisplayMixin, TinyMCEAdminMixin, MultiLangAdminMixin, ModelAdmin):
     category_type = 'productcat'
+    fieldsets = (
+        (None, {'fields': ('title_vn', 'alias', 'description_vn', 'content_vn')}),
+        ('Hình ảnh', {'fields': ('post_image', 'post_banner')}),
+        ('Cài đặt', {'fields': ('idcat', 'sort', 'ticlock', 'home')}),
+        ('SEO', {'fields': ('meta_title', 'meta_description', 'schema_org')}),
+    )
 
     def display_hierarchical_title(self, obj):
         if obj.idcat:
