@@ -46,6 +46,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Tránh parse đường dẫn URL tuyệt đối thành tương đối
             convert_urls: false,
+
+            // Tích hợp image browser của admin vào nút chèn ảnh TinyMCE
+            file_picker_types: 'image',
+            file_picker_callback: function(cb) {
+                window.__tinymceCb = cb;
+                // Patch receiveImageFromBrowser tại thời điểm mở popup (sau khi widget JS đã load)
+                var orig = window.receiveImageFromBrowser || function() {};
+                window.receiveImageFromBrowser = function(fieldId, path) {
+                    if (fieldId === '__tinymce__') {
+                        if (window.__tinymceCb) {
+                            window.__tinymceCb(path, { title: '' });
+                            window.__tinymceCb = null;
+                        }
+                    } else {
+                        orig(fieldId, path);
+                    }
+                };
+                var url = '/admin/suoi_tien/image-browser/?field_id=__tinymce__&subfolder=hinhanh';
+                var w = 900, h = 600;
+                window.open(url, 'TinyMCEImgBrowser',
+                    'width=' + w + ',height=' + h +
+                    ',left=' + ((screen.width - w) / 2 | 0) +
+                    ',top=' + ((screen.height - h) / 2 | 0));
+            },
             
             // Tắt nút Upgrade (gỡ bỏ logo tia sét)
             promotion: false,
