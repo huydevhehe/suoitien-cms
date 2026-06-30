@@ -21,6 +21,7 @@ class PriceInputWidget(forms.NumberInput):
 
 class GalleryPickerWidget(forms.HiddenInput):
     """Multi-image picker: hiện thumbnails có nút ×, nút Thêm ảnh mở popup image browser."""
+    is_hidden = False  # Báo cho admin render row có label, không giấu như HiddenInput
 
     def __init__(self, subfolder='hinhanh', *args, **kwargs):
         self.subfolder = subfolder

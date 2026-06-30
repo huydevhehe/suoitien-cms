@@ -200,6 +200,12 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
     list_display_links = ('get_image', 'get_clean_title')
     search_fields = ('title_vn', 'description_vn', 'content_vn')
     list_filter = ('ticlock', 'date')
+    fieldsets = (
+        (None, {'fields': ('product_subtype', 'title_vn', 'alias', 'description_vn', 'content_vn')}),
+        ('Giá', {'fields': ('price', 'promo_price', 'has_child_ticket', 'price_child')}),
+        ('Hình ảnh', {'fields': ('post_image', 'post_gallery')}),
+        ('Cài đặt', {'fields': ('idcat', 'sort', 'ticlock', 'home')}),
+    )
 
     def get_queryset(self, request):
         price_subquery = HalinkMeta.objects.filter(
