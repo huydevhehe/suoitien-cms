@@ -215,6 +215,16 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
         ('Cài đặt', {'fields': ('idcat', 'sort', 'ticlock', 'home')}),
     )
 
+    def response_add(self, request, obj, post_url_continue=None):
+        request.POST = request.POST.copy()
+        request.POST['_continue'] = '1'
+        return super().response_add(request, obj, post_url_continue)
+
+    def response_change(self, request, obj):
+        request.POST = request.POST.copy()
+        request.POST['_continue'] = '1'
+        return super().response_change(request, obj)
+
     def get_queryset(self, request):
         price_subquery = HalinkMeta.objects.filter(
             Id_post=OuterRef('Id'),
