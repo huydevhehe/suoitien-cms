@@ -584,7 +584,7 @@
         if (group === 'A') {
             const sel = card.querySelector('[data-field-name="post_id"]');
             if (sel && data.post_id) sel.value = data.post_id;
-        } else if (group === 'B') {
+        } else if (group === 'B' || group === 'B_PRODUCT') {
             const idcatInput = card.querySelector('[data-field-name="idcat_list"]');
             if (idcatInput) {
                 const val = Array.isArray(data.idcat_list) ? data.idcat_list[0] : (data.idcat_list || '');
@@ -592,6 +592,8 @@
             }
             const titleInput = card.querySelector('[data-field-name="title"]');
             if (titleInput) titleInput.value = data.title || '';
+            const subtitleInput = card.querySelector('[data-field-name="subtitle"]');
+            if (subtitleInput) subtitleInput.value = data.subtitle || '';
             const limitInput = card.querySelector('[data-field-name="limit"]');
             if (limitInput && data.limit) limitInput.value = data.limit;
         } else {
@@ -703,6 +705,8 @@
                 fields.idcat_list = idcatInput && idcatInput.value ? [idcatInput.value.toString()] : [];
                 const titleInput = card.querySelector('[data-field-name="title"]');
                 fields.title = titleInput.value;
+                const subtitleInput = card.querySelector('[data-field-name="subtitle"]');
+                fields.subtitle = subtitleInput ? subtitleInput.value : '';
                 const limitInput = card.querySelector('[data-field-name="limit"]');
                 fields.limit = limitInput.value ? parseInt(limitInput.value, 10) : null;
             } else {

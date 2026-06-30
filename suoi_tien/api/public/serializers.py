@@ -246,6 +246,8 @@ class PostSummarySerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     product_subtype = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    promo_price = serializers.SerializerMethodField()
     price_child = serializers.SerializerMethodField()
 
     class Meta:
@@ -253,7 +255,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
         fields = [
             'Id', 'title', 'alias', 'description', 'image_url', 'post_type',
             'post_amount', 'home', 'sort', 'date', 'post_views', 'idcat',
-            'product_subtype', 'price_child',
+            'product_subtype', 'price', 'promo_price', 'price_child',
         ]
 
     def get_title(self, obj) -> str:
@@ -270,6 +272,28 @@ class PostSummarySerializer(serializers.ModelSerializer):
             return None
         meta = HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='product_subtype').first()
         return meta.meta_value if meta else 'ticket'
+
+    def get_price(self, obj) -> int | None:
+        if obj.post_type != 'product':
+            return None
+        meta = HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='halink_metabox_gia').first()
+        if meta and meta.meta_value:
+            try:
+                return int(meta.meta_value)
+            except (ValueError, TypeError):
+                pass
+        return None
+
+    def get_promo_price(self, obj) -> int | None:
+        if obj.post_type != 'product':
+            return None
+        meta = HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='halink_metabox_gia_khuyen_mai').first()
+        if meta and meta.meta_value:
+            try:
+                return int(meta.meta_value)
+            except (ValueError, TypeError):
+                pass
+        return None
 
     def get_price_child(self, obj) -> int | None:
         if obj.post_type != 'product':

@@ -40,17 +40,19 @@ def _resolve_group_a(data_raw, request, lang):
 def _resolve_group_b(data_raw, request, lang):
     idcat_list = data_raw.get('idcat_list') or []
     title = data_raw.get('title', '')
+    subtitle = data_raw.get('subtitle', '')
     limit = data_raw.get('limit')
     items = _resolve_posts_by_idcat(idcat_list, 'post', request, lang, limit=limit)
-    return {'idcat_list': idcat_list, 'title': title, 'items': items}
+    return {'idcat_list': idcat_list, 'title': title, 'subtitle': subtitle, 'items': items}
 
 
 def _resolve_group_b_product(data_raw, request, lang):
     idcat_list = data_raw.get('idcat_list') or []
     title = data_raw.get('title', '')
+    subtitle = data_raw.get('subtitle', '')
     limit = data_raw.get('limit')
     items = _resolve_posts_by_idcat(idcat_list, 'product', request, lang, limit=limit)
-    return {'idcat_list': idcat_list, 'title': title, 'items': items}
+    return {'idcat_list': idcat_list, 'title': title, 'subtitle': subtitle, 'items': items}
 
 
 def _resolve_group_c(section_def, data_raw, request, lang):

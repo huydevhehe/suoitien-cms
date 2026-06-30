@@ -239,6 +239,37 @@ TUYEN_DUNG_SECTIONS = {
     },
 }
 
+BANG_GIA_COMBO_SECTIONS = {
+    'section_1_header': {
+        'name': 'Tầng 1 - Tiêu đề trang',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: Chọn Combo Hoàn Hảo Cho Chuyến Đi Của Bạn)', 'type': 'textarea', 'multilang': True},
+            {'name': 'subtitle', 'label': 'Tiêu đề phụ (VD: SUOI TIEN PARK COMBO PACKAGES)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_combo_park': {
+        'name': 'Tầng 2 - Combo Công Viên',
+        'group': 'B_PRODUCT',
+    },
+    'section_3_combo_park_water': {
+        'name': 'Tầng 3 - Combo Công Viên + Biển Tiên Đồng',
+        'group': 'B_PRODUCT',
+    },
+    'section_4_tickets_by_area': {
+        'name': 'Tầng 4 - Vé Cổng Theo Khu Vực',
+        'group': 'B_PRODUCT',
+    },
+    'section_5_cta_link': {
+        'name': 'Tầng 5 - Nút chuyển trang',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Nội dung nút (VD: Xem Bảng Giá Vé Lẻ Các Trò Chơi Suối Tiên)', 'type': 'text', 'multilang': True},
+            {'name': 'link', 'label': 'Đường dẫn liên kết (VD: /bang-gia-ve-le)', 'type': 'text', 'multilang': False},
+        ],
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -275,5 +306,9 @@ PAGES = {
     'tuyen-dung': {
         'name': 'Tuyển Dụng',
         'sections': TUYEN_DUNG_SECTIONS
+    },
+    'bang-gia-combo': {
+        'name': 'Bảng Giá - Combo',
+        'sections': BANG_GIA_COMBO_SECTIONS
     },
 }
