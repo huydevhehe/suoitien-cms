@@ -2,11 +2,12 @@
 {% load i18n static %}
 
 {% block breadcrumbs %}
-<div class="px-4 lg:px-12 py-3 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+<style>.hs-breadcrumb-bar{background:#f9fafb;border-bottom:1px solid #e5e7eb;}.dark .hs-breadcrumb-bar{background:rgb(9 9 11)!important;border-color:rgb(39 39 42)!important;}</style>
+<div class="hs-breadcrumb-bar px-4 lg:px-12 py-3">
     <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
         <a href="{% url 'admin:index' %}" class="hover:text-primary-600">{% translate 'Home' %}</a>
         <span>&rsaquo;</span>
-        <span>Cấu hình Trang chủ</span>
+        <span>Cấu hình trang nội dung</span>
     </div>
 </div>
 {% endblock %}
@@ -227,8 +228,8 @@
     </div>
 
     <!-- Tabs cho Đa Trang -->
-    <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
-        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+    <div class="mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400 whitespace-nowrap">
             {% for pk, p_info in pages_list.items %}
             <li class="mr-2">
                 <a href="?page={{ pk }}" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group 
