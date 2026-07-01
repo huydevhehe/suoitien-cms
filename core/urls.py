@@ -34,6 +34,7 @@ urlpatterns = [
     path('admin/suoi_tien/widgets/', admin.site.admin_view(suoi_tien_views.widgets_view), name='admin_widgets'),
     path('admin/suoi_tien/widgets/save/', admin.site.admin_view(suoi_tien_views.widgets_save_ajax), name='admin_widgets_save'),
     path('admin/suoi_tien/image-browser/', admin.site.admin_view(suoi_tien_views.image_browser_view), name='admin_image_browser'),
+    path('admin/suoi_tien/kingpos-catalog/', admin.site.admin_view(suoi_tien_views.kingpos_catalog_view), name='admin_kingpos_catalog'),
     path('admin/suoi_tien/home-sections/', admin.site.admin_view(suoi_tien_views.home_sections_view), name='admin_home_sections'),
     path('admin/suoi_tien/home-sections/save/', admin.site.admin_view(suoi_tien_views.home_sections_save_ajax), name='admin_home_sections_save'),
 

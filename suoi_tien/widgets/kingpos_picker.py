@@ -42,6 +42,7 @@ class KingposComboPickerWidget(forms.HiddenInput):
     <div id="%(fid)s_list" class="kingpos-picker-list" style="max-height:220px;overflow-y:auto;"></div>
   </div>
   %(empty_warn)s
+  <a href="/admin/suoi_tien/kingpos-catalog/" target="_blank" style="font-size:11px;color:#93c5fd;display:inline-block;margin-top:4px;">👁 Xem toàn bộ combo KingPOS (ảnh, mô tả đầy đủ, copy nội dung)</a>
 </div>
 %(hidden_input)s
 <style>

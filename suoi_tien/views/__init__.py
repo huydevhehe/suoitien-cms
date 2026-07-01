@@ -5,3 +5,4 @@ Re-export để giữ tương thích ngược (core/urls.py truy cập qua suoi_
 from .widgets_config import *   # noqa: F401,F403
 from .image_browser import *    # noqa: F401,F403
 from .home_sections_config import *  # noqa: F401,F403
+from .kingpos_catalog import *  # noqa: F401,F403

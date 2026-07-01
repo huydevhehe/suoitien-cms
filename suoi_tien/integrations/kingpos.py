@@ -39,7 +39,7 @@ def get_access_token(force_refresh=False):
     return token
 
 
-def get_combo_list(id_server=None):
+def get_combo_list(id_server=None, force_refresh=False):
     """
     Trả danh sách combo thật từ KingPOS, đã làm phẳng (bỏ cấu trúc nhóm):
     [{'id': '6797', 'name': 'VÉ CỔNG BIỂN KỲ QUAN - NGƯỜI LỚN', 'price': '180000', 'group': 'COMBO CÔNG VIÊN'}, ...]
@@ -47,9 +47,10 @@ def get_combo_list(id_server=None):
     """
     id_server = id_server or settings.KINGPOS_ID_SERVER
     cache_key = f'kingpos_combo_list_{id_server}'
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
+    if not force_refresh:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
 
     token = get_access_token()
     if not token:
@@ -74,8 +75,12 @@ def get_combo_list(id_server=None):
             combos.append({
                 'id': str(c.get('id', '')),
                 'name': c.get('vn_name') or c.get('name') or '',
+                'name_en': c.get('en_name') or '',
                 'price': c.get('price', ''),
                 'group': group_name,
+                'image': c.get('image', ''),
+                'description': c.get('vn_description') or c.get('description') or '',
+                'description_en': c.get('en_description') or '',
             })
 
     cache.set(cache_key, combos, COMBO_CACHE_TTL)
