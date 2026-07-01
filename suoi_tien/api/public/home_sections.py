@@ -56,8 +56,7 @@ def _resolve_group_b_product(data_raw, request, lang):
     return {'idcat_list': idcat_list, 'title': title, 'subtitle': subtitle, 'items': items}
 
 
-def _resolve_group_b_product_cats(data_raw, request, lang):
-    cat_ids = data_raw.get('cat_ids') or []
+def _resolve_product_cats(cat_ids, request, lang, limit=None):
     categories = []
     for idcat_str in cat_ids:
         try:
@@ -67,13 +66,25 @@ def _resolve_group_b_product_cats(data_raw, request, lang):
         except (ValueError, TypeError):
             idcat_int = 0
             cat_title = ''
-        items = _resolve_posts_by_idcat([str(idcat_str)], 'product', request, lang, limit=6)
+        items = _resolve_posts_by_idcat([str(idcat_str)], 'product', request, lang, limit=limit)
         categories.append({
             'idcat': idcat_int,
             'cat_title': cat_title,
             'items': items,
         })
     return {'categories': categories}
+
+
+def _resolve_group_b_product_cats(data_raw, request, lang):
+    """Danh mục dọc, tối đa 6 sản phẩm/danh mục (VD: trang Bảng Giá - Vé Lẻ)."""
+    cat_ids = data_raw.get('cat_ids') or []
+    return _resolve_product_cats(cat_ids, request, lang, limit=6)
+
+
+def _resolve_group_b_product_tabs(data_raw, request, lang):
+    """Danh mục dạng tab ngang, KHÔNG giới hạn số sản phẩm/danh mục (VD: trang Đặt Vé Online)."""
+    cat_ids = data_raw.get('cat_ids') or []
+    return _resolve_product_cats(cat_ids, request, lang, limit=None)
 
 
 def _resolve_group_c(section_def, data_raw, request, lang):

@@ -202,12 +202,14 @@
         margin-bottom: 0;
     }
 
-    .group-badge.group-B_PRODUCT_CATS {
+    .group-badge.group-B_PRODUCT_CATS,
+    .group-badge.group-B_PRODUCT_TABS {
         background: #cffafe;
         color: #155e75;
     }
 
-    .dark .group-badge.group-B_PRODUCT_CATS {
+    .dark .group-badge.group-B_PRODUCT_CATS,
+    .dark .group-badge.group-B_PRODUCT_TABS {
         background: #164e63;
         color: #67e8f9;
     }
@@ -735,7 +737,7 @@
             if (subtitleInput) subtitleInput.value = data.subtitle || '';
             const limitInput = card.querySelector('[data-field-name="limit"]');
             if (limitInput && data.limit) limitInput.value = data.limit;
-        } else if (group === 'B_PRODUCT_CATS') {
+        } else if (group === 'B_PRODUCT_CATS' || group === 'B_PRODUCT_TABS') {
             const listEl = card.querySelector('.cat-blocks-list');
             const addBtn = card.querySelector('.add-cat-block-btn');
             (data.cat_ids || []).forEach(catId => addCatBlockRow(listEl, catId));
@@ -853,7 +855,7 @@
                 fields.subtitle = subtitleInput ? subtitleInput.value : '';
                 const limitInput = card.querySelector('[data-field-name="limit"]');
                 fields.limit = limitInput.value ? parseInt(limitInput.value, 10) : null;
-            } else if (group === 'B_PRODUCT_CATS') {
+            } else if (group === 'B_PRODUCT_CATS' || group === 'B_PRODUCT_TABS') {
                 const rows = Array.from(card.querySelectorAll('.cat-block-row'));
                 fields.cat_ids = rows.map(row => {
                     const val = row.querySelector('.cat-block-value');

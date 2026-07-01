@@ -295,6 +295,23 @@ BANG_GIA_VE_LE_SECTIONS = {
     },
 }
 
+DAT_VE_ONLINE_SECTIONS = {
+    'section_1_header': {
+        'name': 'Tầng 1 - Tiêu đề trang',
+        'group': 'C',
+        'fields': [
+            {'name': 'title', 'label': 'Tiêu đề chính (VD: Đặt Vé Suối Tiên Online)', 'type': 'textarea', 'multilang': True},
+            {'name': 'row1_text', 'label': 'Mốc 1 (VD: Trên 1,4m: Mua vé người lớn)', 'type': 'text', 'multilang': True},
+            {'name': 'row2_text', 'label': 'Mốc 2 (VD: Từ 1m đến dưới 1,4m: Mua vé trẻ em)', 'type': 'text', 'multilang': True},
+            {'name': 'row3_text', 'label': 'Mốc 3 (VD: Dưới 1m: Miễn phí)', 'type': 'text', 'multilang': True},
+        ],
+    },
+    'section_2_tabs_products': {
+        'name': 'Tầng 2 - Danh mục dạng Tab + Sản phẩm (không giới hạn)',
+        'group': 'B_PRODUCT_TABS',
+    },
+}
+
 PAGES = {
     'home': {
         'name': 'Trang Chủ',
@@ -339,5 +356,9 @@ PAGES = {
     'bang-gia-ve-le': {
         'name': 'Bảng Giá - Vé Lẻ',
         'sections': BANG_GIA_VE_LE_SECTIONS
+    },
+    'dat-ve-online': {
+        'name': 'Đặt Vé Suối Tiên Online',
+        'sections': DAT_VE_ONLINE_SECTIONS
     },
 }

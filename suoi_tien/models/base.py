@@ -173,7 +173,7 @@ class HalinkCart(models.Model):
                 items = [item.strip() for item in self.info_product.split(',') if item.strip()]
                 for item in items:
                     parts = item.split('***+++***')
-                    if len(parts) == 3:
+                    if len(parts) >= 3:
                         sl = int(parts[1])
                         gia = int(parts[2])
                         total += sl * gia
@@ -198,10 +198,10 @@ class HalinkCart(models.Model):
             items = [item.strip() for item in self.info_product.split(',') if item.strip()]
             for idx, item in enumerate(items):
                 parts = item.split('***+++***')
-                if len(parts) != 3:
+                if len(parts) < 3:
                     raise ValidationError({
-                        'info_product': f'Mục thứ {idx+1} phải có đúng 3 phần '
-                                        f'(ID***+++***SL***+++***GIÁ), '
+                        'info_product': f'Mục thứ {idx+1} phải có ít nhất 3 phần '
+                                        f'(ID***+++***SL***+++***GIÁ[***+++***LOẠI_VÉ]), '
                                         f'nhận được {len(parts)} phần: "{item}"'
                     })
         super().clean()

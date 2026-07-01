@@ -50,6 +50,11 @@ có sẵn `key` (section_key) và `section` (dict định nghĩa khối) - inclu
         <div class="cat-blocks-list" style="margin-bottom:4px;"></div>
         <button type="button" class="pick-image-btn add-cat-block-btn" style="margin-top:6px; width:100%; text-align:center;">+ Thêm danh mục</button>
 
+    {% elif section.group == 'B_PRODUCT_TABS' %}
+        <label class="field-label">Danh sách danh mục dạng tab — hiển thị TẤT CẢ sản phẩm trong danh mục (không giới hạn)</label>
+        <div class="cat-blocks-list" style="margin-bottom:4px;"></div>
+        <button type="button" class="pick-image-btn add-cat-block-btn" style="margin-top:6px; width:100%; text-align:center;">+ Thêm danh mục</button>
+
     {% else %}
         {% for field in section.fields %}
             {% if field.multilang %}

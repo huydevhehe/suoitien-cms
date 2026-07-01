@@ -42,8 +42,9 @@ def get_order_status_label(status):
 
 def parse_ticket_order_items(info_product):
     """
-    Tách chuỗi info_product (ID***+++***SL***+++***GIÁ, cách nhau bằng dấu phẩy)
+    Tách chuỗi info_product (ID***+++***SL***+++***GIÁ***+++***LOẠI_VÉ, cách nhau bằng dấu phẩy)
     thành danh sách item kèm tên sản phẩm tra từ HalinkPost. Dùng cho tra cứu đơn.
+    LOẠI_VÉ ('adult'/'child') là phần mở rộng thêm sau — đơn cũ chỉ có 3 phần thì mặc định 'adult'.
     """
     if not info_product:
         return []
@@ -51,15 +52,16 @@ def parse_ticket_order_items(info_product):
     raw_items = []
     for line in info_product.split(','):
         parts = line.strip().split(PRODUCT_SEPARATOR)
-        if len(parts) == 3:
+        if len(parts) >= 3:
             try:
-                raw_items.append((int(parts[0]), int(parts[1]), int(parts[2])))
+                price_type = parts[3] if len(parts) >= 4 else 'adult'
+                raw_items.append((int(parts[0]), int(parts[1]), int(parts[2]), price_type))
             except ValueError:
                 continue
 
     titles = {
         post.Id: post.clean_title
-        for post in HalinkPost.objects.filter(Id__in=[pid for pid, _, _ in raw_items])
+        for post in HalinkPost.objects.filter(Id__in=[pid for pid, _, _, _ in raw_items])
     }
     return [
         {
@@ -68,8 +70,9 @@ def parse_ticket_order_items(info_product):
             'quantity': qty,
             'unit_price': price,
             'line_total': qty * price,
+            'price_type': price_type,
         }
-        for pid, qty, price in raw_items
+        for pid, qty, price, price_type in raw_items
     ]
 
 
@@ -102,10 +105,20 @@ def resolve_ticket_items(items):
     resolved_items = []
     for item in items:
         product = products_by_id[item['post_id']]
+        price_type = item.get('price_type', 'adult')
+        unit_price = product.post_amount
+        if price_type == 'child':
+            meta = HalinkMeta.objects.filter(Id_post=product.pk, meta_title='price_child').first()
+            if meta and meta.meta_value:
+                try:
+                    unit_price = int(meta.meta_value)
+                except (ValueError, TypeError):
+                    pass
         resolved_items.append({
             'post_id': product.Id,
             'quantity': item['quantity'],
-            'unit_price': product.post_amount,
+            'unit_price': unit_price,
+            'price_type': price_type,
         })
     return resolved_items
 
@@ -123,6 +136,7 @@ def build_ticket_order(*, fullname, phone, email='', address='', note='',
     info_product = ','.join(
         PRODUCT_SEPARATOR.join([
             str(item['post_id']), str(item['quantity']), str(item['unit_price']),
+            item.get('price_type', 'adult'),
         ])
         for item in resolved_items
     )
@@ -364,6 +378,7 @@ class CommentSerializer(serializers.Serializer):
 class TicketItemInputSerializer(serializers.Serializer):
     post_id = serializers.IntegerField(min_value=1)
     quantity = serializers.IntegerField(min_value=1)
+    price_type = serializers.ChoiceField(choices=['adult', 'child'], required=False, default='adult')
 
 
 class TicketOrderCreateSerializer(serializers.Serializer):
