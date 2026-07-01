@@ -170,7 +170,28 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 16px;
-        align-items: start;
+        align-items: stretch;
+    }
+
+    .hs-page-tabs {
+        scrollbar-width: thin;
+        scrollbar-color: #d4d4d8 transparent;
+    }
+    .hs-page-tabs::-webkit-scrollbar {
+        height: 6px;
+    }
+    .hs-page-tabs::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .hs-page-tabs::-webkit-scrollbar-thumb {
+        background: #d4d4d8;
+        border-radius: 3px;
+    }
+    .dark .hs-page-tabs {
+        scrollbar-color: #52525b transparent;
+    }
+    .dark .hs-page-tabs::-webkit-scrollbar-thumb {
+        background: #52525b;
     }
 
     .lang-tab-btn {
@@ -230,7 +251,7 @@
     </div>
 
     <!-- Tabs cho Đa Trang -->
-    <div class="mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+    <div class="hs-page-tabs mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
         <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400 whitespace-nowrap">
             {% for pk, p_info in pages_list.items %}
             <li class="mr-2">
