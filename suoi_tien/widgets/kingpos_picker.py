@@ -69,8 +69,10 @@ if (!window._kposReady) {
     if (!reg) return;
     var list = document.getElementById(fieldId + '_list');
     if (!list) return;
-    var ql = (q || '').toLowerCase();
-    var filtered = ql ? reg.combos.filter(function(c) { return c.name.toLowerCase().indexOf(ql) >= 0; }) : reg.combos;
+    var ql = (q || '').trim().toLowerCase();
+    var filtered = ql ? reg.combos.filter(function(c) {
+      return c.name.toLowerCase().indexOf(ql) >= 0 || String(c.id).toLowerCase().indexOf(ql) >= 0;
+    }) : reg.combos;
     if (!filtered.length) {
       list.innerHTML = '<div class="kingpos-picker-empty">Không tìm thấy combo nào (hoặc KingPOS chưa trả dữ liệu).</div>';
       return;

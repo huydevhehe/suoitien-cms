@@ -30,7 +30,7 @@ def kingpos_catalog_view(request):
                 f'onerror="this.style.display=\'none\'">'
             ) if img else '<div class="thumb placeholder">Không có ảnh</div>'
             cards_html += f'''
-<div class="card" data-name="{html.escape((c.get('name','') + ' ' + c.get('name_en','')).lower())}">
+<div class="card" data-name="{html.escape((c.get('name','') + ' ' + c.get('name_en','') + ' ' + c.get('id','')).lower())}">
   {img_html}
   <div class="body">
     <div class="grp">{html.escape(c.get('group',''))}</div>
@@ -44,6 +44,7 @@ def kingpos_catalog_view(request):
       {f'<div class="desc-en">{desc_en}</div>' if desc_en else ''}
     </details>
     <div class="actions">
+      <button type="button" class="copy-btn copy-id" onclick="kcCopy(this, {json.dumps(c.get('id',''))})">📋 Copy mã</button>
       <button type="button" class="copy-btn" onclick="kcCopy(this, {json.dumps(c.get('description',''))})">📋 Copy mô tả</button>
       <button type="button" class="copy-btn" onclick="kcCopy(this, {json.dumps(img)})" {'disabled' if not img else ''}>📋 Copy link ảnh</button>
     </div>
@@ -80,6 +81,8 @@ body{{font-family:Inter,sans-serif;background:#18181b;color:#e4e4e7}}
 .copy-btn{{flex:1;padding:6px 8px;border-radius:6px;border:1px solid #3f3f46;background:#3f3f46;color:#e4e4e7;font-size:11px;cursor:pointer}}
 .copy-btn:hover{{background:#52525b}}
 .copy-btn:disabled{{opacity:.4;cursor:not-allowed}}
+.copy-btn.copy-id{{background:#312e81;border-color:#4338ca;color:#c7d2fe;font-weight:600}}
+.copy-btn.copy-id:hover{{background:#3730a3}}
 .empty{{padding:60px 20px;text-align:center;color:#71717a}}
 </style></head><body>
 <div class="toolbar">
