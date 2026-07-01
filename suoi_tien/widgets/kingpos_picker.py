@@ -87,16 +87,33 @@ if (!window._kposReady) {
     });
   };
 
+  window.kposCloseAll = function() {
+    document.querySelectorAll('.kingpos-picker-dropdown').forEach(function(el) { el.style.display = 'none'; });
+  };
+
   window.kposToggle = function(fieldId) {
     var dd = document.getElementById(fieldId + '_dropdown');
-    if (!dd) return;
+    var display = document.getElementById(fieldId + '_display');
+    if (!dd || !display) return;
     var opening = dd.style.display === 'none';
-    document.querySelectorAll('.kingpos-picker-dropdown').forEach(function(el) { el.style.display = 'none'; });
+    window.kposCloseAll();
     if (opening) {
+      // Gắn thẳng vào <body> + định vị theo toạ độ thật của ô input, tránh bị
+      // các khung cha có overflow:hidden (Unfold hay dùng cho hiệu ứng thu gọn) cắt mất.
+      if (dd.parentElement !== document.body) document.body.appendChild(dd);
+      var rect = display.getBoundingClientRect();
+      dd.style.position = 'fixed';
+      dd.style.top = rect.bottom + 'px';
+      dd.style.left = rect.left + 'px';
+      dd.style.width = rect.width + 'px';
+      dd.style.right = 'auto';
       dd.style.display = 'block';
       window.kposRenderList(fieldId, '');
     }
   };
+
+  window.addEventListener('scroll', window.kposCloseAll, true);
+  window.addEventListener('resize', window.kposCloseAll);
 
   window.kposFilter = function(fieldId, q) { window.kposRenderList(fieldId, q); };
 
@@ -110,9 +127,10 @@ if (!window._kposReady) {
   };
 
   document.addEventListener('mousedown', function(e) {
-    if (!e.target.closest || !e.target.closest('.kingpos-picker-wrap')) {
-      document.querySelectorAll('.kingpos-picker-dropdown').forEach(function(el) { el.style.display = 'none'; });
-    }
+    // Dropdown được đẩy ra <body> khi mở (xem kposToggle), nên "trong picker" giờ
+    // tính cả .kingpos-picker-wrap (ô hiển thị) lẫn .kingpos-picker-dropdown (đã tách ra ngoài).
+    var inside = e.target.closest && (e.target.closest('.kingpos-picker-wrap') || e.target.closest('.kingpos-picker-dropdown'));
+    if (!inside) window.kposCloseAll();
   });
 }
 window._kposReg['%(fid)s'] = { combos: %(combos_json)s };
