@@ -163,6 +163,14 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Hệ thống phát hành vé thật (KingPOS) - dùng chung với các đơn vị khác (xem PHP gốc).
+# Tài khoản mặc định lấy từ code PHP cũ (đã xác nhận còn đăng nhập được lúc 01/07/2026) -
+# CHỈ dùng tạm để test, cần thay bằng tài khoản riêng do Suối Tiên cấp trước khi lên production thật.
+KINGPOS_BASE_URL = os.environ.get('KINGPOS_BASE_URL', 'https://bv.suoitien.vn:5634')
+KINGPOS_USERNAME = os.environ.get('KINGPOS_USERNAME', 'web')
+KINGPOS_PASSWORD = os.environ.get('KINGPOS_PASSWORD', '7856')
+KINGPOS_ID_SERVER = os.environ.get('KINGPOS_ID_SERVER', '1')
+
 UNFOLD = {
     "SITE_TITLE": "Hệ thống Quản trị Suối Tiên",
     "SITE_HEADER": "Suối Tiên CMS",

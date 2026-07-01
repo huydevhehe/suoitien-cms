@@ -18,7 +18,7 @@ from ..models import (
     ProductProxy,
     ProductCategoryProxy,
 )
-from ..widgets import PriceInputWidget
+from ..widgets import PriceInputWidget, KingposComboPickerWidget
 from .mixins import (
     PostDisplayMixin,
     TinyMCEAdminMixin,
@@ -67,6 +67,16 @@ class ProductAdminForm(forms.ModelForm):
         min_value=0,
         widget=PriceInputWidget(),
     )
+    kingpos_combo_adult = forms.CharField(
+        label="Mã combo KingPOS - Người Lớn",
+        required=False,
+        widget=KingposComboPickerWidget(),
+    )
+    kingpos_combo_child = forms.CharField(
+        label="Mã combo KingPOS - Trẻ Em",
+        required=False,
+        widget=KingposComboPickerWidget(),
+    )
 
     class Meta:
         model = ProductProxy
@@ -78,6 +88,7 @@ class ProductAdminForm(forms.ModelForm):
     field_order = [
         'product_subtype', 'title_vn', 'alias', 'description_vn', 'content_vn',
         'price', 'promo_price', 'has_child_ticket', 'price_child',
+        'kingpos_combo_adult', 'kingpos_combo_child',
         'post_image', 'post_gallery', 'idcat', 'sort', 'ticlock', 'home',
     ]
 
@@ -108,6 +119,7 @@ class ProductAdminForm(forms.ModelForm):
                     meta_title__in=[
                         'halink_metabox_gia', 'halink_metabox_gia_khuyen_mai',
                         'product_subtype', 'price_child',
+                        'kingpos_combo_adult', 'kingpos_combo_child',
                     ]
                 )
             }
@@ -127,6 +139,10 @@ class ProductAdminForm(forms.ModelForm):
                     self.fields['has_child_ticket'].initial = True
                 except (ValueError, TypeError):
                     pass
+            if 'kingpos_combo_adult' in meta_map:
+                self.fields['kingpos_combo_adult'].initial = meta_map['kingpos_combo_adult']
+            if 'kingpos_combo_child' in meta_map:
+                self.fields['kingpos_combo_child'].initial = meta_map['kingpos_combo_child']
 
 
 # ==============================================================================
@@ -217,6 +233,11 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
     fieldsets = (
         (None, {'fields': ('product_subtype', 'title_vn', 'alias', 'content_vn', 'description_vn')}),
         ('Giá', {'fields': ('price', 'promo_price', 'has_child_ticket', 'price_child')}),
+        ('Liên kết hệ thống vé thật (KingPOS)', {
+            'fields': ('kingpos_combo_adult', 'kingpos_combo_child'),
+            'description': 'Chọn đúng combo bên hệ thống KingPOS tương ứng sản phẩm này, để lúc đặt vé thật hệ '
+                            'thống gửi đúng mã. Để trống nếu sản phẩm này chưa nối vé thật.',
+        }),
         ('Hình ảnh', {'fields': ('post_image', 'post_gallery')}),
         ('Cài đặt', {'fields': ('idcat', 'sort', 'ticlock', 'home')}),
     )
@@ -323,6 +344,18 @@ class ProductProxyAdmin(JSONSchemaAdminMixin, SortableAdminMixin, StatusSwitchAd
             _save_meta('price_child', price_child_val)
         else:
             HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='price_child').delete()
+
+        kingpos_adult = (form.cleaned_data.get('kingpos_combo_adult') or '').strip()
+        if kingpos_adult:
+            _save_meta('kingpos_combo_adult', kingpos_adult)
+        else:
+            HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='kingpos_combo_adult').delete()
+
+        kingpos_child = (form.cleaned_data.get('kingpos_combo_child') or '').strip()
+        if kingpos_child:
+            _save_meta('kingpos_combo_child', kingpos_child)
+        else:
+            HalinkMeta.objects.filter(Id_post=obj.pk, meta_title='kingpos_combo_child').delete()
 
 
 @admin.register(ProductCategoryProxy)
